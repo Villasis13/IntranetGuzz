@@ -1,0 +1,11 @@
+2024-01-11 16:58:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-11 16:58:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-11 16:58:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-11 16:58:42[UTC -5] [ip] ::1 [lugar] Navbar|num_clientes [texto] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'vargas_tienda.clientes' doesn't exist
+2024-01-11 16:58:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\TiendaVargas\app\models\Navbar.php: 32[MESSAGGE]Undefined variable $result
+
+2024-01-11 16:58:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\TiendaVargas\app\models\Navbar.php: 32[MESSAGGE]Trying to access array offset on value of type null
+

@@ -1,0 +1,574 @@
+2024-02-04 17:08:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:23[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:23[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:23[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:23[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-02-04 17:08:27[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:27[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:27[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:28[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:08:28[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:08:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:08:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:08:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:10:57[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:10:57[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:10:57[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:10:57[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-02-04 17:11:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:11:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:11:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:11:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:11:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:15:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:15:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:16:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:16:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:16:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:16:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:16:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:16:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:16:52[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:46[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:46[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:46[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:51[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:51[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:54[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:56[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:56[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:56[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:56[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:56[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:58[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:58[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:58[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:58[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:58[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:19:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:11[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:11[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:11[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:14[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:14[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:14[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:14[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:14[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:15[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:15[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:15[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:16[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:16[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 17:20:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 17:20:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:12:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:12:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:12:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:12:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:12:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:12:40[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:12:40[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:12:40[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:12:40[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:12:40[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:23:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:23:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:23:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:23:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:23:49[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:26:45[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:26:45[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:26:45[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 18:26:45[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 18:26:45[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 21:48:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 21:48:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 21:48:43[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 21:48:44[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-02-04 21:48:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 21:48:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 21:48:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 21:48:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 21:48:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 22:39:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:39:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:39:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:39:59[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-02-04 22:40:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 22:40:00[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 22:40:06[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:06[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:06[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:06[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 22:40:06[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 22:40:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-02-04 22:40:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-02-04 22:40:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+

@@ -1,0 +1,368 @@
+2024-01-27 10:31:03[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:31:03[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:31:03[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:31:03[UTC -5] [ip] ::1 [lugar] Admin|inicio [texto] Class "Caja" not found
+2024-01-27 10:31:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:31:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:31:38[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:31:38[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:32:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:08[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:08[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:32:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:32[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:32:33[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:33[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:33[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:32:33[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:33:02[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:02[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:02[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:02[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:33:09[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:09[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:09[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:09[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:33:21[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:21[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:21[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:33:21[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:34:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:34:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:34:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:34:59[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:36:55[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:36:55[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:36:55[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:36:55[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:37:07[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:37:07[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:37:07[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:37:07[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:39:09[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:39:09[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:39:09[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:39:09[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:39:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:39:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:39:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:39:12[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:40:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:40:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:40:01[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:40:01[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:44:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:44:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:44:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:44:37[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:45:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:45:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:45:59[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:46:00[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:46:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:46:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:46:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:46:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:46:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:47:18[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:18[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:18[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:19[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:47:19[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:47:20[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:20[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:20[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:20[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:47:39[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:39[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:39[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:47:39[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:48:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:48:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:48:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:48:34[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:48:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:48:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:48:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:48:48[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:50:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:23[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:50:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:34[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:50:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:50:48[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:51:02[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:02[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:02[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:02[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:51:28[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:28[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:28[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:29[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:51:29[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:51:30[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:30[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:30[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:51:30[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:52:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:22[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:31[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:31[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:31[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:34[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:34[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:52:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:44[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:44[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:44[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:44[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:44[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:47[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:50[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:51[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $select declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:51[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Builder.php: 174[MESSAGGE]Optional parameter $where declared before required parameter $pdo is implicitly treated as a required parameter
+
+2024-01-27 10:52:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:53[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:52:53[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 10:53:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:32[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:33[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:33[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:33[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:37[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 10:53:37[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:19:46[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:19:46[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:19:46[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:19:48[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:19:48[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:21:04[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:21:04[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:21:04[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:21:04[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:29:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:29:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:29:42[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:29:42[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:30:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:30:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:30:12[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:30:12[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:30:39[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:30:39[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:30:39[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:30:39[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:31:10[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:31:10[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:31:10[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:31:10[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:32:03[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:32:03[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:32:03[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:26[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:26[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:26[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:26[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2024-01-27 11:34:41[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:41[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:41[UTC -5] [ip] ::1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 8192 IN C:\laragon\www\TiendaVargas\app\models\Encriptar.php: 11[MESSAGGE]strlen(): Passing null to parameter #1 ($string) of type string is deprecated
+
+2024-01-27 11:34:41[UTC -5] [ip] ::1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1

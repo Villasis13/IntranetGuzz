@@ -1,0 +1,24 @@
+2025-04-26 02:42:12[UTC -5] [ip] 127.0.0.1 [lugar] Navbar|num_clientes [texto] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'guzz_bd.clientes' doesn't exist
+2025-04-26 02:42:12[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Undefined variable $result
+
+2025-04-26 02:42:12[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Trying to access array offset on value of type null
+
+2025-04-26 02:42:12[UTC -5] [ip] 127.0.0.1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2025-04-26 02:43:55[UTC -5] [ip] 127.0.0.1 [lugar] Navbar|num_clientes [texto] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'guzz_bd.clientes' doesn't exist
+2025-04-26 02:43:55[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Undefined variable $result
+
+2025-04-26 02:43:55[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Trying to access array offset on value of type null
+
+2025-04-26 02:43:55[UTC -5] [ip] 127.0.0.1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2025-04-26 02:53:12[UTC -5] [ip] 127.0.0.1 [lugar] Navbar|num_clientes [texto] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'guzz_bd.clientes' doesn't exist
+2025-04-26 02:53:12[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Undefined variable $result
+
+2025-04-26 02:53:12[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Trying to access array offset on value of type null
+
+2025-04-26 02:53:12[UTC -5] [ip] 127.0.0.1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
+2025-04-26 02:53:49[UTC -5] [ip] 127.0.0.1 [lugar] Navbar|num_clientes [texto] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'guzz_bd.clientes' doesn't exist
+2025-04-26 02:53:49[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Undefined variable $result
+
+2025-04-26 02:53:49[UTC -5] [ip] 127.0.0.1 [lugar] Excepcion No Manejada [texto] [LEVEL]: 2 IN C:\laragon\www\IntranetGuzz\app\models\Navbar.php: 32[MESSAGGE]Trying to access array offset on value of type null
+
+2025-04-26 02:53:49[UTC -5] [ip] 127.0.0.1 [lugar] Caja|traer_estado_caja [texto] SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fecha_caja) = CONVERT(date, GETDATE())' at line 1
