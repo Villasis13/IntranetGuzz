@@ -108,4 +108,3 @@
 </div>
 <script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>
 <script src="<?php echo _SERVER_ . _JS_;?>productos.js"></script>
-

@@ -9,6 +9,7 @@ class ClientesController
     private $usuario;
     private $rol;
     private $archivo;
+
     //Variables fijas para cada llamada al controlador
     private $sesion;
     private $encriptar;
@@ -46,56 +47,69 @@ class ClientesController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
-    public function guardar_editar_clientes(){
+    public function guardar_editar_clientes()
+    {
         $result = 2;
         $message = 'OK';
-        try{
+        try {
             $ok_data = true;
-            if($ok_data){
-                $id = $_POST['id_cliente'];
-                if($id == null){
-                    $validar_dni = $this->clientes->validar_x_dni($_POST['cliente_dni']);
-                    if($validar_dni){
+            $id = $_POST['id_cliente'];
+            $cliente_dni = $_POST['cliente_dni'];
+            if ($ok_data) {
+                if ($id == null) {
+                    $validar_dni = $this->clientes->validar_x_dni($id);
+                    if ($validar_dni) {
                         $result = 3;
-                    }else{
+                    } else {
                         $result = $this->builder->save("clientes", array(
+                            "cliente_dni" => $cliente_dni,
                             "cliente_nombre" => $_POST['cliente_nombre'],
-                            "cliente_apellidos" => $_POST['cliente_apellidos'],
-                            "cliente_dni" => $_POST['cliente_dni'],
+                            "cliente_apellido_paterno" => $_POST['cliente_apellido_paterno'],
+                            "cliente_apellido_materno" => $_POST['cliente_apellido_materno'],
+                            "cliente_fecha_nacimiento" => $_POST['cliente_fecha_nacimiento'] ?? null,
+                            "cliente_direccion" => $_POST['cliente_direccion'],
+                            "cliente_referencia" => $_POST['cliente_referencia'] ?? null,
                             "cliente_celular" => $_POST['cliente_celular'],
-                            "cliente_email" => $_POST['cliente_email'],
-                            "cliente_genero" => $_POST['cliente_genero']
+                            "cliente_correo" => $_POST['cliente_correo'] ?? null,
+                            "cliente_nro_tarjeta" => $_POST['cliente_nro_tarjeta'] ?? null,
+                            "cliente_clave" => $_POST['cliente_clave'] ?? null,
+                            "cliente_lugar_trabajo" => $_POST['cliente_lugar_trabajo'] ?? null,
+                            "cliente_otro" => $_POST['cliente_otro'] ?? null,
+                            "cliente_estado" => 1,
+                            "cliente_fecha" => date("Y-m-d H:i:s")
                         ));
                     }
-                }else{
-                    $id_nombre = $this->clientes->validar_x_id_nombre($_POST['id_cliente'],$_POST['cliente_dni']);
-                    $validar_dni = $this->clientes->validar_x_dni($_POST['cliente_dni']);
-                    if($id_nombre->id_cliente != $validar_dni->id_cliente){
+                } else {
+                    $validar_dni = $this->clientes->validar_x_dni($cliente_dni);
+                    if ($validar_dni['id_cliente']) {
                         $result = 3;
-                    }else{
+                    } else {
                         $id = $_POST['id_cliente'];
                         $result = $this->builder->update("clientes", array(
+                            "cliente_dni" => $cliente_dni,
                             "cliente_nombre" => $_POST['cliente_nombre'],
-                            "cliente_apellidos" => $_POST['cliente_apellidos'],
-                            "cliente_dni" => $_POST['cliente_dni'],
+                            "cliente_apellido_paterno" => $_POST['cliente_apellido_paterno'],
+                            "cliente_apellido_materno" => $_POST['cliente_apellido_materno'],
+                            "cliente_fecha_nacimiento" => $_POST['cliente_fecha_nacimiento'] ?? null,
+                            "cliente_direccion" => $_POST['cliente_direccion'],
+                            "cliente_referencia" => $_POST['cliente_referencia'] ?? null,
                             "cliente_celular" => $_POST['cliente_celular'],
-                            "cliente_email" => $_POST['cliente_email'],
-                            "cliente_genero" => $_POST['cliente_genero']
-                        ), array(
-                            "id_cliente" => $id
-                        ));
+                            "cliente_correo" => $_POST['cliente_correo'] ?? null,
+                            "cliente_nro_tarjeta" => $_POST['cliente_nro_tarjeta'] ?? null,
+                            "cliente_clave" => $_POST['cliente_clave'] ?? null,
+                            "cliente_lugar_trabajo" => $_POST['cliente_lugar_trabajo'] ?? null,
+                            "cliente_otro" => $_POST['cliente_otro'] ?? null
+                        ), array("id_cliente" => $id));
                     }
                 }
-            }else {
+            } else {
                 $result = 6;
                 $message = "Integridad de datos fallida. Algún parametro se está enviando mal";
             }
-        } catch (Exception $e){
-            //Registramos el error generado y devolvemos el mensaje enviado por PHP
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
             $message = $e->getMessage();
         }
-        //Retornamos el json
         echo json_encode(array("result" => array("code" => $result, "message" => $message)));
     }
     public function edicion_clientes(){

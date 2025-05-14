@@ -29,17 +29,6 @@ class Clientes
             return [];
         }
     }
-    public function validar_x_id_nombre($id,$dni){
-        try{
-            $sql = 'select * from clientes where cliente_dni = ?';
-            $stm = $this->pdo->prepare($sql);
-            $stm->execute([$id,$dni]);
-            return $stm->fetchAll();
-        } catch (Throwable $e){
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            return [];
-        }
-    }
     public function todos_clientes(){
         try{
             $sql = 'select * from clientes';
