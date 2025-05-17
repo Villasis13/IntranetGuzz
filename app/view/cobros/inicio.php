@@ -21,7 +21,7 @@
         <div class="card-body" style="padding: 0px;">
             <div class="table-responsive">
                 <table class="table table-hover table-bordered" id="example1">
-                    <thead class="thead-light">
+                    <thead>
                     <tr class="text-center">
                         <th>DNI</th>
                         <th>Vencimiento</th>
@@ -37,17 +37,17 @@
                     <?php ?>
                     <tr class="text-center">
                         <td class="align-middle">
-                            <span class="badge bg-primary">71423949</span>
+                            71423949
                         </td>
                         <td class="align-middle">
-                            <span class="badge bg-warning text-dark">5 días</span>
+                            5 días
                         </td>
                         <td class="align-middle text-right">Bryan Diaz</td>
                         <td class="align-middle text-success fw-bold">S/ 1500.00</td>
                         <td class="align-middle text-danger fw-bold">S/ 500.00</td>
                         <td class="align-middle">15-07-2024</td>
                         <td class="align-middle">
-                            <span class="badge bg-danger">2 días</span>
+                            2 días
                         </td>
                         <td class="align-middle">
                             <a href="pagar" class="btn btn-primary btn-sm">
@@ -73,7 +73,7 @@
         <div class="card-body" style="padding: 0px;">
             <div class="table-responsive">
                 <table class="table table-hover table-bordered" id="example2">
-                    <thead class="thead-light">
+                    <thead>
                     <tr class="text-center">
                         <th>DNI</th>
                         <th>Vencimiento</th>
@@ -89,17 +89,17 @@
                     <?php ?>
                     <tr class="text-center">
                         <td class="align-middle">
-                            <span class="badge bg-primary">71423949</span>
+                            71423949
                         </td>
                         <td class="align-middle">
-                            <span class="badge bg-warning text-dark">5 días</span>
+                            5 días
                         </td>
                         <td class="align-middle text-right">Bryan Diaz</td>
                         <td class="align-middle text-success fw-bold">S/ 1500.00</td>
                         <td class="align-middle text-danger fw-bold">S/ 500.00</td>
                         <td class="align-middle">15-07-2024</td>
                         <td class="align-middle">
-                            <span class="badge bg-danger">2 días</span>
+                            2 días
                         </td>
                         <td class="align-middle">
                             <a href="pagar" class="btn btn-primary btn-sm">
@@ -125,7 +125,7 @@
         <div class="card-body" style="padding: 0px;">
             <div class="table-responsive">
                 <table class="table table-hover table-bordered" id="example3">
-                    <thead class="thead-light">
+                    <thead>
                     <tr class="text-center">
                         <th>DNI</th>
                         <th>Vencimiento</th>
@@ -141,17 +141,17 @@
                     <?php ?>
                     <tr class="text-center">
                         <td class="align-middle">
-                            <span class="badge bg-primary">71423949</span>
+                            71423949
                         </td>
                         <td class="align-middle">
-                            <span class="badge bg-warning text-dark">5 días</span>
+                            5 días
                         </td>
                         <td class="align-middle text-right">Bryan Diaz</td>
                         <td class="align-middle text-success fw-bold">S/ 1500.00</td>
                         <td class="align-middle text-danger fw-bold">S/ 500.00</td>
                         <td class="align-middle">15-07-2024</td>
                         <td class="align-middle">
-                            <span class="badge bg-danger">2 días</span>
+                            2 días
                         </td>
                         <td class="align-middle">
                             <a href="pagar" class="btn btn-primary btn-sm">
@@ -166,12 +166,6 @@
     </div>
 </div>
 <style>
-    .table thead th {
-        background-color: #3487C9;
-        color: white !important;
-        font-weight: 500;
-        vertical-align: middle;
-    }
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
         cursor: pointer;

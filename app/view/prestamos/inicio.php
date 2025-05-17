@@ -2,7 +2,7 @@
 <div class="container-fluid">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Préstamos al Instante</h1>
-            <a class="d-none d-sm-inline-block btn btn-danger shadow-sm text-white">
+            <a class="d-none d-sm-inline-block btn btn-secondary shadow-sm text-white">
                 <i class="fa fa-list text-white"></i> Ver Todos los Préstamos
             </a>
         </div>

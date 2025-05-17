@@ -25,17 +25,17 @@
                     </div>
                     <div class="info-group mb-3">
                         <label class="fw-bold">DNI:</label>
-                        <span class="badge bg-primary">71423949</span>
+                        71423949
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="info-group mb-3">
                         <label class="fw-bold">Monto Prestado:</label>
-                        <span class="text-success">S/ 5,000.00</span>
+                        S/ 5,000.00
                     </div>
                     <div class="info-group mb-3">
                         <label class="fw-bold">Interés:</label>
-                        <span class="badge bg-info">15%</span>
+                        15%
                     </div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="fw-bold">Tipo de Pago:</label>
-                    <span class="badge bg-secondary">Diario</span>
+                    Diario
                 </div>
                 <div class="col-md-4">
                     <a href="#" class="btn btn-outline-dark">

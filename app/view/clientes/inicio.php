@@ -130,6 +130,7 @@
                                 <th class="align-middle">Contacto</th>
                                 <th class="align-middle">Dirección</th>
                                 <th class="align-middle">Línea Crédito</th>
+                                <th class="align-middle">Garantes</th>
                                 <th class="align-middle">Acciones</th>
                             </tr>
                             </thead>
@@ -163,6 +164,11 @@
                                         <span class="badge bg-success rounded-pill">
                                             S/ <?=number_format($c->cliente_credito, 2)?>
                                         </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="garante" class="btn btn-primary btn-sm">
+                                            <i class="fa fa-user-circle"></i>
+                                        </a>
                                     </td>
                                     <td class="align-middle">
                                         <div class="d-flex gap-2 justify-content-center">

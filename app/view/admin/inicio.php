@@ -98,7 +98,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr class="bg-warning text-center">
+                                    <tr class="text-center">
                                         <td>Juan Pérez</td>
                                         <td>S/ 150.00</td>
                                         <td>15-05-2023</td>
@@ -111,7 +111,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <a href="cobros/inicio" class="btn btn-danger mt-3">
+                            <a href="cobros/inicio" class="btn btn-secondary mt-3">
                                 <i class="fa fa-list fa-sm text-white-50"></i> Ver Todos
                             </a>
                         </div>
@@ -126,16 +126,16 @@
                         <br>
                         <div class="card-body">
                             <div class="d-grid gap-3">
-                                <a href="Prestamos_Antiguos.php" class="btn btn-danger">
+                                <a href="Prestamos_Antiguos.php" class="btn btn-secondary">
                                     <i class="fa fa-history mr-2"></i> Préstamos Antiguos
                                 </a>
-                                <a href="VentasCasuales.php" class="btn btn-danger">
+                                <a href="VentasCasuales.php" class="btn btn-secondary">
                                     <i class="fa fa-eject mr-2"></i> Ventas a Plazo
                                 </a>
-                                <a href="Inventario.php" class="btn btn-danger">
+                                <a href="Inventario.php" class="btn btn-secondary">
                                     <i class="fa fa-chain mr-2"></i> Gestión Garantías
                                 </a>
-                                <a href="Documentos_Registrados.php" class="btn btn-danger">
+                                <a href="Documentos_Registrados.php" class="btn btn-secondary">
                                     <i class="fa fa-folder mr-2"></i> Documentos
                                 </a>
                             </div>
