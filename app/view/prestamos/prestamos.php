@@ -56,7 +56,7 @@
                                         <a href="<?= _SERVER_ ?>prestamos/detalles/<?= $c->id_prestamos ?>" class="btn-sm btn-warning text-white">
                                             <i class="fa fa-eye"></i>
                                         </a>
-                                        <a href="<?= _SERVER_ ?>prestamos/pagar/<?= $c->id_prestamos ?>" style="cursor: pointer" class="btn-sm btn-success text-white">
+                                        <a href="<?= _SERVER_ ?>cobros/pagar/<?= $c->id_prestamos ?>" style="cursor: pointer" class="btn-sm btn-success text-white">
                                             <i class="fa fa-money"></i>
                                         </a>
                                     </td>

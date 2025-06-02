@@ -29,6 +29,11 @@
                         <label class="fw-bold">Resta por Pagar:</label>
                         <span class="badge bg-danger">S/ 26.00</span>
                     </div>
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">Aplicar Descuento</label>
+                        <input type="radio" name="desc" id="descSi"><label for="descSi">Si</label>
+                        <input type="radio" name="desc" checked id="descNo"><label for="descNo">No</label>
+                    </div>
                 </div>
 
                 <!-- Detalles Préstamo -->
