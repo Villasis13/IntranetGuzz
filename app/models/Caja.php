@@ -32,7 +32,10 @@ class Caja
     }
     public function traer_estado_caja(){
         try{
-            $sql = 'select estado_caja from caja where CONVERT(date, fecha_caja) = CONVERT(date, GETDATE())';
+            $sql = 'SELECT estado_caja
+					FROM caja
+					WHERE DATE(fecha_caja) = CURDATE();
+					';
             $stm = $this->pdo->prepare($sql);
             $stm->execute();
             return $stm->fetch();

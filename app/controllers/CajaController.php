@@ -60,7 +60,8 @@ class CajaController
                 if($id_caja == null){
                     $result = $this->builder->save("caja", array(
                         "fecha_caja" => $fecha_caja,
-                        "monto_caja" => $monto_caja
+                        "monto_caja" => $monto_caja,
+                        "estado_caja" => 1
                     ));
                 }
             }else {

@@ -51,4 +51,15 @@ class Clientes
             return [];
         }
     }
+    public function listar_x_dni($dni){
+        try{
+            $sql = 'select * from clientes where cliente_dni = ?' ;
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$dni]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
 }
