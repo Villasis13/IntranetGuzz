@@ -42,5 +42,16 @@ class Prestamos
 			return [];
 		}
 	}
+	public function listar_total_pagos_x_prestamo($id_p){
+		try{
+			$sql = 'select sum(pago_monto) as total from pagos where id_prestamo = ?';
+			$stm = $this->pdo->prepare($sql);
+			$stm->execute([$id_p]);
+			return $stm->fetchAll();
+		} catch (Throwable $e){
+			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+			return [];
+		}
+	}
 
 }

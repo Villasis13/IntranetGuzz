@@ -131,7 +131,7 @@
                                 <th class="align-middle">Dirección</th>
                                 <th class="align-middle">Línea Crédito</th>
                                 <th class="align-middle">Garantes</th>
-                                <th class="align-middle">Acciones</th>
+<!--                                <th class="align-middle">Acciones</th>-->
                             </tr>
                             </thead>
 
@@ -166,20 +166,20 @@
                                         </span>
                                     </td>
                                     <td class="align-middle">
-                                        <a href="garante" class="btn btn-primary btn-sm">
+                                        <a href="<?=_SERVER_?>Clientes/garante/<?= $c->id_cliente ?>" class="btn btn-primary btn-sm">
                                             <i class="fa fa-user-circle"></i>
                                         </a>
                                     </td>
-                                    <td class="align-middle">
+                                    <!--<td class="align-middle">
                                         <div class="d-flex gap-2 justify-content-center">
-                                            <a class="btn btn-warning btn-sm px-3" data-toggle="modal" data-target="#gestionCliente" onclick="editar_clientes(<?= $c->id_cliente ?>)">
+                                            <a class="btn btn-warning btn-sm px-3" data-toggle="modal" data-target="#gestionCliente" onclick="editar_clientes(<?php /*= $c->id_cliente */?>)">
                                                 <i class="fa fa-edit text-white"></i>
                                             </a>
-                                            <a class="btn btn-danger btn-sm px-3" onclick="preguntar('¿Estás seguro de eliminar este cliente?','eliminar_cliente','Confirmar','Cancelar','<?= $c->id_cliente ?>')">
+                                            <a class="btn btn-danger btn-sm px-3" onclick="preguntar('¿Estás seguro de eliminar este cliente?','eliminar_cliente','Confirmar','Cancelar','<?php /*= $c->id_cliente */?>')">
                                                 <i class="fa fa-trash text-white"></i>
                                             </a>
                                         </div>
-                                    </td>
+                                    </td>-->
                                 </tr>
                                 <?php
                                 $contador_cliente++;

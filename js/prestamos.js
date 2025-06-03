@@ -42,7 +42,6 @@ function cambiar_proximo_cobro(tipo){
 
     $('#fecha_prox_cobro2').val(fecha_nueva);
 }
-
 function guardar_nuevo_linea_credito(){
     var valor = true;
     var boton = "btn_alc";
@@ -96,7 +95,6 @@ function guardar_nuevo_linea_credito(){
         });
     }
 }
-
 function validar_monto_linea(){
     var monto_prestamo = parseFloat($('#monto_prestamo').val()) || 0;
     var linea_actual = parseFloat($('#linea_actual').val()) || 0;
@@ -106,7 +104,6 @@ function validar_monto_linea(){
         $('#monto_prestamo').val(0);
     }
 }
-
 function guardar_prestamo(){
     var valor = true;
     var id_cliente = $('#id_cliente').val();
@@ -183,5 +180,114 @@ function guardar_prestamo(){
                 }
             }
         });
+    }
+}
+function guardar_pago_prestamo(){
+    var valor = true;
+    var id_prestamo = $('#id_prestamo').val();
+    var pago_monto = $('#pago_monto').val();
+    var pago_recepcion = $('#pago_recepcion').val();
+    var pago_metodo = $('#pago_metodo').val();
+    var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
+    
+    valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
+    valor = validar_campo_vacio('pago_monto', pago_monto, valor);
+    valor = validar_campo_vacio('pago_recepcion', pago_recepcion, valor);
+    valor = validar_campo_vacio('pago_metodo', pago_metodo, valor);
+    valor = validar_campo_vacio('prestamo_prox_cobro', prestamo_prox_cobro, valor);
+    
+    if(valor){
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/cobros/guardar_pago",
+            data: {
+                id_prestamo : id_prestamo,  
+                pago_monto: pago_monto,
+                pago_recepcion: pago_recepcion,
+                pago_metodo: pago_metodo,
+                prestamo_prox_cobro: prestamo_prox_cobro
+            },
+            dataType: 'json',
+            // beforeSend: function () {
+            //     cambiar_estado_boton(boton, 'Guardando...', true);
+            // },
+            success:function (r) {
+                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
+                switch (r.result.code) {
+                    case 1:
+                        respuesta('¡Pago Guardado!', 'success');
+                        setTimeout(function () {
+                            // location.reload();
+                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
+                        }, 1000);
+                        break;
+                    case 2:
+                        respuesta('Error al guardar', 'error');
+                        break;
+                    case 3:
+                        respuesta('El monto supera a lo que falta pagar', 'error');
+                        break;
+                    default:
+                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        break;
+                }
+            }
+        });
+    }
+}
+function guardar_aplicar_descuento(id_prestamo){
+    var valor = true;
+    var input_resta_por_pagar = $('#input_resta_por_pagar').val();
+    var descontar_cantidad = $('#descontar_cantidad').val();
+    
+    valor = validar_campo_vacio('input_resta_por_pagar', input_resta_por_pagar, valor);
+    valor = validar_campo_vacio('descontar_cantidad', descontar_cantidad, valor);
+    
+    if(parseFloat(input_resta_por_pagar) < parseFloat(descontar_cantidad)){
+        respuesta('La cantidad a descontar no puede ser mayor al monto restante por pagar', 'error');
+        valor = false;
+    }
+    
+    if(valor){
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/cobros/aplicar_descuento",
+            data: {
+                id_prestamo : id_prestamo,
+                input_resta_por_pagar: input_resta_por_pagar,
+                descontar_cantidad: descontar_cantidad
+            },
+            dataType: 'json',
+            // beforeSend: function () {
+            //     cambiar_estado_boton(boton, 'Guardando...', true);
+            // },
+            success:function (r) {
+                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
+                switch (r.result.code) {
+                    case 1:
+                        respuesta('¡Descuento Aplicado!', 'success');
+                        setTimeout(function () {
+                            location.reload();
+                            // window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_self');
+                        }, 1000);
+                        break;
+                    case 2:
+                        respuesta('Error al guardar', 'error');
+                        break;
+                    default:
+                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        break;
+                }
+            }
+        });
+    }
+}
+function aplicar_descuento(){
+    var opcionSeleccionada = $('input[name="desc"]:checked').attr('id');
+    if (opcionSeleccionada === 'descSi') {
+        $('#div_descontar').show(200);
+    }else{
+        $('#div_descontar').hide(200);
+        $('#descontar_cantidad').val('');
     }
 }

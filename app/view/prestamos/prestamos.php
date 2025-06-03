@@ -56,8 +56,19 @@
                                         <a href="<?= _SERVER_ ?>prestamos/detalles/<?= $c->id_prestamos ?>" class="btn-sm btn-warning text-white">
                                             <i class="fa fa-eye"></i>
                                         </a>
+                                        <br>
                                         <a href="<?= _SERVER_ ?>cobros/pagar/<?= $c->id_prestamos ?>" style="cursor: pointer" class="btn-sm btn-success text-white">
                                             <i class="fa fa-money"></i>
+                                        </a>
+                                        <br>
+                                        <a onclick="preguntar('<i class=\'fa fa-exclamation-circle text-warning\'></i> ' +
+                                                'Cuidado. Está a punto de transferir un préstamo normal a ' +
+                                                'préstamo antiguo. ¿Seguro que desea hacerlo? ' +
+                                                'Se le recuerda que no hay vuelta atrás ' +
+                                                'una vez hecho el cambio.',
+                                                'transferir_prestamo','SI','NO', '<?= $c->id_prestamos ?>')"
+                                           style="cursor: pointer" class="btn-sm btn-primary text-white">
+                                            <i class="fa fa-refresh"></i>
                                         </a>
                                     </td>
 								</tr>

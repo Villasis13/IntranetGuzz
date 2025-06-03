@@ -75,6 +75,88 @@ function guardar_editar_clientes(){
         });
     }
 }
+function guardar_garante(){
+    var valor = true;
+    var id_cliente_recomendado = $('#id_cliente_recomendado').val();
+    var id_cliente = $('#id_cliente').val();
+    
+    if(id_cliente_recomendado === ""){
+        respuesta('Debe buscar un cliente','error');
+        valor = false;
+    }
+
+    if(valor){
+        var cadena =
+            "id_cliente=" + id_cliente+
+        "&id_cliente_recomendado=" + id_cliente_recomendado;
+
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/Clientes/guardar_cliente_garante",
+            data: cadena,
+            dataType: 'json',
+            /*beforeSend: function () {
+                cambiar_estado_boton(boton, 'Guardando...', true);
+            },*/
+            success:function (r) {
+                // cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar", false);
+                switch (r.result.code) {
+                    case 1:
+                        respuesta('¡Garante Guardado', 'success');
+                        setTimeout(function () { 
+                            location.reload(); 
+                            }, 1000);
+                        break;
+                    case 2:
+                        respuesta('Error al guardar', 'error');
+                        break;
+                    case 3:
+                        respuesta('Ese garante ya está registrado para este cliente', 'error');
+                        break;
+                    case 4:
+                        respuesta('Uno mismo no puede ser garante', 'error');
+                        break;
+                    default:
+                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        break;
+                }
+            }
+        });
+    }
+}
+function buscar_cliente_garante(){
+    var valor = true;
+    var btn_dni_garante_nuevo = $('#btn_dni_garante_nuevo').val();
+    var id_cliente_recomendado = $('#id_cliente_recomendado').val('');
+    valor = validar_campo_vacio('btn_dni_garante_nuevo', btn_dni_garante_nuevo, valor);
+    if(valor){
+        var cadena =
+            "btn_dni_garante_nuevo=" + btn_dni_garante_nuevo;
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/Clientes/buscar_cliente_garante",
+            data: cadena,
+            dataType: 'json',
+            /*beforeSend: function () {
+                cambiar_estado_boton(boton, 'Guardando...', true);
+            },*/
+            success:function (r) {
+                // cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar", false);
+                let data = r.result.code;
+                // console.log(data)
+                if(data){
+                    respuesta('Cliente encontrado', 'info');
+                    $('#id_cliente_recomendado').val(data.id_cliente);
+                    $('#input_recomendado').val(data.cliente_nombre + ' ' + data.cliente_apellido_paterno + ' ' + data.cliente_apellido_materno);
+                }else{
+                    $('#input_recomendado').val('')
+                    $('#id_cliente_recomendado').val('');
+                    respuesta('Cliente no encontrado', 'error');
+                }
+            }
+        });
+    }
+}
 function editar_clientes(id_cliente){
     let guardarid = id_cliente;
     $.ajax({

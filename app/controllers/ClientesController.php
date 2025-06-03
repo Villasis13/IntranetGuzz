@@ -51,7 +51,9 @@ class ClientesController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-
+			$id_cliente = $_GET['id'];
+			$data_cliente = $this->clientes->listar_x_id($id_cliente);
+			$garantes = $this->clientes->listar_clientes_garantes($id_cliente);
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'clientes/garante.php';
@@ -128,6 +130,32 @@ class ClientesController
         }
         echo json_encode(array("result" => array("code" => $result, "message" => $message)));
     }
+    public function guardar_cliente_garante()
+    {
+        $result = 2;
+        $message = 'OK';
+        try {
+			if($_POST['id_cliente']!=$_POST['id_cliente_recomendado']){
+				$buscar_existente = $this->clientes->listar_x_id_garante($_POST['id_cliente'],$_POST['id_cliente_recomendado']);
+				if(!$buscar_existente){
+					$result = $this->builder->save("clientes_garantes", array(
+						"id_cliente" => $_POST['id_cliente'],
+						"id_garante" => $_POST['id_cliente_recomendado'],
+						"cliente_garante_estado" => 1,
+						"cliente_garante_mt" => microtime(true),
+					));
+				}else{
+					$result = 3;
+				}
+			}else{
+				$result = 4;
+			}
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
     public function edicion_clientes(){
         $ok_data = true;
         $result = 2;
@@ -145,12 +173,26 @@ class ClientesController
         }
         echo json_encode(array("result" => array("code" => $result, "message" => $message)));
     }
+    public function buscar_cliente_garante(){
+        $ok_data = true;
+        $result = 2;
+        $message = 'OK';
+        try{
+            $result = $this->clientes->listar_x_dni($_POST['btn_dni_garante_nuevo']);
+        } catch (Exception $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
     public function eliminar_cliente(){
         try{
             $id = $_POST['id'];
-            $result=$this->builder->delete("clientes", array(
-                "id_cliente" => $id
-            ));
+			$result = $this->builder->update("clientes",array(
+				'cliente_estado' => 0
+			),array(
+			'id_cliente' => $id
+			));
         }catch (Exception $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'._FUNCTION_);
             $message = $e->getMessage();

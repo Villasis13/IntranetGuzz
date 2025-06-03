@@ -6,9 +6,9 @@
                 <div class="card-header bg-primary py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="m-0 font-weight-bold text-white">
-                            <i class="fa fa-user-circle-o me-2"></i>Gestión de Garantes
+                            <i class="fa fa-user-circle-o me-2"></i>Gestión de Garantes de:  <?= $data_cliente->cliente_nombre .' '.$data_cliente->cliente_apellido_paterno . ' - ' . $data_cliente->cliente_dni ?>
                         </h4>
-                        <a href="inicio" class="btn btn-light">
+                        <a href="<?= _SERVER_ ?>Clientes/inicio" class="btn btn-light">
                             <i class="fa fa-arrow-left me-2"></i>Volver a Clientes
                         </a>
                     </div>
@@ -16,29 +16,32 @@
                 <br>
 
                 <div class="card-body bg-white">
-                    <form class="row g-3 align-items-end">
+                    <div class="row">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">DNI del Garante</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Ingrese DNI" value="70123456">
-                                <button class="btn btn-warning">
+                                <input type="hidden" id="id_cliente" name="id_cliente" value="<?= $id_cliente ?>">
+                                <input id="btn_dni_garante_nuevo" name="btn_dni_garante_nuevo" type="text" 
+                                       class="form-control" placeholder="Ingrese DNI">
+                                <button onclick="buscar_cliente_garante()" class="btn btn-warning">
                                     <i class="fa fa-search me-2"></i>Buscar
                                 </button>
                             </div>
                         </div>
-
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Recomendado por</label>
-                            <input type="text" class="form-control bg-light"
-                                   value="Juan Pérez Martínez - 70123456" readonly>
+                            <input id="id_cliente_recomendado" name="id_cliente_recomendado" type="hidden">
+                            <input id="input_recomendado" name="input_recomendado" type="text" class="form-control"
+                                   readonly>
                         </div>
 
-                        <div class="col-md-2">
-                            <button class="btn btn-success w-100">
+                        <div class="col-md-2 mt-4">
+                            <a onclick="guardar_garante()" class="btn text-white btn-success w-100">
                                 <i class="fa fa-save me-2"></i>Guardar
-                            </button>
+                            </a>
                         </div>
-                    </form>
+                    </div>
+                    
                 </div>
             </div>
 
@@ -53,54 +56,42 @@
                         <table class="table table-hover m-0">
                             <thead class="bg-light">
                             <tr class="text-center">
+                                <th>#</th>
                                 <th>DNI</th>
                                 <th>Nombre Completo</th>
                                 <th>Dirección</th>
                                 <th>Contacto</th>
                                 <th>Estado</th>
-                                <th>Acción</th>
+<!--                                <th>Acción</th>-->
                             </tr>
                             </thead>
                             <tbody>
-
-                            <tr class="text-center">
-                                <td>70123456</td>
-                                <td>Juan Pérez Martínez</td>
-                                <td>Av. Lima 123</td>
-                                <td>987654321</td>
-                                <td><span class="badge bg-success">Activo</span></td>
-                                <td>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fa fa-ban me-1"></i>Desactivar
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr class="text-center">
-                                <td>76543210</td>
-                                <td>María Gómez Sánchez</td>
-                                <td>Jr. Ayacucho 456</td>
-                                <td>912345678</td>
-                                <td><span class="badge bg-danger">Inactivo</span></td>
-                                <td>
-                                    <button class="btn btn-success btn-sm">
-                                        <i class="fa fa-check me-1"></i>Activar
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr class="text-center">
-                                <td>71234567</td>
-                                <td>Carlos Rojas Díaz</td>
-                                <td>Av. Brasil 789</td>
-                                <td>934567890</td>
-                                <td><span class="badge bg-success">Activo</span></td>
-                                <td>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fa fa-ban me-1"></i>Desactivar
-                                    </button>
-                                </td>
-                            </tr>
+                            <?php
+                            $a = 1;
+                            foreach ($garantes as $g){
+                                if($g->cliente_garante_estado==1){
+                                    $class = 'text-success';
+                                    $estado = 'Activo';
+                                }else{
+                                    $class = 'text-danger';
+                                    $estado = 'Inactivo';
+                                }
+                                ?>
+                                <tr class="text-center">
+                                    <td><?= $a ?></td>
+                                    <td><?= $g->cliente_dni ?></td>
+                                    <td><?= $g->cliente_nombre . ' ' . $g->cliente_apellido_paterno . ' ' . $g->cliente_apellido_materno ?></td>
+                                    <td><?= $g->cliente_direccion ?></td>
+                                    <td><?= $g->cliente_dni ?></td>
+                                    <td><span class="badge <?= $class ?>"><?= $estado ?></span></td>
+                                    <td>
+                                        
+                                    </td>
+                                </tr>
+                            <?php
+                                $a++;
+                            }
+                            ?>
                             </tbody>
                         </table>
                     </div>
@@ -110,3 +101,4 @@
     </div>
 </div>
 <script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>
+<script src="<?php echo _SERVER_ . _JS_;?>clientes.js"></script>

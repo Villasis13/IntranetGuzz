@@ -19,6 +19,7 @@ define('_TODO_LOGIN_', 'styles/todo_login/');
 define('_ICON_', 'styles/MG1.png');
 define('_ICON2_', 'styles/MG1icono.ico');
 define('_JS_','js/');
+define('_MEDIAIMG_','media/image/');
 define('_VIEW_PATH_', 'app/view/');
 define('_CONTROLLER_PATH_', 'app/controllers/');
 define('_LIBS_', 'libs/');

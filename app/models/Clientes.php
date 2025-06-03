@@ -51,11 +51,36 @@ class Clientes
             return [];
         }
     }
+    public function listar_clientes_garantes($id){
+        try{
+            $sql = 'select * from clientes_garantes as cg
+         			inner join clientes as c on c.id_cliente = cg.id_garante
+		 			where cg.id_cliente = ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
     public function listar_x_dni($dni){
         try{
             $sql = 'select * from clientes where cliente_dni = ?' ;
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$dni]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function listar_x_id_garante($id_cliente, $id_recomendado){
+        try{
+            $sql = 'select * from clientes_garantes 
+         			where id_cliente = ? and id_garante = ?' ;
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_cliente, $id_recomendado]);
             return $stm->fetch();
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
