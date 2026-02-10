@@ -89,6 +89,7 @@
 <!-- Main JS-->
 <script src="<?= _SERVER_ . _STYLES_bt5_;?>assets/js/main.js"></script>
 <script src="<?= _SERVER_ . _STYLES_ADMIN_;?>vendor/jquery-ui.min.js"></script>
+<script src="<?= _SERVER_. _STYLES_ADMIN_;?>vendor/select2/select2.min.js"></script>
 </body>
 
 </html>

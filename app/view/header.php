@@ -36,5 +36,17 @@
     <link href="<?= _SERVER_ . _STYLES_ADMIN_;?>vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <script src="<?= _SERVER_ . _STYLES_ADMIN_;?>vendor/jquery/jquery.min.js"></script>
     <link rel="stylesheet" href="<?=_SERVER_ . _LIBS_;?>sweetalert/sweetalert2.min.css">
+    <link href="<?= _SERVER_ . _STYLES_ADMIN_;?>vendor/select2/select2.min.css" rel="stylesheet" media="all">
+
+
+    <!-- CSS de Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- JS de jQuery (antes de Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- JS de Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
 </head>
 <body>

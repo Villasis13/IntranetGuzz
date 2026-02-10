@@ -7,96 +7,75 @@ class Ventas
         $this->pdo = Database::getConnection();
         $this->log = new Log();
     }
-
-    public function listar_productos_comprar($valor){
+	
+    public function listar_ventas_x_mt($mt){
         try {
-            $sql = 'SELECT * FROM productos WHERE producto_nombre LIKE ?';
+            $sql = 'SELECT * FROM ventas where venta_mt = ?';
             $stm = $this->pdo->prepare($sql);
-            $valor = '%' . $valor . '%'; // Agregar los caracteres '%' antes y después del valor
-            $stm->execute([$valor]);
-            return $stm->fetchAll();
-        } catch (Throwable $e) {
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            return [];
-        }
-    }
-    public function ultimo_id_venta(){
-        try {
-            $sql = 'SELECT id_venta FROM ventas order by id_venta desc limit 1';
-            $stm = $this->pdo->prepare($sql);
-            $stm->execute();
+            $stm->execute([$mt]);
             return $stm->fetch();
         } catch (Throwable $e) {
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];
         }
     }
-    public function tipo_documento(){
+    public function listar_ventas_x_id($id){
         try {
-            $sql = 'SELECT * FROM tipo_documento';
+            $sql = 'SELECT * FROM ventas where id_venta = ?';
             $stm = $this->pdo->prepare($sql);
-            $stm->execute();
-            return $stm->fetchAll();
-        } catch (Throwable $e) {
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            return [];
-        }
-    }
-    public function tipo_pago(){
-        try {
-            $sql = 'SELECT * FROM tipo_pago';
-            $stm = $this->pdo->prepare($sql);
-            $stm->execute();
-            return $stm->fetchAll();
-        } catch (Throwable $e) {
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            return [];
-        }
-    }
-    public function clientes(){
-        try {
-            $sql = 'SELECT * FROM clientes';
-            $stm = $this->pdo->prepare($sql);
-            $stm->execute();
-            return $stm->fetchAll();
-        } catch (Throwable $e) {
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            return [];
-        }
-    }
-
-    public function ultimo_documento(){
-        try {
-            $sql = 'SELECT * FROM documento ORDER BY id_documento DESC LIMIT 1';
-            $stm = $this->pdo->prepare($sql);
-            $stm->execute();
+            $stm->execute([$id]);
             return $stm->fetch();
         } catch (Throwable $e) {
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];
         }
     }
-
-    public function ultima_serie($tipo_documento){
+    public function listar_pagos_ventas($id_v){
         try {
-            $sql = "SELECT documento_serie FROM documento WHERE documento_serie LIKE ? ORDER BY id_documento DESC LIMIT 1";
+            $sql = 'SELECT sum(venta_pago_monto) as total FROM ventas_pagos where id_venta = ?';
             $stm = $this->pdo->prepare($sql);
-            if($tipo_documento==1)
-            {
-                $tipo_documento='B%';
-                $stm->execute([$tipo_documento]);
-                return $stm->fetch();
-            }
-            else if($tipo_documento==2){
-                $tipo_documento='F%';
-                $stm->execute([$tipo_documento]);
-                return $stm->fetch();
-            }
-
+            $stm->execute([$id_v]);
+            return $stm->fetch();
         } catch (Throwable $e) {
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];
         }
     }
-
+    public function listar_datos_pagos_ventas($id_v){
+        try {
+            $sql = 'SELECT * FROM ventas_pagos where id_venta = ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_v]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function ventas_pendiente_pago(){
+        try {
+            $sql = 'SELECT * FROM ventas as v 
+         			inner join clientes as c on v.id_cliente = c.id_cliente
+         			where v.venta_estado = 2';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute();
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function ventas_realizadas(){
+        try {
+            $sql = 'SELECT * FROM ventas as v 
+         			inner join clientes as c on v.id_cliente = c.id_cliente
+         			where v.venta_estado = 1';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute();
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
 }

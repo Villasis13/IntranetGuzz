@@ -22,7 +22,7 @@ class Navbar{
     }
     public function num_clientes(){
         try{
-            $sql = "SELECT COUNT(*) AS num_clientes FROM clientes;";
+            $sql = "SELECT COUNT(*) AS num_clientes FROM clientes WHERE cliente_estado = 1;";
             $stm = $this->pdo->prepare($sql);
             $stm->execute();
             $result = $stm->fetch(PDO::FETCH_ASSOC);

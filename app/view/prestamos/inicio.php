@@ -152,8 +152,20 @@
 
                         <div class="col-md-6">
                             <label for="prestamo_garante" class="form-label">Garante</label>
-                            <input type="text" class="form-control" id="prestamo_garante" name="prestamo_garante" 
-                                   value="<?= $garante ?>" >
+                            <select class="form-control" id="prestamo_garante" name="prestamo_garante">
+                                <option value="">Seleccionar</option>
+                                <?php
+								foreach ($clientes_g as $c) {
+                                    ?>
+                                    <option value="<?= $c->id_cliente ?>"><?= $c->cliente_dni . ' ' . $c->cliente_nombre ?></option>
+                                <?php
+                                }
+                                ?>
+                            </select>
+                            
+                            <!--<input type="text" class="form-control" id="prestamo_garante" name="prestamo_garante" 
+                                   value="<?php /*= $garante */?>" 
+                            >-->
                         </div>
 
                         <div class="col-md-12">
@@ -190,3 +202,25 @@
     </div>
 <script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>
 <script src="<?php echo _SERVER_ . _JS_;?>prestamos.js"></script>
+<script>
+    $(document).ready(function() {
+        // $('#prestamo_garante').select2();
+
+        $(document).ready(function() {
+            $("#prestamo_garante").select2();
+        });
+
+
+
+
+        let dni = $('#dni_post').val();
+        let id_cliente = $('#id_cliente').val();
+        if(dni && id_cliente){
+            respuesta('¡Cliente encontrado!', 'success');
+        }else{
+            respuesta('¡Cliente no encontrado!', 'error');
+        }
+        
+    });
+    
+</script>

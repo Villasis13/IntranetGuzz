@@ -7,12 +7,12 @@ class Clientes
         $this->pdo = Database::getConnection();
         $this->log = new Log();
     }
-    public function validar_x_dni($dni){
+    public function validar_x_id($id,$dni){
         try{
-            $sql = 'select * from clientes where cliente_dni = ?';
+            $sql = 'select * from clientes where id_cliente <> ? and cliente_dni = ?' ;
             $stm = $this->pdo->prepare($sql);
-            $stm->execute([$dni]);
-            return $stm->fetchAll();
+            $stm->execute([$id,$dni]);
+            return $stm->fetch();
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];
@@ -40,12 +40,61 @@ class Clientes
             return [];
         }
     }
+    public function listar_clientes_actualizar(){
+        try{
+            $sql = 'SELECT * 
+					FROM clientes 
+					WHERE cliente_fecha <= CURDATE() - INTERVAL 3 MONTH;
+					';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute();
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
     public function listar_x_id($id){
         try{
             $sql = 'select * from clientes where id_cliente = ?' ;
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$id]);
             return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function listar_x_id_h($id){
+        try{
+            $sql = 'select * from clientes_historial_cambios where id_cliente = ?' ;
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function listar_x_id_presrtamo($id){
+        try{
+            $sql = 'select * from prestamos as p 
+					inner join clientes as c on c.id_cliente = p.id_cliente
+					where p.id_prestamos = ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function motivos_morosos($id){
+        try{
+            $sql = 'select * from clientes_historial_moroso where id_cliente = ?' ;
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetchAll();
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];

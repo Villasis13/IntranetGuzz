@@ -41,7 +41,9 @@
                                 <textarea type="text" id="motivo_aumento" name="motivo_aumento" class="form-control"></textarea>
                             </div>
                             <div class="col-lg-4 mt-2">
-                                <a id="btn_alc" name="btn_alc" onclick="guardar_nuevo_linea_credito()" 
+                                <a id="btn_alc" name="btn_alc" 
+                                   
+                                   onclick="preguntar('¿Está seguro de aumentar la línea de crédito del cliente?', 'guardar_nuevo_linea_credito','SI','NO',1)" 
                                    class="btn btn-success text-white">
                                     <i class="fa fa-save"></i> Guardar</a>
                             </div>

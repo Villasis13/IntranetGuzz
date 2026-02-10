@@ -4,7 +4,7 @@
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fas fa-hand-holding-usd me-2"></i>Pago de Deuda
         </h1>
-        <a href="#" class="btn btn-success">
+        <a href="<?= _SERVER_ ?>prestamos/prestamos" class="btn btn-success">
             <i class="fa fa-arrow-left me-2"></i>Volver
         </a>
     </div>
@@ -25,7 +25,7 @@
                     </div>
                     <div class="info-group mb-3">
                         <label class="fw-bold">Monto Inicial:</label>
-                        <span class="text-success">S/ <?= $prestamos_data->prestamo_monto ?></span>
+                        <span class="text-success">S/ <?= $prestamos_data->prestamo_monto +  ($prestamos_data->prestamo_monto *$prestamos_data->prestamo_interes / 100)?></span>
                     </div>
                     <div class="info-group mb-3">
                         <label class="fw-bold">Resta por Pagar:</label>
@@ -33,18 +33,19 @@
                             <?php
 							$resta_total = (float) $resta_pagar[0]->total;
 							$descuentos_total = (float) $descuentos_prestamos[0]->total;
+                            $pm = (float)$prestamos_data->prestamo_monto +  ($prestamos_data->prestamo_monto *$prestamos_data->prestamo_interes / 100);
 
 							if ($resta_total > 0) {
                                 if($descuentos_total > 0){
-									$valor_resta_por_pagar =  $prestamos_data->prestamo_monto - $resta_total - $descuentos_total;
-									echo $prestamos_data->prestamo_monto - $resta_total - $descuentos_total;
+									$valor_resta_por_pagar =  $pm - $resta_total - $descuentos_total;
+									echo $pm - $resta_total - $descuentos_total;
                                 }else{
-									$valor_resta_por_pagar =  $prestamos_data->prestamo_monto - $resta_total;
-									echo $prestamos_data->prestamo_monto - $resta_total; 
+									$valor_resta_por_pagar =  $pm - $resta_total;
+									echo $pm - $resta_total; 
                                 }
 							} else {
-								$valor_resta_por_pagar = $prestamos_data->prestamo_monto;
-								echo $prestamos_data->prestamo_monto;
+								$valor_resta_por_pagar = $pm;
+								echo $pm;
 							}
 
 							?>
@@ -90,7 +91,45 @@
                     </div>
                     <div class="info-group mb-3">
                         <label class="fw-bold">Fecha Vencimiento:</label>
-                        <span class="badge bg-danger"><?= $prestamos_data->prestamo_prox_cobro ?></span>
+                        <span class="badge bg-danger">
+                            <?php
+							function calcularProxCobro(string $tipo, string $fecha): string {
+								$dt = new DateTime($fecha);
+
+								switch (strtolower(trim($tipo))) {
+									case 'diario':
+										$dt->add(new DateInterval('P1D')); // +1 día
+										break;
+									case 'semanal':
+										$dt->add(new DateInterval('P1W')); // +1 semana
+										break;
+									case 'mensual':
+										$dt->add(new DateInterval('P1M')); // +1 mes (respeta fin de mes)
+										break;
+									default:
+										// Si no coincide, no modifica la fecha
+										break;
+								}
+
+								return $dt->format('Y-m-d');
+							}
+                            
+                            if($prestamos_data->prestamo_fecha == $prestamos_data->prestamo_prox_cobro){
+								
+								$fechaPrestamo = (new DateTime($prestamos_data->prestamo_fecha))->format('Y-m-d');
+								$proxCobro     = (new DateTime($prestamos_data->prestamo_prox_cobro))->format('Y-m-d');
+								$tipoPago      = $prestamos_data->prestamo_tipo_pago;
+                                
+								if ($fechaPrestamo == $proxCobro) {
+									echo calcularProxCobro($tipoPago, $fechaPrestamo);
+								} else {
+									echo $proxCobro;
+								}
+                            }else{
+                                echo $prestamos_data->prestamo_prox_cobro;
+                            }
+                            ?>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -117,16 +156,25 @@
                                 <option value="">Seleccione</option>
                                 <option value="transferencia">Transferencia</option>
                                 <option value="efectivo">Efectivo</option>
+                                <option value="plin">Plin</option>
+                                <option value="yape">Yape</option>
                             </select>
                             <label style="margin-left: -3px;">Método de Pago</label>
                         </div>
                     </div>
 
                     <div class="col-md-3">
-                        <a href="../Prestamos/detalles" class="btn btn-secondary shadow-sm d-flex align-items-center justify-content-center" style="display: block; width: 100%; height: 100%;">
-                            <i class="fa fa-list me-2"></i>Ver Detalles de los Pagos
-                        </a>
+                        <div class="form-floating">
+                            <input id="pago_recepcion_yp" name="pago_recepcion_yp" type="text" class="form-control" placeholder="Opcional*">
+                            <label>Nombre de la persona del yape/plin</label>
+                        </div>
                     </div>
+
+<!--                    <div class="col-md-3">-->
+<!--                        <a href="" class="btn btn-secondary shadow-sm d-flex align-items-center justify-content-center" style="display: block; width: 100%; height: 100%;">-->
+<!--                            <i class="fa fa-list me-2"></i>Ver Detalles de los Pagos-->
+<!--                        </a>-->
+<!--                    </div>-->
                 </div>
 
                 <div class="row mb-4">
@@ -144,7 +192,7 @@
                                 <div class="mt-2">
                                     <label class="fw-bold">Garantes:</label>
                                     <ul class="list-unstyled">
-                                        <li class="text-muted"><?= $prestamos_data->prestamo_garante ?></li>
+                                        <li class="text-muted"><?= $garante->cliente_nombre .' ' . $garante->cliente_apellido_paterno ?></li>
                                     </ul>
                                 </div>
                             </div>

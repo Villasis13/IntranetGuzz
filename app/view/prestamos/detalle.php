@@ -61,7 +61,7 @@
 					<?= $data_prestamo->prestamo_tipo_pago ?>
                 </div>
                 <div class="col-md-4">
-                    <a href="#" class="btn btn-outline-dark">
+                    <a target="_blank" href="<?= _SERVER_ ?>/Prestamos/generar_documento/<?= $id_prestamos ?>" class="btn btn-outline-dark">
                         <i class="fas fa-calendar-alt me-2"></i>Ver Cronograma
                     </a>
                 </div>

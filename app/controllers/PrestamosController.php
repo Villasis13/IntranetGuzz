@@ -5,6 +5,7 @@ require 'app/models/Usuario.php';
 require 'app/models/Rol.php';
 require 'app/models/Caja.php';
 require 'app/models/Archivo.php';
+require 'app/models/Cobros.php';
 require 'app/models/Prestamos.php';
 
 //use Codedge\Fpdf\Fpdf\Fpdf;
@@ -24,6 +25,7 @@ class PrestamosController
     private $clientes;
     private $builder;
     private $prestamos;
+    private $cobros;
     public function __construct()
     {
         //Instancias especificas del controlador
@@ -39,6 +41,7 @@ class PrestamosController
         $this->clientes = new Clientes();
         $this->builder = new Builder();
         $this->prestamos = new Prestamos();
+        $this->cobros = new Cobros();
     }
     public function inicio(){
         try{
@@ -50,7 +53,7 @@ class PrestamosController
 					$data_cliente = $this->clientes->listar_x_dni($_POST['dni_post']);
 				}
 			}
-			
+			$clientes_g = $this->clientes->todos_clientes();
 			
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -71,6 +74,23 @@ class PrestamosController
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'prestamos/prestamos.php';
+            require _VIEW_PATH_ . 'footer.php';
+        }
+        catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            echo "<script language=\"javascript\">alert(\"Error Al Mostrar Contenido. Redireccionando Al Inicio\");</script>";
+            echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
+        }
+    }
+    public function prestamos_antiguos(){
+        try{
+            $this->nav = new Navbar();
+            $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+			$prestamos_antiguos = $this->prestamos->listar_prestamos_antiguos();
+			$prestamos_antiguos_cancelados = $this->prestamos->listar_prestamos_antiguos_cancelados();
+            require _VIEW_PATH_ . 'header.php';
+            require _VIEW_PATH_ . 'navbar.php';
+            require _VIEW_PATH_ . 'prestamos/prestamos_antiguos.php';
             require _VIEW_PATH_ . 'footer.php';
         }
         catch (Throwable $e){
@@ -156,41 +176,88 @@ class PrestamosController
 		$result = 2;
 		$message = 'OK';
 		try {
-			$mt = microtime(true);
-			$result = $this->builder->save("prestamos",array(
-				'id_cliente' => $_POST['id_cliente'],
-				'prestamo_monto' => $_POST['prestamo_monto'],
-				'prestamo_interes' => $_POST['prestamo_interes'],
-				'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'],
-				'prestamo_num_cuotas' => $_POST['prestamo_num_cuotas'],
-				'prestamo_fecha' => $_POST['prestamo_fecha'],
-				'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'],
-				'prestamo_monto_interes' => $_POST['prestamo_monto']*$_POST['prestamo_interes']/100,
-				'prestamo_saldo_pagar' => 0,
-				'prestamo_garantia' => $_POST['prestamo_garantia'],
-				'prestamo_garante' => $_POST['prestamo_garante'],
-				'prestamo_motivo' => $_POST['prestamo_motivo'],
-				'prestamo_comentario' => $_POST['prestamo_comentario'],
-				'prestamo_domingo' => $_POST['select_domingos'],
-				'prestamo_mt' => $mt,
-				'prestamo_estado' => 1,
-			));
-			
-			if($result == 1){
-				$id_prestamo = $this->prestamos->listar_x_mt($mt);
-				$monto_anterior = $this->clientes->listar_x_id($_POST['id_cliente'])->cliente_credito;
-				$monto_actual = $monto_anterior - $_POST['prestamo_monto'];
-				$result = $this->builder->update("clientes",array(
-					'cliente_credito' => $monto_actual,
-				),array(
-					'id_cliente' => $_POST['id_cliente'],
-				));
+			$monto_caja_abierta = $this->caja->traer_datos_caja();
+			if(($monto_caja_abierta->monto_caja - $_POST['prestamo_monto'])>=0){
+				$mt = microtime(true);
+				$result = $this->builder->save("prestamos",array(
+					'id_cliente' => $_POST['id_cliente'], 
+					'prestamo_monto' => $_POST['prestamo_monto'], 
+					'prestamo_interes' => $_POST['prestamo_interes'], 
+					'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'], 
+					'prestamo_num_cuotas' => $_POST['prestamo_num_cuotas'], 
+					'prestamo_fecha' => $_POST['prestamo_fecha'], 
+					'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'], 
+					'prestamo_monto_interes' => $_POST['prestamo_monto']*$_POST['prestamo_interes']/100, 
+					'prestamo_saldo_pagar' => 0, 
+					'prestamo_garantia' => $_POST['prestamo_garantia'], 
+					'prestamo_garante' => $_POST['prestamo_garante'], 
+					'prestamo_motivo' => $_POST['prestamo_motivo'], 
+					'prestamo_comentario' => $_POST['prestamo_comentario'], 
+					'prestamo_domingo' => $_POST['select_domingos'], 
+					'prestamo_mt' => $mt, 'prestamo_estado' => 1,
+					));
+
+				if($result == 1){
+					$id_prestamo = $this->prestamos->listar_x_mt($mt);
+					$monto_anterior = $this->clientes->listar_x_id($_POST['id_cliente'])->cliente_credito;
+					$monto_actual = $monto_anterior - $_POST['prestamo_monto'];
+					$result = $this->builder->update("clientes",array('cliente_credito' => $monto_actual,),array('id_cliente' => $_POST['id_cliente'],));
+
+					if($result == 1){
+						$result = $this->builder->update("caja",array(
+							'monto_caja' => $monto_caja_abierta->monto_caja - $_POST['prestamo_monto'],
+						),array(
+							'id_caja' => $monto_caja_abierta->id_caja
+						));
+					}
+				}
+			}else{
+				$result = 3; // No hay suficiente dinero en caja
 			}
 		} catch (Exception $e) {
 			$this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
 			$message = $e->getMessage();
 		}
 		echo json_encode(array("result" => array("code" => $result, "message" => $message, "id_p" => $id_prestamo->id_prestamos)));
+	}
+	public function transferir_prestamo()
+	{
+		$result = 2;
+		$message = 'OK';
+		try {
+			$result = $this->builder->update("prestamos",array(
+				'prestamo_estado' => 3,
+			),array(
+				'id_prestamos' => $_POST['id_prestamos'],
+			));
+			
+			if($result == 1){
+				//Guardar para vender garantias_ventas
+				$data_prestamo = $this->prestamos->listar_x_id($_POST['id_prestamos']);
+				
+				/*$result = $this->builder->save("garantias_ventas",array(
+					'id_prestamos' => $_POST['id_prestamos'],
+					'garantia_venta_descripcion' => $data_prestamo->prestamo_garantia,
+					'garantia_venta_precio' => 0,
+					'garantia_venta_fecha' => date('Y-m-d H:i:s'),
+					'garantia_venta_estado' => 1,
+					'garantia_venta_mt' => microtime(true),
+				));*/
+				$result = $this->builder->save("ventas",array(
+					'id_cliente' => $data_prestamo->id_cliente,
+					'venta_producto' => $data_prestamo->prestamo_garantia,
+					'venta_precio' => 0,
+					'venta_pago' => 0,
+					'venta_fecha' => date('Y-m-d H:i:s'),
+					'venta_estado' => 2,
+					'venta_mt' => microtime(true),
+				));
+			}
+		} catch (Exception $e) {
+			$this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+			$message = $e->getMessage();
+		}
+		echo json_encode(array("result" => array("code" => $result, "message" => $message)));
 	}
 	public function generar_documento(){
 		try{
@@ -242,8 +309,10 @@ class PrestamosController
 			}
 			
 			$pdf = new Fpdf();
+			
 			$pdf->AliasNbPages();
 			$pdf->AddPage();
+			$pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png',5,5,18);
 			$pdf->SetFont('Arial','B',12);
 			$pdf->Cell(180,6,'Reconocimiento de Deuda',0,1,'C',0);
 			$pdf->Cell(180,6,'',0,1,'C',0);
@@ -304,8 +373,9 @@ class PrestamosController
 			}
 
 			if($data_prestamo->prestamo_tipo_pago=='Diario'){
-				$monto_diario = round($data_prestamo->prestamo_monto / $data_prestamo->prestamo_num_cuotas,2); // 0.74
-				$monto_diario_redondeado = ceil($data_prestamo->prestamo_monto / $data_prestamo->prestamo_num_cuotas); // 1
+				$monto_diario_ = round($data_prestamo->prestamo_monto / $data_prestamo->prestamo_num_cuotas,2) * $data_prestamo->prestamo_interes /100;  // 500
+				$monto_diario = round($data_prestamo->prestamo_monto / $data_prestamo->prestamo_num_cuotas,2) + $monto_diario_;
+				$monto_diario_redondeado = ceil($monto_diario / $data_prestamo->prestamo_num_cuotas); // 1
 				$total_redondeado = $monto_diario_redondeado * $data_prestamo->prestamo_num_cuotas;
 				$date = $data_prestamo->prestamo_fecha;
 				$fecha_pago_diario = new DateTime($date);
@@ -313,7 +383,7 @@ class PrestamosController
 				$pdf->SetFillColor(232,232,232);
 				$pdf->Cell(180,6,'CRONOGRAMA DE PAGOS',0,1,'C',0);
 				$pdf->Cell(25,6,'Monto sin redondear: S/. ' . $monto_diario,0,1,'L',0);
-				$pdf->Cell(25,6,'Total sin redondear: S/. ' . $data_prestamo->prestamo_monto,0,0,'L',0);
+				$pdf->Cell(25,6,'Total sin redondear: S/. ' . $monto_diario,0,0,'L',0);
 				$pdf->SetFont('Arial','',10);
 				$pdf->SetFillColor(232,232,232);
 				$pdf->Ln();
@@ -417,6 +487,115 @@ class PrestamosController
 				$pdf->Ln();
 				$pdf->Cell(180,6,'Iquitos, '.$dia_fecha.' de '.$mes.' del '.$anho_fecha,0,1,'R');
 
+			}
+			$pdf->Output();
+		}catch (Exception $e){
+			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+			$message = $e->getMessage();
+		}
+	}
+	public function reporte_prestamos_antiguos(){
+		try{
+			$pdf = new Fpdf();
+			$pdf->AliasNbPages();
+			$pdf->AddPage();
+			$pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png', 5, 5, 18);
+			$pdf->SetFont('Arial', 'B', 12);
+			$pdf->Cell(180, 6, 'Inversiones y Multiservicios GUZZ E.I.R.L', 0, 1, 'C');
+			$pdf->SetFont('Arial', '', 12);
+			$pdf->Ln(8);
+			$pdf->Cell(180, 6, 'Préstamos Antiguos', 0, 1, 'C');
+			$pdf->Ln(4);
+			$pdf->Cell(0, 6, 'Momento del Reporte: ' . date('Y-m-d H:i:s'), 0, 1, 'L');
+
+			//INGRESOS----------------------------------------------------------------
+			$pdf->Ln(10);
+			$pdf->SetFont('Arial', 'U', 12);
+			$pdf->Cell(180, 6, 'INGRESOS', 0, 1, 'L');
+			$prestamos_antiguos_pagos = $this->prestamos->listar_prestamos_antiguos_pagos();
+			$monto_total_ingresos = 0;
+			foreach ($prestamos_antiguos_pagos as $p) {
+				$monto_total_ingresos += $p->pago_monto;
+			}
+
+			$pdf->SetFont('Arial', '', 12);
+			$pdf->Cell(180, 6, 'Monto Total Ingresos: S/ ' .number_format($monto_total_ingresos,2), 0, 1, 'L');
+			
+			
+			$pdf->SetFont('Arial', '', 10);
+			$pdf->Cell(25, 6, 'DNI', 1, 0, 'C', 0);
+			$pdf->Cell(50, 6, 'Nombre', 1, 0, 'C', 0);
+			$pdf->Cell(25, 6, 'Fecha', 1, 0, 'C', 0);
+			$pdf->Cell(25, 6, 'Nro Recibo', 1, 0, 'C', 0);
+			$pdf->Cell(40, 6, 'Monto', 1, 1, 'C', 0);
+
+			foreach ($prestamos_antiguos_pagos as $p) {
+				$pdf->Cell(25, 6, $p->cliente_dni, 1, 0, 'C', 0);
+				$pdf->Cell(50, 6, $p->cliente_nombre . ' ' . $p->cliente_apellido_paterno . ' ' . $p->cliente_apellido_materno, 1, 0, 'L', 0);
+				$pdf->Cell(25, 6, date('d-m-Y', strtotime($p->prestamo_fecha)), 1, 0, 'L', 0);
+				$pdf->Cell(25, 6, $p->id_pago, 1, 0, 'R', 0);
+				$pdf->Cell(40, 6, 'S/ ' . number_format($p->pago_monto, 2), 1, 1, 'R', 0);
+			}
+			
+			
+			//EGRESOS------------------------------------------------------------------
+			$pdf->Ln(10);
+			$pdf->SetFont('Arial', 'U', 12);
+			$pdf->Cell(180, 6, 'Egresos', 0, 1, 'L');
+			$prestamos_antiguos = $this->prestamos->listar_prestamos_antiguos();
+			$monto_total_egresos = 0;
+			$monto_total_adeudan = 0;
+			foreach ($prestamos_antiguos as $p) {
+				$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($p->id_prestamos);
+				$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($p->id_prestamos);
+				$resta_total = (float) $resta_pagar[0]->total;
+				$descuentos_total = (float) $descuentos_prestamos[0]->total;
+				$pm = (float)$p->prestamo_monto;
+				if ($resta_total > 0) {
+					if($descuentos_total > 0){
+						$valor_resta_por_pagar =  $pm - $resta_total - $descuentos_total;
+					}else{
+						$valor_resta_por_pagar =  $pm - $resta_total;
+					}
+				} else {
+					$valor_resta_por_pagar = $pm;
+				}
+				
+				$monto_total_egresos += $p->prestamo_monto;
+				$monto_total_adeudan += $valor_resta_por_pagar;
+			}
+
+			$pdf->SetFont('Arial', '', 12);
+			$pdf->Cell(180, 6, 'Monto Total Egresos: S/ ' .number_format($monto_total_egresos,2), 0, 1, 'L');
+			$pdf->Cell(180, 6, 'Monto Total que adeudan: S/ ' . number_format($monto_total_adeudan,2), 0, 1, 'L');
+			$pdf->SetFont('Arial', '', 10);
+			$pdf->Cell(25, 6, 'DNI', 1, 0, 'C', 0);
+			$pdf->Cell(50, 6, 'Nombre', 1, 0, 'C', 0);
+			$pdf->Cell(25, 6, 'Fecha', 1, 0, 'C', 0);
+			$pdf->Cell(40, 6, 'Monto prestado ', 1, 0, 'C', 0);
+			$pdf->Cell(40, 6, 'Monto que adeuda', 1, 1, 'C', 0);
+			
+			foreach ($prestamos_antiguos as $p) {
+				$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($p->id_prestamos);
+				$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($p->id_prestamos);
+				$resta_total = (float) $resta_pagar[0]->total;
+				$descuentos_total = (float) $descuentos_prestamos[0]->total;
+				$pm = (float)$p->prestamo_monto;
+				if ($resta_total > 0) {
+					if($descuentos_total > 0){
+						$valor_resta_por_pagar =  $pm - $resta_total - $descuentos_total;
+					}else{
+						$valor_resta_por_pagar =  $pm - $resta_total;
+					}
+				} else {
+					$valor_resta_por_pagar = $pm;
+				}
+				
+				$pdf->Cell(25, 6, $p->cliente_dni, 1, 0, 'C', 0);
+				$pdf->Cell(50, 6, $p->cliente_nombre . ' ' . $p->cliente_apellido_paterno . ' ' . $p->cliente_apellido_materno, 1, 0, 'L', 0);
+				$pdf->Cell(25, 6, date('d-m-Y', strtotime($p->prestamo_fecha)), 1, 0, 'L', 0);
+				$pdf->Cell(40, 6, 'S/ ' . number_format($p->prestamo_monto, 2), 1, 0, 'R', 0);
+				$pdf->Cell(40, 6, 'S/ ' . number_format($valor_resta_por_pagar, 2), 1, 1, 'R', 0);
 			}
 			$pdf->Output();
 		}catch (Exception $e){

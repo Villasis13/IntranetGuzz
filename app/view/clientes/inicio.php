@@ -101,6 +101,42 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="PasarMorosoCliente" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-edit me-2 text-white"></i>PASAR A MOROSO AL CLIENTE
+                </h5>
+                <button type="button" class="btn-close btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <input type="hidden" id="id_cliente_moroso" name="id_cliente_moroso">
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Motivo por el cual pasa a moroso</label>
+                                <textarea class="form-control" id="cliente_historial_moroso_comentario" name="cliente_historial_moroso_comentario"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times me-2"></i>Cerrar
+                </button>
+                <button id="btn_pasar_moroso_cliente" name="btn_pasar_moroso_cliente" type="button" class="btn btn-success" onclick="guardar_editar_clientes_moroso()">
+                    <i class="fa fa-save me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!--Contenido-->
 <div class="container-fluid">
@@ -112,14 +148,15 @@
                         <h5 class="m-0 font-weight-bold text-white">
                             <i class="fas fa-users me-2"></i>CLIENTES REGISTRADOS
                         </h5>
-                        <button onclick="limpiar_clientes()" data-toggle="modal" data-target="#gestionCliente" class="btn btn-success btn-sm shadow-sm">
+                        <button onclick="limpiar_clientes()" data-toggle="modal" data-target="#gestionCliente" 
+                                class="btn btn-success btn-sm shadow-sm">
                             <i class="fa fa-plus-circle me-2"></i>Nuevo Cliente
                         </button>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    <div class="table-responsive-md">
+                    <div class="table-responsive">
                         <table class="table table-hover table-bordered" id="dataTable">
                             <thead class="thead-light">
                             <tr class="text-center">
@@ -130,7 +167,8 @@
                                 <th class="align-middle">Contacto</th>
                                 <th class="align-middle">Dirección</th>
                                 <th class="align-middle">Línea Crédito</th>
-                                <th class="align-middle">Garantes</th>
+                                <th class="align-middle">Estado</th>
+                                <th class="align-middle">Acciones</th>
 <!--                                <th class="align-middle">Acciones</th>-->
                             </tr>
                             </thead>
@@ -165,16 +203,54 @@
                                             S/ <?=number_format($c->cliente_credito, 2)?>
                                         </span>
                                     </td>
-                                    <td class="align-middle">
-                                        <a href="<?=_SERVER_?>Clientes/garante/<?= $c->id_cliente ?>" class="btn btn-primary btn-sm">
-                                            <i class="fa fa-user-circle"></i>
+                                    <td>
+                                        <?php
+                                        if($c->cliente_estado == 1){
+                                            echo '<span class="badge bg-success">Activo</span>';
+                                        }else{
+                                            echo '<span class="badge bg-danger">Moroso</span>';
+                                        }
+                                        ?>
+                                    </td>
+                                    <td >
+                                        <a class="btn btn-primary btn-sm" data-toggle="modal" data-target="#gestionCliente" onclick="editar_clientes(<?= $c->id_cliente ?>)">
+                                            <i class="fa fa-edit text-white"></i>
                                         </a>
+                                        <a href="<?=_SERVER_?>Clientes/historial_cliente/<?= $c->id_cliente ?>"
+                                           class="btn btn-sm btn-warning">
+                                            <i class="fa fa-history"></i> Historial
+                                        </a>
+                                        <br>
+                                        <a href="<?=_SERVER_?>Clientes/garante/<?= $c->id_cliente ?>" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fa fa-user-circle"></i> Garantes
+                                        </a>
+                                        <br>
+                                        <?php
+                                        if($c->cliente_estado == 1){
+                                           ?>
+                                            <a style="cursor: pointer" class="btn-sm btn-danger btn text-white" data-toggle="modal" data-target="#PasarMorosoCliente" 
+                                               onclick="poner_id_modal_moroso(<?= $c->id_cliente ?>)">
+                                                <i class="fa fa-warning"></i> Moroso
+                                                    <!--onclick="preguntar('¿Está seguro que desea poner este cliente como moroso?',
+                                                    'actualizar_cliente_a_moroso','SI','NO',<?php /*= $c->id_cliente */?>,'0')"-->
+                                            </a>
+                                        <?php
+										}else{
+                                            ?>
+                                            <a 
+                                                    onclick="preguntar('¿Está seguro que desea activar a este cliente?',
+                                                    'actualizar_cliente_a_moroso','SI','NO',<?= $c->id_cliente ?>,'1')"
+                                               style="cursor: pointer" class="btn-sm btn-secondary btn text-white">
+                                                <i class="fa fa-warning"></i> Activar
+                                            </a>
+                                        <?php
+										}
+                                        ?>
                                     </td>
                                     <!--<td class="align-middle">
                                         <div class="d-flex gap-2 justify-content-center">
-                                            <a class="btn btn-warning btn-sm px-3" data-toggle="modal" data-target="#gestionCliente" onclick="editar_clientes(<?php /*= $c->id_cliente */?>)">
-                                                <i class="fa fa-edit text-white"></i>
-                                            </a>
+                                            
                                             <a class="btn btn-danger btn-sm px-3" onclick="preguntar('¿Estás seguro de eliminar este cliente?','eliminar_cliente','Confirmar','Cancelar','<?php /*= $c->id_cliente */?>')">
                                                 <i class="fa fa-trash text-white"></i>
                                             </a>

@@ -4,9 +4,12 @@ require 'app/models/Usuario.php';
 require 'app/models/Rol.php';
 require 'app/models/Archivo.php';
 require 'app/models/Builder.php';
+require 'app/models/Caja.php';
+require 'app/models/Clientes.php';
 class VentasController
 {
     private $usuario;
+    private $clientes;
     private $rol;
     private $archivo;
     //Variables fijas para cada llamada al controlador
@@ -16,6 +19,7 @@ class VentasController
     private $validar;
     private $ventas;
     private $builder;
+    private $caja;
     public function __construct()
     {
         //Instancias especificas del controlador
@@ -29,18 +33,22 @@ class VentasController
         $this->validar = new Validar();
         $this->ventas = new Ventas();
         $this->builder = new Builder();
+        $this->caja = new Caja();
+        $this->clientes = new Clientes();
     }
     public function inicio(){
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$tipo_documento = $this->ventas->tipo_documento();
-			$modo_pago = $this->ventas->tipo_pago();
-			$clientes = $this->ventas->clientes();
-//            $documento=$this->ventas->ultimo_documento();
-//            $id_documento=$documento->id_documento;
-            $ultimo_id_venta=$this->ventas->ultimo_id_venta();
-
+			$listar_estado_caja = $this->caja->traer_estado_caja()->estado_caja;
+			if($listar_estado_caja == 1){
+				if($_POST['dni_post']){
+					$data_cliente = $this->clientes->listar_x_dni($_POST['dni_post']);
+				}
+			}
+			
+			$ventas_pendiente_pago = $this->ventas->ventas_pendiente_pago();
+			$ventas_realizadas = $this->ventas->ventas_realizadas();
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'ventas/inicio.php';
@@ -52,109 +60,139 @@ class VentasController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
-
-    public function listar_productos_comprar(){
+    public function pagar_venta(){
         try{
-            $valor =  $_POST['valor'];
-            $result = $this->ventas->listar_productos_comprar($valor);
-        }catch (Exception $e){
-            //Registramos el error generado y devolvemos el mensaje enviado por PHP
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            $message = $e->getMessage();
+            $this->nav = new Navbar();
+            $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+			$id_venta = $_GET['id'];
+			$monto_total = $this->ventas->listar_ventas_x_id($id_venta);
+			$pagos_realizados = $this->ventas->listar_pagos_ventas($id_venta);
+            require _VIEW_PATH_ . 'header.php';
+            require _VIEW_PATH_ . 'navbar.php';
+            require _VIEW_PATH_ . 'ventas/pagar_venta.php';
+            require _VIEW_PATH_ . 'footer.php';
         }
-//		echo json_encode(array("result" => array("code" => $result, "message" => $message)));
-        echo json_encode($result);
-
+        catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            echo "<script language=\"javascript\">alert(\"Error Al Mostrar Contenido. Redireccionando Al Inicio\");</script>";
+            echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
+        }
     }
-
-    public function ultima_serie(){
+    public function pagos_venta(){
         try{
-            $tipo_documento =  $_POST['tipo_documento'];
-            $result = $this->ventas->ultima_serie($tipo_documento);
-        }catch (Exception $e){
-            //Registramos el error generado y devolvemos el mensaje enviado por PHP
-            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-            $message = $e->getMessage();
+            $this->nav = new Navbar();
+            $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+			$id_venta = $_GET['id'];
+			$pagos_realizados = $this->ventas->listar_pagos_ventas($id_venta)->total;
+			$pagos_realizados_venta = $this->ventas->listar_datos_pagos_ventas($id_venta);
+			
+            require _VIEW_PATH_ . 'header.php';
+            require _VIEW_PATH_ . 'navbar.php';
+            require _VIEW_PATH_ . 'ventas/pagos_venta.php';
+            require _VIEW_PATH_ . 'footer.php';
         }
-//		echo json_encode(array("result" => array("code" => $result, "message" => $message)));
-        echo json_encode(['valor_obtenido' => $result]);
-
+        catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            echo "<script language=\"javascript\">alert(\"Error Al Mostrar Contenido. Redireccionando Al Inicio\");</script>";
+            echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
+        }
     }
 
 	public function guardar_realizar_venta(){
 		try{
 			$ok_data = true;
-			$array_productos = json_decode($_POST['array_productos']);
-			$id_tipo_pago = $_POST['modo_pago'];
-
-			if($ok_data){
-				$venta_fecha = date('Y-m-d H:i:s');
-				if(count($array_productos)>0){
-
-//                    $documento=$this->ventas->ultimo_documento();
-//                    $documento_serie=$documento->documento_serie;
-                    /*GUARDAR DOCUMENTO VENTA*/
-                    $serie = $_POST['documento'];
-                    $result = $this->builder->save("documento", array(
-                        'id_tipo_documento' => $_POST['id_tipo_documento'],
-                        'documento_serie' => $serie,
-                    ));
-
-                    /*JALAR ID DEL DOCUMENTO QUE SE ACABA DE CREAR*/
-                    $documento=$this->ventas->ultimo_documento();
-                    $id_documento=$documento->id_documento;
-
-                    /*GUARDAR VENTA EN TABLA VENTA ASIGNANDO EL DOCUMENTO CREADO*/
-                    $total_venta=0;
-                    foreach ($array_productos as $p){$total_venta += $p->subtotal;}
+			if($_POST['venta_pago'] <= $_POST['venta_precio']){
+				if($ok_data){
+					$fecha_venta = date('Y-m-d H:i:s');
+					$mt_venta = microtime(true);
+					if($_POST['venta_pago'] < $_POST['venta_precio']){
+						//estado 2 porque falta pagar
+						$estado_venta = 2;
+					}else if($_POST['venta_pago'] == $_POST['venta_precio']){
+						//estado 1 porque pago total
+						$estado_venta = 1;
+					}
+					
 					$result = $this->builder->save("ventas", array(
 						'id_cliente' => $_POST['id_cliente'],
-						'id_documento' => $id_documento,
-						'id_tipo_pago' => $id_tipo_pago,
-						'venta_fecha' => $venta_fecha,
-						'venta_monto' =>$total_venta,
+						'venta_producto' => $_POST['venta_producto'],
+						'venta_precio' => $_POST['venta_precio'],
+						'venta_pago' => $_POST['venta_pago'],
+						'venta_fecha' => $fecha_venta,
+						'venta_estado' => $estado_venta,
+						'venta_mt' => $mt_venta,
 					));
-
-                    /*JALAR ID DE LA VENTA QUE SE ACABA DE CREAR*/
-                    $venta=$this->ventas->ultimo_id_venta();
-                    $id_venta=$venta->id_venta;
-
-                    /*GUARDAR DETALLE VENTA*/
-                    $array_productos = json_decode($_POST['array_productos']);
-                    foreach ($array_productos as $c) {
-                        $result = $this->builder->save("detalle_venta", array(
-                            'id_venta' => $id_venta,
-                            'id_producto' => $c->id,
-                            'detalle_venta_cantidad' => $c->vender_cantidad,
-                            'detalle_venta_subtotal' => $c->subtotal,
-                        ));
-                    }
-
-                    /*RESTAR STOCK DE PRODUCTO*/
-                    $array_productos = json_decode($_POST['array_productos']);
-                    foreach ($array_productos as $c) {
-
-                        $result = $this->builder->update("productos", array(
-                            'id_producto' => $c->id,
-                            'producto_stock'=>$c->stock-$c->vender_cantidad,
-                        ), array(
-                            "id_producto" => $c->id,
-                        ));
-                    }
-
-				}else{
-					$result = 3;
+					
+					if($result == 1){
+						
+						$data_venta = $this->ventas->listar_ventas_x_mt($mt_venta);
+						
+						$result = $this->builder->save("ventas_pagos",array(
+							'id_venta' => $data_venta->id_venta,
+							'venta_pago_monto' => $_POST['venta_pago'],
+							'venta_pago_estado' => 1,
+							'venta_pago_fecha' => $fecha_venta,
+						));
+						
+						if($result == 1){
+							$data_caja = $this->caja->traer_datos_caja();
+							$monto_caja = $data_caja->monto_caja + $_POST['venta_pago'];
+							$result = $this->builder->update("caja", array(
+								'monto_caja' => $monto_caja
+							),array(
+								'id_caja' => $data_caja->id_caja
+							));
+						}
+						
+					}
 				}
-/*				foreach ($array_productos as $c) {
-					$id_venta = $this->ventas->ultimo_id_venta()->id_venta;
-					$result = $this->builder->save("detalle_formato_ingreso", array(
-						'$id_venta' => $id_venta,
-						'id_producto' => $c->id,
-						'detalle_venta_cantidad' => 1,
-						'detalle_venta_subtotal' => 1,
-					));
-				}*/
+			}else{
+				$result = 3;
 			}
+			
+		}catch(Exception $e) {
+			$this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+			$message = $e->getMessage();
+		}
+		echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+	}
+	public function guardar_pago_venta(){
+		try{
+			$ok_data = true;
+			$data_venta = $this->ventas->listar_ventas_x_id($_POST['id_venta']);
+			$pagos_realizados = $this->ventas->listar_pagos_ventas($_POST['id_venta'])->total;
+//			if($_POST['venta_pago_monto'] <= ($data_venta->venta_precio - $pagos_realizados)){
+				if($ok_data){
+					if(($pagos_realizados + $_POST['venta_pago_monto']) == $data_venta->venta_precio){
+						$result = $this->builder->update("ventas",array(
+							'venta_estado' => 1
+						),array(
+							'id_venta' => $_POST['id_venta']
+						));
+					}
+					
+					$result = $this->builder->save("ventas_pagos", array(
+						'id_venta' => $_POST['id_venta'],
+						'venta_pago_monto' => $_POST['venta_pago_monto'],
+						'venta_pago_estado' => 1,
+						'venta_pago_fecha' => date('Y-m-d H:i:s'),
+					));
+					
+					if($result == 1){
+						$data_caja = $this->caja->traer_datos_caja();
+						$monto_caja = $data_caja->monto_caja + $_POST['venta_pago_monto'];
+						$result = $this->builder->update("caja", array(
+							'monto_caja' => $monto_caja
+						),array(
+							'id_caja' => $data_caja->id_caja
+						));
+						
+					}
+				}
+//			}else{
+//				$result = 3;
+//			}
+			
 		}catch(Exception $e) {
 			$this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
 			$message = $e->getMessage();

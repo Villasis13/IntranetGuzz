@@ -6,7 +6,9 @@
                 <div class="card-header bg-primary py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="m-0 font-weight-bold text-white">
-                            <i class="fa fa-user-circle-o me-2"></i>Gestión de Garantes de:  <?= $data_cliente->cliente_nombre .' '.$data_cliente->cliente_apellido_paterno . ' - ' . $data_cliente->cliente_dni ?>
+                            <i class="fa fa-user-circle-o me-2"></i>Gestión de Garantes de:  
+                            <?= $data_cliente->cliente_nombre .' '.$data_cliente->cliente_apellido_paterno . ' - ' . 
+                            $data_cliente->cliente_dni ?>
                         </h4>
                         <a href="<?= _SERVER_ ?>Clientes/inicio" class="btn btn-light">
                             <i class="fa fa-arrow-left me-2"></i>Volver a Clientes

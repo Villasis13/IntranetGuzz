@@ -75,6 +75,47 @@ function guardar_editar_clientes(){
         });
     }
 }
+function guardar_editar_clientes_moroso(){
+    var valor = true;
+    var boton = "btn_pasar_moroso_cliente";
+
+    var id_cliente_moroso = $('#id_cliente_moroso').val();
+    var cliente_historial_moroso_comentario = $('#cliente_historial_moroso_comentario').val();
+    
+    valor = validar_campo_vacio('id_cliente_moroso', id_cliente_moroso, valor);
+    valor = validar_campo_vacio('cliente_historial_moroso_comentario', cliente_historial_moroso_comentario, valor);
+
+    if(valor){
+        var cadena =
+            "id_cliente_moroso=" + id_cliente_moroso +
+            "&cliente_historial_moroso_comentario=" + cliente_historial_moroso_comentario;
+
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/Clientes/actualizar_cliente_a_moroso",
+            data: cadena,
+            dataType: 'json',
+            beforeSend: function () {
+                cambiar_estado_boton(boton, 'Guardando...', true);
+            },
+            success:function (r) {
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar", false);
+                switch (r.result.code) {
+                    case 1:
+                        respuesta('¡Cliente guardado! Recargando...', 'success');
+                        setTimeout(function () { location.reload(); }, 1000);
+                        break;
+                    case 2:
+                        respuesta('Error al guardar cliente', 'error');
+                        break;
+                    default:
+                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        break;
+                }
+            }
+        });
+    }
+}
 function guardar_garante(){
     var valor = true;
     var id_cliente_recomendado = $('#id_cliente_recomendado').val();
@@ -189,6 +230,35 @@ function editar_clientes(id_cliente){
     }
 
 }
+function actualizar_cliente_a_moroso(id_cliente,tipo){
+    let guardarid = id_cliente;
+    $.ajax({
+        type: "POST",
+        url: urlweb + "api/Clientes/actualizar_cliente_a_moroso",
+        data: {
+            guardarid :guardarid,
+            tipo : tipo
+        },
+        dataType: 'json',
+        success:function (r) {
+            // cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar", false);
+            switch (r.result.code) {
+                case 1:
+                    respuesta('¡Cliente enviado a Moroso', 'success');
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1000);
+                    break;
+                case 2:
+                    respuesta('Error al guardar', 'error');
+                    break;
+                default:
+                    respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                    break;
+            }
+        }
+    })
+}
 function limpiar_clientes(){
     $('#id_cliente').val('');
     $('#cliente_dni ').val('');
@@ -204,6 +274,9 @@ function limpiar_clientes(){
     $('#cliente_clave').val('');
     $('#cliente_lugar_trabajo').val('');
     $('#cliente_otro').val('');
+}
+function poner_id_modal_moroso(id){
+    $('#id_cliente_moroso').val(id);
 }
 function eliminar_cliente(id_cliente){
     $.ajax({

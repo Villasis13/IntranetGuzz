@@ -1,0 +1,171 @@
+<!--Contenido-->
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-hand-holding-usd me-2"></i>Pago de Deuda de una Venta
+        </h1>
+        <!--<a href="#" class="btn btn-success">
+            <i class="fa fa-arrow-left me-2"></i>Volver
+        </a>-->
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-7">
+                    <!--<div class="info-group mb-3">
+                        <label class="fw-bold">Nombre:</label>
+                        <input type="hidden" id="id_prestamo" name="id_prestamo" value="<?php /*= $id_prestamo */?>">
+						<?php /*= $cliente_data->cliente_nombre . ' ' .
+						$cliente_data->cliente_apellido_paterno . ' ' . $cliente_data->cliente_apellido_materno */?>
+                    </div>
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">DNI:</label>
+						<?php /*= $cliente_data->cliente_dni */?>
+                    </div>
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">Monto Inicial:</label>
+                        <span class="text-success">S/ <?php /*= $prestamos_data->prestamo_monto */?></span>
+                    </div>-->
+                    <div class="info-group mb-3">
+                        <input id="id_venta" name="id_venta" type="hidden" value="<?= $id_venta ?>">
+                        <label class="fw-bold">Resta por Pagar:</label>
+                        <span class="badge bg-danger">S/. 
+                            <?=
+							$monto_total->venta_precio - $pagos_realizados->total;
+							?>
+                            <input id="input_resta_por_pagar" name="input_resta_por_pagar" type="hidden" value="<?= $valor_resta_por_pagar ?>">
+                        </span>
+                    </div>
+                    <!--<div class="info-group mb-3">
+                        <label class="fw-bold">Aplicar Descuento</label>
+                        <input onchange="aplicar_descuento()" type="radio" name="desc" id="descSi"><label for="descSi">Si</label>
+                        <input onchange="aplicar_descuento()" type="radio" name="desc" checked id="descNo"><label for="descNo">No</label>
+                    </div>
+                    <div style="display: none" id="div_descontar" class="info-group mb-3">
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <label class="fw-bold me-3 mb-0">Ingrese Cantidad a Descontar:</label>
+
+                            <input class="form-control w-25 me-3"
+                                   type="text"
+                                   onkeyup="validar_numeros_decimales_dos(this.id)"
+                                   id="descontar_cantidad"
+                                   name="descontar_cantidad">
+
+                            <a onclick="preguntar('¿Está seguro que desea aplicar este descuento?','guardar_aplicar_descuento','SI','NO',<?php /*= $id_prestamo */?>)" style="cursor: pointer;"
+                               class="btn btn-sm btn-primary text-white">Aplicar Descuento
+                            </a>
+                        </div>
+                    </div>-->
+
+                </div>
+
+                <!-- Detalles Préstamo -->
+               <!-- <div class="col-md-5">
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">Interés Aplicado:</label>
+						<?php /*= $prestamos_data->prestamo_interes */?> %
+                    </div>
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">Tipo de Pago:</label>
+                        <span class="badge bg-info"><?php /*= $prestamos_data->prestamo_tipo_pago */?></span>
+                    </div>
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">Fecha del Préstamo:</label>
+						<?php /*= $prestamos_data->prestamo_fecha */?>
+                    </div>
+                    <div class="info-group mb-3">
+                        <label class="fw-bold">Fecha Vencimiento:</label>
+                        <span class="badge bg-danger"><?php /*= $prestamos_data->prestamo_prox_cobro */?></span>
+                    </div>
+                </div>-->
+            </div>
+
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" onkeyup="validar_numeros_decimales_dos(this.id)" id="venta_pago_monto" name="venta_pago_monto" class="form-control" placeholder=" ">
+                        <label>Monto a Pagar (S/)</label>
+                    </div>
+                </div>
+
+                <!--<div class="col-md-3">
+                    <div class="form-floating">
+                        <input id="pago_recepcion" name="pago_recepcion" type="text" class="form-control">
+                        <label>Recepción</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select id="pago_metodo" name="pago_metodo" class="form-select">
+                            <option value="">Seleccione</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="efectivo">Efectivo</option>
+                        </select>
+                        <label style="margin-left: -3px;">Método de Pago</label>
+                    </div>
+                </div>-->
+
+                <!--                    <div class="col-md-3">-->
+                <!--                        <a href="" class="btn btn-secondary shadow-sm d-flex align-items-center justify-content-center" style="display: block; width: 100%; height: 100%;">-->
+                <!--                            <i class="fa fa-list me-2"></i>Ver Detalles de los Pagos-->
+                <!--                        </a>-->
+                <!--                    </div>-->
+            </div>
+
+            <!--<div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-primary">
+                        <div class="card-header bg-gray" style="color: white;padding: 13px;">
+                            Garantías
+                        </div>
+                        <br>
+                        <div class="card-body" style="padding: 8px;">
+                            <p class="mb-1">
+                                <strong>Garantía:</strong>
+								<?php /*= $prestamos_data->prestamo_garantia */?>
+                            </p>
+                            <div class="mt-2">
+                                <label class="fw-bold">Garantes:</label>
+                                <ul class="list-unstyled">
+                                    <li class="text-muted"><?php /*= $prestamos_data->prestamo_garante */?></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating mb-3" style="height: 50%;">
+                        <input value="<?php /*= $prestamos_data->prestamo_prox_cobro */?>" type="date" class="form-control w-100" style="height: 86%;" readonly>
+                        <label>Fecha Esperada</label>
+                    </div>
+                    <div class="form-floating mb-3" style="height: 50%;">
+                        <input id="prestamo_prox_cobro" name="prestamo_prox_cobro" value="<?php /*= date('Y-m-d') */?>" type="date" class="form-control w-100" style="height: 86%;">
+                        <label>Próximo Cobro</label>
+                    </div>
+                </div>
+            </div>-->
+
+            <div class="text-center mt-4">
+                <button onclick="guardar_pago_venta()" type="submit" class="btn btn-lg btn-primary px-5">
+                    <i class="fa fa-check-circle me-2"></i>Confirmar Pago
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+    .info-group label {
+        width: 150px;
+        color: #4a5568;
+    }
+    .card-header {
+        font-weight: 500;
+    }
+</style>
+<script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>
+<script src="<?php echo _SERVER_ . _JS_;?>ventas.js"></script>

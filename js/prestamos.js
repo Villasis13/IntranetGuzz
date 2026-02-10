@@ -1,7 +1,8 @@
-function cambiar_proximo_cobro(tipo){
+/*function cambiar_proximo_cobro(tipo){
     var fecha_prestamo = $('#fecha_prestamo2').val();
     var domingo = $('#select_domingos').val();
     var fecha_nueva = '';
+    var num_cuotas = 0;
 
     if(tipo != 'diario'){
         $('#div_diario_domingos').hide(200);
@@ -9,12 +10,14 @@ function cambiar_proximo_cobro(tipo){
 
         if(tipo == 'semanal'){
             fecha.setDate(fecha.getDate() + 7);
+            num_cuotas = 7;
         } else {
             var mesActual = fecha.getMonth();
             fecha.setMonth(mesActual + 1);
             if (fecha.getDate() !== new Date(fecha.getFullYear(), mesActual + 1, 0).getDate()) {
                 fecha.setDate(Math.min(fecha.getDate(), new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate()));
             }
+            num_cuotas = 1;
         }
 
         // Validar si cae en domingo y si "domingo" es 'no'
@@ -25,7 +28,7 @@ function cambiar_proximo_cobro(tipo){
         fecha_nueva = fecha.toISOString().split('T')[0];
 
     } else {
-        $('#div_diario_domingos').show(200);
+        /!*$('#div_diario_domingos').show(200);
         if(domingo == 'no'){
             var fecha = new Date(fecha_prestamo);
             fecha.setDate(fecha.getDate() + 1);
@@ -37,11 +40,72 @@ function cambiar_proximo_cobro(tipo){
             var fecha = new Date(fecha_prestamo);
             fecha.setDate(fecha.getDate() + 1);
             fecha_nueva = fecha.toISOString().split('T')[0];
+        }*!/
+        $('#div_diario_domingos').show(200);
+        var fecha = new Date(fecha_prestamo);
+        fecha.setDate(fecha.getDate() + 1);
+
+        if(domingo == 'no' && fecha.getDay() == 0){
+            fecha.setDate(fecha.getDate() + 1);
         }
+
+        fecha_nueva = fecha.toISOString().split('T')[0];
+        num_cuotas = 1;
     }
 
     $('#fecha_prox_cobro2').val(fecha_nueva);
+    $('#prestamo_num_cuotas').val(num_cuotas);
+}*/
+function cambiar_proximo_cobro(tipo){
+    var fecha_prestamo = $('#fecha_prestamo2').val();
+    var domingo = $('#select_domingos').val();
+    var fecha_nueva = '';
+    var num_cuotas = 0;
+
+    if(tipo != 'diario'){
+        $('#div_diario_domingos').hide(200);
+        var fecha = new Date(fecha_prestamo);
+
+        if(tipo == 'semanal'){
+            fecha.setDate(fecha.getDate() + 7);
+            num_cuotas = 7;
+        } else {
+            var mesActual = fecha.getMonth();
+            var anioActual = fecha.getFullYear();
+
+            // Obtener días del mes siguiente (30 o 31)
+            var diasMesSiguiente = new Date(anioActual, mesActual + 1, 0).getDate();
+            num_cuotas = diasMesSiguiente;
+
+            fecha.setMonth(mesActual + 1);
+            if (fecha.getDate() !== new Date(fecha.getFullYear(), mesActual + 1, 0).getDate()) {
+                fecha.setDate(Math.min(fecha.getDate(), new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate()));
+            }
+        }
+
+        if(domingo == 'no' && fecha.getDay() == 0){
+            fecha.setDate(fecha.getDate() + 1);
+        }
+
+        fecha_nueva = fecha.toISOString().split('T')[0];
+
+    } else {
+        $('#div_diario_domingos').show(200);
+        var fecha = new Date(fecha_prestamo);
+        fecha.setDate(fecha.getDate() + 1);
+
+        if(domingo == 'no' && fecha.getDay() == 0){
+            fecha.setDate(fecha.getDate() + 1);
+        }
+
+        fecha_nueva = fecha.toISOString().split('T')[0];
+        num_cuotas = 1;
+    }
+
+    $('#fecha_prox_cobro2').val(fecha_nueva);
+    $('#prestamo_num_cuotas').val(num_cuotas);
 }
+
 function guardar_nuevo_linea_credito(){
     var valor = true;
     var boton = "btn_alc";
@@ -75,7 +139,8 @@ function guardar_nuevo_linea_credito(){
                     case 1:
                         respuesta('¡Línea de crédito Guardada!', 'success');
                         setTimeout(function () {
-                            location.reload();
+                            // location.reload();
+                            window.location.href = urlweb + 'Prestamos/inicio';
                         }, 1000);
                         break;
                     case 2:
@@ -127,7 +192,7 @@ function guardar_prestamo(){
     valor = validar_campo_vacio('fecha_prestamo2', prestamo_fecha, valor);
     valor = validar_campo_vacio('fecha_prox_cobro2', prestamo_prox_cobro, valor);
     valor = validar_campo_vacio('prestamo_garantia', prestamo_garantia, valor);
-    valor = validar_campo_vacio('prestamo_garante', prestamo_garante, valor);
+    // valor = validar_campo_vacio('prestamo_garante', prestamo_garante, valor);
     valor = validar_campo_vacio('prestamo_motivo', prestamo_motivo, valor);
     valor = validar_campo_vacio('prestamo_comentario', prestamo_comentario, valor);
     //Si var valor no ha cambiado de valor, procedemos a hacer la llamada de ajax
@@ -161,18 +226,28 @@ function guardar_prestamo(){
                         respuesta('¡Préstamo Guardado!', 'success');
                         console.log(r.result.id_p)
                         setTimeout(function () {
+                            window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_blank');
+                            window.location.href = urlweb + 'Clientes/inicio';
                             // location.reload();
-                            window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_self');
                         }, 1000);
+
+
+
+
+
+                        /*setTimeout(function () {
+                            // Abre nueva pestaña con el comprobante
+                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
+
+                            // Redirige la ventana actual
+                            window.location.href = urlweb + 'Clientes/inicio';
+                        }, 1000);*/
                         break;
                     case 2:
                         respuesta('Error al guardar', 'error');
                         break;
                     case 3:
-                        respuesta('Contraseña Incorrecta', 'error');
-                        break;
-                    case 4:
-                        respuesta('El monto debe ser mayor que cero', 'error');
+                        respuesta('Monto insuficiente en caja', 'error');
                         break;
                     default:
                         respuesta('¡Algo catastrofico ha ocurrido!', 'error');
@@ -182,6 +257,37 @@ function guardar_prestamo(){
         });
     }
 }
+function transferir_prestamo(id_prestamos){
+    $.ajax({
+        type: "POST",
+        url: urlweb + "api/prestamos/transferir_prestamo",
+        data: {
+            id_prestamos : id_prestamos
+        },
+        dataType: 'json',
+        // beforeSend: function () {
+        //     cambiar_estado_boton(boton, 'Guardando...', true);
+        // },
+        success:function (r) {
+            // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
+            switch (r.result.code) {
+                case 1:
+                    respuesta('¡Préstamo Transferido a Antiguo!', 'success');
+                    setTimeout(function () {
+                        location.reload();
+                        // window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_self');
+                    }, 1000);
+                    break;
+                case 2:
+                    respuesta('Error al transferir préstamo', 'error');
+                    break;
+                default:
+                    respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                    break;
+            }
+        }
+    });
+}
 function guardar_pago_prestamo(){
     var valor = true;
     var id_prestamo = $('#id_prestamo').val();
@@ -189,6 +295,7 @@ function guardar_pago_prestamo(){
     var pago_recepcion = $('#pago_recepcion').val();
     var pago_metodo = $('#pago_metodo').val();
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
+    var pago_recepcion_yp = $('#pago_recepcion_yp').val();
     
     valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
     valor = validar_campo_vacio('pago_monto', pago_monto, valor);
@@ -205,7 +312,8 @@ function guardar_pago_prestamo(){
                 pago_monto: pago_monto,
                 pago_recepcion: pago_recepcion,
                 pago_metodo: pago_metodo,
-                prestamo_prox_cobro: prestamo_prox_cobro
+                prestamo_prox_cobro: prestamo_prox_cobro,
+                pago_recepcion_yp: pago_recepcion_yp
             },
             dataType: 'json',
             // beforeSend: function () {
@@ -215,10 +323,20 @@ function guardar_pago_prestamo(){
                 // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
                 switch (r.result.code) {
                     case 1:
-                        respuesta('¡Pago Guardado!', 'success');
+                        /*respuesta('¡Pago Guardado!', 'success');
                         setTimeout(function () {
                             // location.reload();
                             window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
+                        }, 1000);
+                        break;*/
+                        
+                        respuesta('¡Pago Guardado!', 'success');
+                        setTimeout(function () {
+                            // Abre nueva pestaña con el comprobante
+                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
+
+                            // Redirige la ventana actual
+                            window.location.href = urlweb + 'Clientes/inicio';
                         }, 1000);
                         break;
                     case 2:
