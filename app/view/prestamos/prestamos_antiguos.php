@@ -32,38 +32,19 @@
 							<?php
 							$a = 1;
 							foreach ($prestamos_antiguos as $c){
-								?>
+
+                                $pagos=$this->prestamos->listar_total_pagos_x_prestamo($c->id_prestamos);
+
+                                ?>
 								<tr class="text-center">
 									<td><?= $a ?></td>
-									<td><?= $c->prestamo_fecha ?></td>
+									<td><?= date('Y-m-d',Strtotime($c->prestamo_fecha))?></td>
 									<td><?= $c->cliente_nombre .' ' . $c->cliente_apellido_paterno.' '.$c->cliente_apellido_materno ?></td>
 									<td>S/. <?= $c->prestamo_monto ?></td>
-									<td>
-                                        <?php
-										$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($c->id_prestamos);
-										$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($c->id_prestamos);
-
-										$resta_total = (float) $resta_pagar[0]->total;
-										$descuentos_total = (float) $descuentos_prestamos[0]->total;
-										$pm = (float)$c->prestamo_monto;
-
-										if ($resta_total > 0) {
-											if($descuentos_total > 0){
-												$valor_resta_por_pagar =  $pm - $resta_total - $descuentos_total;
-												echo "S/. " . ($pm - $resta_total - $descuentos_total);
-											}else{
-												$valor_resta_por_pagar =  $pm - $resta_total;
-												echo "S/. " . ($pm - $resta_total);
-											}
-										} else {
-											$valor_resta_por_pagar = $pm;
-											echo "S/. " . $pm;
-										}
-                                        ?>
-                                    </td>
                                     <td>
-                                        <?= $c->prestamo_prox_cobro ?>
+                                           S/. <?= floatval($c->prestamo_monto + $c->prestamo_monto_interes) - floatval($pagos->total) ?>
                                     </td>
+                                    <td> <?= $c->prestamo_prox_cobro ?></td>
                                     <td>
                                         <a href="<?= _SERVER_ ?>cobros/pagar/<?= $c->id_prestamos ?>"
                                            style="cursor: pointer" class="btn-sm btn-warning text-white">

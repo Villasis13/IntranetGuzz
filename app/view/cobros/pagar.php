@@ -29,26 +29,7 @@
                     </div>
                     <div class="info-group mb-3">
                         <label class="fw-bold">Resta por Pagar:</label>
-                        <span class="badge bg-danger">S/. 
-                            <?php
-							$resta_total = (float) $resta_pagar[0]->total;
-							$descuentos_total = (float) $descuentos_prestamos[0]->total;
-                            $pm = (float)$prestamos_data->prestamo_monto +  ($prestamos_data->prestamo_monto *$prestamos_data->prestamo_interes / 100);
-
-							if ($resta_total > 0) {
-                                if($descuentos_total > 0){
-									$valor_resta_por_pagar =  $pm - $resta_total - $descuentos_total;
-									echo $pm - $resta_total - $descuentos_total;
-                                }else{
-									$valor_resta_por_pagar =  $pm - $resta_total;
-									echo $pm - $resta_total; 
-                                }
-							} else {
-								$valor_resta_por_pagar = $pm;
-								echo $pm;
-							}
-
-							?>
+                        <span class="badge bg-danger"><?= !empty( $prestamos_data->prestamo_saldo_pagar)? "S/. ".$prestamos_data->prestamo_saldo_pagar : "Sin saldo restante"  ?>
                             <input id="input_resta_por_pagar" name="input_resta_por_pagar" type="hidden" value="<?= $valor_resta_por_pagar ?>">
                         </span>
                     </div>
@@ -134,49 +115,46 @@
                 </div>
             </div>
 
-            
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input type="text" onkeyup="validar_numeros_decimales_dos(this.id)" id="pago_monto" name="pago_monto" class="form-control" placeholder=" ">
-                            <label>Monto a Pagar (S/)</label>
-                        </div>
-                    </div>
 
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input id="pago_recepcion" name="pago_recepcion" type="text" class="form-control">
-                            <label>Recepción</label>
-                        </div>
+            <div class="row g-3 mb-4 align-items-end">
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input id="pago_recepcion" name="pago_recepcion" type="text" class="form-control" placeholder=" ">
+                        <label>Recepción</label>
                     </div>
-
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <select id="pago_metodo" name="pago_metodo" class="form-select">
-                                <option value="">Seleccione</option>
-                                <option value="transferencia">Transferencia</option>
-                                <option value="efectivo">Efectivo</option>
-                                <option value="plin">Plin</option>
-                                <option value="yape">Yape</option>
-                            </select>
-                            <label style="margin-left: -3px;">Método de Pago</label>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input id="pago_recepcion_yp" name="pago_recepcion_yp" type="text" class="form-control" placeholder="Opcional*">
-                            <label>Nombre de la persona del yape/plin</label>
-                        </div>
-                    </div>
-
-<!--                    <div class="col-md-3">-->
-<!--                        <a href="" class="btn btn-secondary shadow-sm d-flex align-items-center justify-content-center" style="display: block; width: 100%; height: 100%;">-->
-<!--                            <i class="fa fa-list me-2"></i>Ver Detalles de los Pagos-->
-<!--                        </a>-->
-<!--                    </div>-->
                 </div>
-
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <select id="pago_metodo" name="pago_metodo" class="form-select" placeholder=" ">
+                            <option value="">Seleccione</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="plin">Plin</option>
+                            <option value="yape">Yape</option>
+                        </select>
+                        <label style="margin-left: -3px;">Método de Pago</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input id="pago_recepcion_yp" name="pago_recepcion_yp" type="text" class="form-control" placeholder=" ">
+                        <label>Titular del yape/plin</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="id_pago" name="id_pagoid_pago">
+                            <option value="">Seleccionar</option>
+                            <?php foreach ($cuotas as $c) { ?>
+                                <option value="<?= $c->id_pago_diario?>">
+                                    <?= $c->pago_diario_monto . '/' . $c->pago_diario_fecha ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                        <label>Cuotas</label>
+                    </div>
+                </div>
+            </div>
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="card border-primary">
@@ -199,6 +177,14 @@
                         </div>
                     </div>
 
+                    <?php if ($prestamos_data->prestamo_num_cuotas == $total_pagos_cuenta->cuenta) { ?>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3" style="height: 50%;">
+                            <label><b>Sin pagos pendientes.</b></label>
+                        </div>
+                    </div>
+                    <?php } else { ?>
+
                     <div class="col-md-6">
                         <div class="form-floating mb-3" style="height: 50%;">
                             <input value="<?= $prestamos_data->prestamo_prox_cobro ?>" type="date" class="form-control w-100" style="height: 86%;" readonly>
@@ -209,6 +195,9 @@
                             <label>Próximo Cobro</label>
                         </div>
                     </div>
+
+                    <?php } ?>
+
                 </div>
 
                 <div class="text-center mt-4">

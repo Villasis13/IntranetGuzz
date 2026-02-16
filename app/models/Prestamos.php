@@ -56,6 +56,19 @@ class Prestamos
 			return [];
 		}
 	}
+
+    public function duplicidad_garante($id){
+        try{
+            $sql = 'select * from prestamos where prestamo_garante = ? and prestamo_estado=1' ;
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
 	public function listar_prestamos_antiguos_pagos(){
 		try{
 			$sql = 'select * from pagos as pa
@@ -81,11 +94,11 @@ class Prestamos
 			return [];
 		}
 	}
-	public function egresos_hoy(){
+	public function egresos_hoy($fecha){
 		try{
-			$sql = 'select sum(prestamo_monto) as total from prestamos where prestamo_fecha = CURDATE()' ;
+			$sql = 'select sum(prestamo_monto) as total from prestamos where prestamo_fecha = ? ' ;
 			$stm = $this->pdo->prepare($sql);
-			$stm->execute();
+			$stm->execute([$fecha]);
 			return $stm->fetch();
 		} catch (Throwable $e){
 			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
@@ -131,6 +144,24 @@ class Prestamos
 			return [];
 		}
 	}
+
+
+    public function listar_prestamos_cliente($id){
+        try{
+            $sql = 'select p.*,c.*,cl.cliente_nombre as nombre_garante,cl.cliente_apellido_paterno as apellido_garante from prestamos as p
+         			inner join clientes as c on p.id_cliente = c.id_cliente
+                    left join clientes as cl on p.prestamo_garante = cl.id_cliente
+         			where p.id_cliente = ?' ;
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+
 	public function listar_prestamos(){
 		try{
 			$sql = 'select * from prestamos as p 
@@ -145,14 +176,26 @@ class Prestamos
 	}
 	public function listar_total_pagos_x_prestamo($id_p){
 		try{
-			$sql = 'select sum(pago_monto) as total from pagos where id_prestamo = ?';
+			$sql = 'select sum(pago_diario_monto) as total from pagos_diarios where id_prestamos = ? and pago_diario_estado=0 ';
 			$stm = $this->pdo->prepare($sql);
 			$stm->execute([$id_p]);
-			return $stm->fetchAll();
+			return $stm->fetch();
 		} catch (Throwable $e){
 			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
 			return [];
 		}
 	}
+
+    public function listar_total_pagos_contados($id_p){
+        try{
+            $sql = 'select count(pago_diario_monto) as cuenta from pagos_diarios where id_prestamos = ? and pago_diario_estado=0 ';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_p]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
 
 }

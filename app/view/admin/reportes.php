@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="panel-body">
-                        <form method="post" action="Reporte.php" target="_blank">
+                        <form method="post" action="<?= _SERVER_ ?>Reporte/ver_reportes" target="_blank">
                             <fieldset>
                                 <legend>Tipo de Reporte</legend>
                                 <div class="row mb-3">
@@ -76,7 +76,7 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label>Desde</label>
-                                        <input type="date" disabled class="form-control" name="fecha_prestamo" id="fecha_prestamo">
+                                        <input type="date" disabled class="form-control" name="" id="fecha_prestamo">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label>Hasta</label>
@@ -98,27 +98,6 @@
                                     </div>
                                     <div class="col-md-4 text-center d-flex align-items-end justify-content-center">
                                         <input type="submit" class="btn btn-primary" value="Generar Reporte">
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </form>
-
-                        <hr>
-
-                        <form method="post" action="Reporte_posterior.php" target="_blank">
-                            <fieldset>
-                                <legend>Reporte día posterior</legend>
-                                <div class="row">
-                                    <div class="col-md-5 mb-3">
-                                        <label for="fecha_desde">Desde</label>
-                                        <input type="date" id="fecha_desde" name="fecha_desde" class="form-control">
-                                    </div>
-                                    <div class="col-md-5 mb-3">
-                                        <label for="fecha_hasta">Hasta</label>
-                                        <input type="date" id="fecha_hasta" name="fecha_hasta" class="form-control">
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end justify-content-center">
-                                        <input type="submit" class="btn btn-success w-100" value="Generar">
                                     </div>
                                 </div>
                             </fieldset>

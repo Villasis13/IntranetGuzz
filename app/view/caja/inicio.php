@@ -1,3 +1,35 @@
+<!-- MODAL AÑADIR DINERO A CAJA -->
+<div class="modal fade" id="dinero_caja" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form class="modal-content" onsubmit="return false;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitleAlumno">Editar Monto de Ingreso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3">
+                    <!-- NOMBRES -->
+                    <div class="col-md-6">
+                        <label class="form-label">Monto a añadir</label>
+                        <input type="number" id="monto_caja" name="monto_caja" class="form-control"  required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" id="contrasenha" name="pago_monto" class="form-control"  required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btn-agregar-monto" onclick="guardar_movimiento_caja()">
+                    <i class="fa fa-save fa-sm text-white-50"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-lg-12 col-md-8 col-lg-4">
@@ -6,9 +38,9 @@
 					<div class="card">
 						<div class="card-body">
                             <?php
-                            $fecha_actual = date('Y-m-d');
-                            $fecha_caja_sin_hora = date('Y-m-d', strtotime($fecha_caja));
-                            if($fecha_caja_sin_hora == $fecha_actual){
+
+
+                            if($ultima_caja->estado_caja == 1){
                             ?>
                                 <h4 class="text-success">CAJA ABIERTA</h4>
                                 <h5>Tiene en caja: S/.<?= $monto_caja_abierta ?></h5>
@@ -22,6 +54,17 @@
                                        placeholder="Ingrese nuevo monto"
                                        onkeyup="validar_numeros_decimales_dos(this.id)"
                                 >
+                                <a href="<?= _SERVER_ ?>Caja/historial_pagos" class="btn btn-sm btn-info text-white ml-2 ">
+                                    <i class="fa fa-list"></i>
+                                    Historial Pagos Hoy
+                                </a>
+                                <button type="button"
+                                        data-toggle="modal"
+                                        data-target="#dinero_caja"
+                                        onclick="limpiar_modal_alumno()"
+                                        class="btn btn-sm btn-primary text-white ml-2">
+                                    <i class="fa fa-plus"></i> Añadir a caja
+                                </button>
                                 <a style="display: none" id="btn_editar" onclick="guardar_nuevo_monto()" class="btn btn-sm btn-success text-white">
                                     <i class="fa fa-save"></i>
                                 </a>
@@ -122,6 +165,13 @@
                     <!--                            </a>-->
                 </div>
             </div>
+            <?php  if($ultima_caja->estado_caja==1){ ?>
+            <div class="text-center mt-4">
+                <button type="button" id="btn-cerrar-caja" class="btn btn-danger btn-lg px-5 py-2" onclick="cerrar_caja(<?=$ultima_caja->id_caja ?>)">
+                    <i class="fa fa-lock"></i> Cerrar Caja
+                </button>
+            </div>
+            <?php  }?>
         </div>
     </div>
 </div>

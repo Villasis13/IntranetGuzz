@@ -17,7 +17,7 @@
                 </div>
                 <br>
 
-                <div class="card-body bg-white">
+              <!--  <div class="card-body bg-white">
                     <div class="row">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">DNI del Garante</label>
@@ -44,9 +44,11 @@
                         </div>
                     </div>
                     
-                </div>
-            </div>
+                </div> -->
 
+
+            </div>
+          <?php if (!empty($garantes)){ ?>
             <div class="card shadow">
                 <div class="card-header bg-info py-3">
                     <h5 class="m-0 font-weight-bold text-white">
@@ -71,7 +73,7 @@
                             <?php
                             $a = 1;
                             foreach ($garantes as $g){
-                                if($g->cliente_garante_estado==1){
+                                if($g->cliente_estado==1){
                                     $class = 'text-success';
                                     $estado = 'Activo';
                                 }else{
@@ -99,6 +101,49 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card shadow mt-3">
+                <div class="card-header bg-info py-3">
+                    <h5 class="m-0 font-weight-bold text-white">
+                        <i class="fa fa-address-book me-2"></i>Garantias Registrados (Productos)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover m-0">
+                            <thead class="bg-light">
+                            <tr class="text-center">
+                                <th>#</th>
+                                <th>Garantia</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                            $a = 1;
+                            foreach ($garantes as $g){
+                                if($g->cliente_estado==1){
+                                    $class = 'text-success';
+                                    $estado = 'Activo';
+                                }else{
+                                    $class = 'text-danger';
+                                    $estado = 'Inactivo';
+                                }
+                                ?>
+                                <tr class="text-center">
+                                    <td><?= $a ?></td>
+                                    <td><?= $g->prestamo_garantia ?></td>
+                                <?php
+                                $a++;
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <?php } else {?>
+            <p> Este cliente no tiene garantías</p>
+            <?php }?>
         </div>
     </div>
 </div>

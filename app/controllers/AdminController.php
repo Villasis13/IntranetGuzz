@@ -30,10 +30,11 @@ class AdminController{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
 			$num_clientes = $this->nav->num_clientes();
+            $fecha= date("Y-m-d");
 			$estado_caja = $this->caja->traer_estado_caja();
 			$prestamos_hoy = $this->prestamos->prestamos_hoy();
-			$ingresos_hoy = $this->cobros->prestamos_hoy()->total;
-			$egresos_hoy = $this->prestamos->egresos_hoy()->total;
+			$ingresos_hoy = $this->cobros->prestamos_hoy($fecha)->total;
+			$egresos_hoy = $this->prestamos->egresos_hoy($fecha)->total;
 			$actualizar_clientes = $this->clientes->listar_clientes_actualizar();
 			$proximos_cobros = $this->cobros->listar_proximos_cobros();
             require _VIEW_PATH_ . 'header.php';
@@ -46,6 +47,26 @@ class AdminController{
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
+
+    public function cambiar_estado()
+    {
+        $result = 2;
+        $message = 'OK';
+        try {
+            $prestamo=$_POST['id_prestamo'];
+            if (!empty($prestamo)){
+                $result=$this->cobros->cambiar_estado_antiguo($prestamo);
+            } else {
+                $result = 2;
+            }
+
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
+
     public function documentos(){
         try{
             $this->nav = new Navbar();
@@ -74,7 +95,6 @@ class AdminController{
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
-
     public function finalizar_sesion(){
         $this->sesion->finalizar_sesion();
     }

@@ -29,15 +29,12 @@
 							<thead class="thead-light">
 							<tr class="text-center">
 								<th>#</th>
-								<th>DNI</th>
-								<th>Nombre</th>
+								<th>Datos</th>
 								<th>Monto Prestado</th>
-								<th>Saldo a Pagar</th>
 								<th>Fecha de cobro</th>
-								<th>Tipo de Pago</th>
 								<th>Días de Mora</th>
 								<th>Motivo de Préstamo</th>
-								<th>Comentarios</th>
+								<th><small>Comentarios</small></th>
 								<th>Estado</th>
 								<th>Acciones</th>
 							</tr>
@@ -66,52 +63,35 @@
 								$clase_texto = ($c->prestamo_estado == 3 || $c->prestamo_estado == 4) ? 'color-rojo' : '';
 								?>
                                 <tr class="text-center <?= $clase_texto ?>" style="<?= $color_fila ?>">
-									<td><?= $a ?></td>
-									<td><?= $c->cliente_dni ?></td>
-									<td><?= $c->cliente_nombre .' '.
-                                        $c->cliente_apellido_paterno.' '.
-                                        $c->cliente_apellido_materno ?></td>
-                                    <td><?= $c->prestamo_monto ?></td>
+									<td><?= $a  ?></td>
+									<td style="width:50px">
+                                        <small>DNI: <b><?= $c->cliente_dni ?></b></small> <br>
+									    <small>Nombre: </small>
+                                        <small><b>
+                                            <?= $c->cliente_nombre .' '.
+                                            $c->cliente_apellido_paterno.' '.
+                                            $c->cliente_apellido_materno ?></b> </small></td>
                                     <td>
-										<?php
-										$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($c->id_prestamos);
-										$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($c->id_prestamos);
-
-										$resta_total = (float) $resta_pagar[0]->total;
-										$descuentos_total = (float) $descuentos_prestamos[0]->total;
-										$pm = (float)$c->prestamo_monto;
-
-										if ($resta_total > 0) {
-											if($descuentos_total > 0){
-												$valor_resta_por_pagar =  $pm - $resta_total - $descuentos_total;
-												echo "S/. " . ($pm - $resta_total - $descuentos_total);
-											}else{
-												$valor_resta_por_pagar =  $pm - $resta_total;
-												echo "S/. " . ($pm - $resta_total);
-											}
-										} else {
-											$valor_resta_por_pagar = $pm;
-											echo "S/. " . $pm;
-										}
-										?>
+                                        <small>Total:   <?= $c->prestamo_monto + $c->prestamo_monto_interes ?></small><br>
+                                      <small>Saldo:   <?= $c->prestamo_saldo_pagar ?> </small><br>
+                                       <b> <?= $c->prestamo_tipo_pago ?></b>
                                     </td>
-                                    <td>
-                                        <?= $c->prestamo_prox_cobro ?>
+                                    <td style="white-space: nowrap;">
+                                        <small><?= $c->prestamo_prox_cobro ?> </small>
                                     </td>
-                                    <td><?= $c->prestamo_tipo_pago ?></td>
                                     <td>0</td>
                                     <td><?= $c->prestamo_motivo ?></td>
                                     <td><?= $c->prestamo_comentario ?></td>
                                     <td>
 										<?php
 										if ($c->prestamo_estado == 1) {
-											echo '<span>Activo</span>';
+											echo '<small>Activo</small>';
 										} else if ($c->prestamo_estado == 2) {
-											echo '<span>Cancelado</span>'; // Rojo para cancelado
+											echo '<small>Cancelado</small>'; // Rojo para cancelado
 										} else if ($c->prestamo_estado == 3) {
-											echo '<span>Préstamo Antiguo</span>'; // Amarillo (advertencia)
+											echo '<small>Préstamo Antiguo</small>'; // Amarillo (advertencia)
 										} else if ($c->prestamo_estado == 4) {
-											echo '<span>Préstamo Antiguo Cancelado</span>'; // Gris (secundario)
+											echo '<small>Préstamo Antiguo Cancelado</small>'; // Gris (secundario)
 										}
 										?>
                                     </td>
@@ -130,30 +110,25 @@
                                         <?php
 										}
                                         ?>
-                                        
-                                        <br>
+
 
 										<?php
 										if($c->prestamo_estado != 3){
 											?>
-                                            <a onclick="preguntar('<i class=\'fa fa-exclamation-circle text-warning\'></i> ' +
-                                                    'Cuidado. Está a punto de transferir un préstamo normal a ' +
-                                                    'préstamo antiguo. ¿Seguro que desea hacerlo? ' +
-                                                    'Se le recuerda que no hay vuelta atrás ' +
-                                                    'una vez hecho el cambio.',
-                                                    'transferir_prestamo','SI','NO', '<?= $c->id_prestamos ?>')"
-                                               style="cursor: pointer" class="btn btn-sm btn-secondary text-white">
+                                            <a onclick="preguntar('...','transferir_prestamo','SI','NO','<?= $c->id_prestamos ?>')"
+                                               class="btn btn-sm btn-secondary text-white mt-1"
+                                               style="cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:6px;">
                                                 <i class="fa fa-refresh"></i> Transferir
                                             </a>
 											<?php
 										}
 										?>
-                                        
+
                                         <br>
-                                        <a class="text-white btn btn-sm btn-primary" href="<?= _SERVER_ ?>Cobros/pagos/<?= $c->id_prestamos ?>">
-                                            <i class="fa fa-eye"></i> Vista Previa
-                                        </a>
-                                        <br>
+                                        <a class="text-white btn btn-sm btn-primary m-1" href="<?= _SERVER_ ?>Cobros/pagos/<?= $c->id_prestamos ?>" style="white-space:nowrap">
+                                            <i class="fa fa-eye"></i>Previsualización
+                                        </a> <br>
+
                                         <a target="_blank" class="text-white btn btn-sm btn-danger" href="<?= _SERVER_ ?>Prestamos/generar_documento/<?= $c->id_prestamos ?>">
                                             <i class="fa fa-file-pdf-o"></i> Imprimir
                                         </a>

@@ -75,7 +75,7 @@ class ClientesController
 			$id_cliente = $_GET['id'];
 			$data_cliente = $this->clientes->listar_x_id($id_cliente);
 			$data_cliente_h = $this->clientes->listar_x_id_h($id_cliente);
-			$prestamos_cliente = $this->prestamos->listar_x_id_cliente($id_cliente);
+			$prestamos_cliente = $this->prestamos->listar_prestamos_cliente($id_cliente);
 			$morosos_motivos = $this->clientes->motivos_morosos($id_cliente);
 
             require _VIEW_PATH_ . 'header.php';
@@ -97,6 +97,8 @@ class ClientesController
             $ok_data = true;
             $id = $_POST['id_cliente'];
             $cliente_dni = $_POST['cliente_dni'];
+            $id_usuario_edicion = $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
+
             if ($ok_data) {
                 if ($id == null) {
                     $validar_dni = $this->clientes->validar_x_id($id, $cliente_dni);
@@ -143,7 +145,8 @@ class ClientesController
 							"cliente_motivo_ad" => $datos_x_id->cliente_motivo_ad,
 							"cliente_credito" => $datos_x_id->cliente_credito,
 							"cliente_estado" => $datos_x_id->cliente_estado,
-							"cliente_fecha" => date("Y-m-d")
+							"cliente_fecha" => date("Y-m-d"),
+							"usuario_edicion" => $id_usuario_edicion ?? null
 						));
 						
 						
@@ -185,11 +188,13 @@ class ClientesController
 			$comentario = $_POST['cliente_historial_moroso_comentario'];
 			$guardarid = $_POST['guardarid'];
 			$tipo = $_POST['tipo'];
+			$fecha = date("Y-m-d H:i:s");
 			$estado = $this->clientes->listar_x_id($id_)->cliente_estado;
-			if($id_){
+			if($estado==1){
 				$e = 0;
 				$result = $this->builder->update("clientes", array(
 					"cliente_estado" => $e,
+					"cliente_fecha_morosidad" => $fecha
 				), array(
 					"id_cliente" =>  $id_
 				));
@@ -197,6 +202,7 @@ class ClientesController
 				$e = 1;
 				$result = $this->builder->update("clientes", array(
 					"cliente_estado" => $e,
+					"cliente_fecha_morosidad" => null
 				), array(
 					"id_cliente" =>  $guardarid
 				));

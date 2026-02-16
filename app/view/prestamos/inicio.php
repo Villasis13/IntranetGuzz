@@ -17,7 +17,7 @@
             <div class="card-body">
 
                 <div class="row mb-4 border-bottom pb-3">
-                    <form method="post" action="inicio" class="row g-3 align-items-end">
+                    <form id="formBuscar" method="post" action="inicio" class="row g-3 align-items-end">
                         <div class="col-md-4">
                             <label class="form-label">Buscar por DNI <span class="text-danger">*</span></label>
                             <div class="input-group">
@@ -202,25 +202,27 @@
     </div>
 <script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>
 <script src="<?php echo _SERVER_ . _JS_;?>prestamos.js"></script>
-<script>
-    $(document).ready(function() {
-        // $('#prestamo_garante').select2();
+    <script>
+        $(function () {
 
-        $(document).ready(function() {
             $("#prestamo_garante").select2();
+
+            $('#formBuscar').on('submit', function (e) {
+
+                let dni = $('#dni_post').val()?.trim();
+
+                if (!dni) {
+                    e.preventDefault();
+                    respuesta('Ingrese DNI para buscar', 'error');
+                    return;
+                }
+
+                // ✅ Aquí NO hacemos e.preventDefault() para que el form envíe normal
+                // Si quieres mostrar mensaje antes de enviar:
+                respuesta('Buscando cliente...', 'success');
+
+            });
+
         });
+    </script>
 
-
-
-
-        let dni = $('#dni_post').val();
-        let id_cliente = $('#id_cliente').val();
-        if(dni && id_cliente){
-            respuesta('¡Cliente encontrado!', 'success');
-        }else{
-            respuesta('¡Cliente no encontrado!', 'error');
-        }
-        
-    });
-    
-</script>

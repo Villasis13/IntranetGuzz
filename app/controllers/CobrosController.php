@@ -68,7 +68,9 @@ class CobrosController
 			$cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
 			$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
 			$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
-			
+            $cuotas=$this->cobros->listar_cuotas_x_prestamo($id_prestamo);
+            $total_pagos_cuenta=$this->prestamos->listar_total_pagos_contados($id_prestamo);
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'cobros/pagar.php';
@@ -106,24 +108,45 @@ class CobrosController
 		$result = 2;
 		$message = 'OK';
 		try {
-			$monto_caja_abierta = $this->caja->traer_datos_caja();
-			$debe_pagar = $this->prestamos->listar_x_id($_POST['id_prestamo'])->prestamo_monto; //500
-			$ya_pago = $this->prestamos->listar_total_pagos_x_prestamo($_POST['id_prestamo'])[0]->total; //150
-			$descuento = $this->cobros->listar_decuentos_x_prestamo($_POST['id_prestamo'])[0]->total;//80
-			if(floatval($ya_pago) + floatval($_POST['pago_monto']) +floatval($descuento) <= floatval($debe_pagar)){
-				if(floatval($ya_pago) + floatval($_POST['pago_monto']) +floatval($descuento) == floatval($debe_pagar)){
-					$result = $this->builder->update("prestamos",array(
-						'prestamo_estado' => 4, //Pagado
+			$id_prestamo=$_POST['id_prestamo'];
+            $id_pago_cuota=$_POST['id_pago'];
+            $cuota_a_pagar=$this->cobros->listar_cuota_individual($id_pago_cuota);
+            $monto_caja_abierta = $this->caja->traer_datos_caja();
+			$prestamo=$this->prestamos->listar_x_id($id_prestamo);
+            $debe_pagar = $this->prestamos->listar_x_id($_POST['id_prestamo'])->prestamo_monto + $prestamo->prestamo_monto_interes; //500
+            $total_pagos=$this->prestamos->listar_total_pagos_x_prestamo($id_prestamo);
+            $total_pagos_cuenta=$this->prestamos->listar_total_pagos_contados($id_prestamo);
+            $cuenta_pago=$total_pagos_cuenta->cuenta ?? 0;
+            $ya_pago =$total_pagos->total ?? 0;//150
+            $interes=$this->prestamos->listar_x_id($_POST['id_prestamo'])->prestamo_monto_interes ?? 00;
+            $prestamo_total_mas_interes=$prestamo->prestamo_monto + $prestamo->prestamo_monto_interes;
+
+            //$descuento = $this->cobros->listar_decuentos_x_prestamo($_POST['id_prestamo'])[0]->total ?? 0 ;//80
+            if (($total_pagos_cuenta->cuenta + 1) == $prestamo->prestamo_num_cuotas) {
+                $prestamo_total_mas_interes = round((float)$prestamo_total_mas_interes, 2);
+                $ya_pago = round((float)$ya_pago, 2);
+                $cuota = round((float)$cuota_a_pagar->pago_diario_monto, 2);
+                $diferencia = round($prestamo_total_mas_interes - ($ya_pago + $cuota), 2);
+                $ya_pago = round($ya_pago + $diferencia, 2);
+
+
+            }
+
+            $total_cancelado=$ya_pago+$cuota;
+			if($total_cancelado /*+floatval($descuento)*/ <= floatval($debe_pagar) ){
+				if($total_cancelado/* +floatval($descuento)*/ == floatval($debe_pagar)){
+					$entrada="Si";
+                    $result = $this->builder->update("prestamos",array(
+						'prestamo_estado' => 2, //Pagado
 					),array(
 						'id_prestamos' => $_POST['id_prestamo'],
 					));
 				}
-				
-				
+
 				$mt = microtime(true);
 				$result = $this->builder->save("pagos",array(
 					'id_prestamo' => $_POST['id_prestamo'],
-					'pago_monto' => $_POST['pago_monto'],
+					'pago_monto' =>$cuota_a_pagar->pago_diario_monto,
 					'pago_recepcion' => $_POST['pago_recepcion'],
 					'pago_metodo' => $_POST['pago_metodo'],
 					'pago_recepcion_yp' => $_POST['pago_recepcion_yp'],
@@ -131,18 +154,21 @@ class CobrosController
 					'pago_estado' => 1,
 					'pago_mt' => $mt,
 				));
-
+                $result=$this->cobros->cambiar_estado_cuota($id_pago_cuota);
 				if($result == 1){
+                    $prestamo_saldo= $prestamo->prestamo_saldo_pagar - ($cuota_a_pagar->pago_diario_monto+ $diferencia);
 					$id_pago = $this->cobros->listar_pago_guardado_x_mt($mt)->id_pago;
 					$result = $this->builder->update("prestamos",array(
 						'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'],
-					),array(
+                        'prestamo_saldo_pagar' =>$prestamo_saldo, //Pagado
+
+                    ),array(
 						'id_prestamos' => $_POST['id_prestamo'],
 					));
 					if($result == 1){
 						//Actualizar caja
 						$result = $this->builder->update("caja",array(
-							'monto_caja' => $monto_caja_abierta->monto_caja + $_POST['pago_monto'],
+							'monto_caja' => $monto_caja_abierta->monto_caja + $cuota_a_pagar->pago_diario_monto,
 						),array(
 							'id_caja' => $monto_caja_abierta->id_caja,
 						));
@@ -180,7 +206,7 @@ class CobrosController
 			$id_pago = $_GET['id'];
 			$data = $this->cobros->listar_x_id($id_pago);
 			$debe_pagar = $this->prestamos->listar_x_id($data->id_prestamos)->prestamo_monto + ($this->prestamos->listar_x_id($data->id_prestamos)->prestamo_monto * $this->prestamos->listar_x_id($data->id_prestamos)->prestamo_interes / 100);
-			$ya_pago = $this->prestamos->listar_total_pagos_x_prestamo($data->id_prestamos)[0]->total;
+			$ya_pago = $this->prestamos->listar_total_pagos_x_prestamo($data->id_prestamos)->total;
 			$descuento = $this->cobros->listar_decuentos_x_prestamo($data->id_prestamos)[0]->total;
 			$garante = $this->cobros->listar_garante($data->id_prestamos);
 			$saldo_final = $debe_pagar - $ya_pago - $descuento;

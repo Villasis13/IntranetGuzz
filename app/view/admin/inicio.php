@@ -1,3 +1,4 @@
+<!-- ACTUALIZAR DATOS DEL CLIENTE -->
 <div class="modal fade" id="gestionCliente" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow">
@@ -123,7 +124,7 @@
                                         Ingresos Hoy</div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">S/ 
                                         
-										<?= is_array($ingresos_hoy) ? $ingresos_hoy : 0 ?>
+										<?= !empty($ingresos_hoy) ? $ingresos_hoy : 0 ?>
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -142,7 +143,7 @@
                                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
                                         Egresos Hoy</div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">S/ 
-										<?= is_array($egresos_hoy) ? $egresos_hoy : 0 ?>
+										<?= !empty($egresos_hoy) ? $egresos_hoy : 0 ?>
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -189,7 +190,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="row">
                 <div class="col-lg-8">
                     <div class="card shadow mb-4">
@@ -198,30 +198,60 @@
                         </div>
                         <br>
                         <div class="card-body" style="margin-bottom: 21px;">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" width="100%">
-                                    <thead class="text-center">
+                            <div class="table-responsive ">
+                                <table class="table table-bordered" id="dataTable1" width="100%">
+                                    <thead class="text-center table-light">
                                         <tr>
                                             <th>Cliente</th>
                                             <th>Monto</th>
                                             <th>Fecha</th>
+                                            <th>Acción</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <?php
+                                        $style="";
                                         foreach ($proximos_cobros as $pc){
+                                            if ($pc->pago_diario_fecha < $fecha) {
+                                                $style='red';
+                                            } elseif ($pc->pago_diario_fecha == $fecha) {
+                                                $style='#C9A227';
+                                            } else {
+                                                $style='green';
+                                            }
+
                                             ?>
                                             <tr class="text-center">
-                                                <td><?= $pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno ?></td>
-                                                <td>S/ <?= $pc->pago_diario_monto ?></td>
-                                                <td><?= $pc->pago_diario_fecha ?></td>
+                                                <td style="color: <?= $style?>">
+                                                    <?= $pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno ?>
+                                                </td>
+                                                <td style="color:<?= $style?>">
+                                                    S/ <?= $pc->pago_diario_monto ?>
+                                                </td>
+                                                <td style="color:<?= $style?>">
+                                                    <?= $pc->pago_diario_fecha ?>
+                                                </td>
+                                                <?php if($pc->pago_diario_fecha < $fecha){ ?>
+                                                <td>
+                                                    <button onclick="cambiar_prestamo_a_antiguo(<?=$pc->id_prestamos?>)"
+                                                            class="btn btn-sm btn-warning">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                    </button>
+                                                </td>
+                                                <?php } else { ?>
+                                                        <td>Cuota aún a tiempo</td>
+                                                <?php } ?>
                                             </tr>
                                         <?php
                                         }
                                         ?>
-                                        
                                     </tbody>
                                 </table>
+                                <div class="mt-3">
+                                    <span style="color: #C9A227; font-weight: bold;">●</span> Vence hoy |
+                                    <span style="color: red; font-weight: bold;">●</span> Ya venció |
+                                    <span style="color: green; font-weight: bold;">●</span> Por vencer
+                                </div>
                             </div>
 <!--                            <a href="cobros/inicio" class="btn btn-secondary mt-3">-->
 <!--                                <i class="fa fa-list fa-sm text-white-50"></i> Ver Todos-->
@@ -319,6 +349,8 @@
 </div>
 
 <script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>
+<script src="<?php echo _SERVER_ . _JS_;?>prestamos.js"></script>
 <script src="<?php echo _SERVER_ . _JS_;?>caja.js"></script>
 <script src="<?php echo _SERVER_ . _JS_;?>clientes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+

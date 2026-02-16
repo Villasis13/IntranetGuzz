@@ -90,9 +90,9 @@
 							foreach ($prestamos_cliente as $pc){
 								?>
                                 <tr>
-                                    <td><?= $pc->prestamo_fecha ?></td>
+                                    <td><?= date('d/m/Y', strtotime($pc->prestamo_fecha)) ?></td>
                                     <td class="fw-bold">S/ <?= $pc->prestamo_monto ?></td>
-                                    <td> <?= $pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno ?> </td>
+                                    <td>  <?= (!empty($pc->nombre_garante))? $pc->nombre_garante. " ". $pc->apellido_garante : "No hubo Garante en este prestamo." ?> </td>
                                     <td><?= $pc->prestamo_tipo_pago ?></td>
                                     <td><?= $pc->prestamo_num_cuotas ?></td>
                                     <td><?= $pc->prestamo_interes ?>%</td>
@@ -120,15 +120,16 @@
                                     <i class="fa fa-eye me-1"></i>Detalles
                                 </a>-->
 										<?php
-										if($pc->prestamo_estado == 1 || $pc->prestamo_estado == 4 || $pc->prestamo_estado == 3){
+										if($pc->prestamo_estado == 1 || $pc->prestamo_estado == 3){
 											?>
                                             <a href="<?= _SERVER_ ?>Cobros/pagar/<?= $pc->id_prestamos ?>" class="btn btn-sm btn-primary">
                                                 <i class="fa fa-money me-1"></i>Pagar
                                             </a>
 											<?php
-										}
+										} else {
 										?>
-
+                                               <b>Deuda Pagada</b>
+                                        <?php }?>
                                     </td>
                                 </tr>
 								<?php

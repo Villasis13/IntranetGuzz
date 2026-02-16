@@ -21,6 +21,7 @@ class PrestamosController
     private $encriptar;
     private $caja;
     private $log;
+    private $pdo;
     private $validar;
     private $clientes;
     private $builder;
@@ -176,7 +177,12 @@ class PrestamosController
 		$result = 2;
 		$message = 'OK';
 		try {
-			$monto_caja_abierta = $this->caja->traer_datos_caja();
+            $garante = !empty($_POST['prestamo_garante']) ? (int)$_POST['prestamo_garante'] : 0;
+            $validar_duplicidad=$this->prestamos->duplicidad_garante($garante);
+			if ($validar_duplicidad){
+                $result=4;
+            } else {
+            $monto_caja_abierta = $this->caja->traer_datos_caja();
 			if(($monto_caja_abierta->monto_caja - $_POST['prestamo_monto'])>=0){
 				$mt = microtime(true);
 				$result = $this->builder->save("prestamos",array(
@@ -187,14 +193,15 @@ class PrestamosController
 					'prestamo_num_cuotas' => $_POST['prestamo_num_cuotas'], 
 					'prestamo_fecha' => $_POST['prestamo_fecha'], 
 					'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'], 
-					'prestamo_monto_interes' => $_POST['prestamo_monto']*$_POST['prestamo_interes']/100, 
-					'prestamo_saldo_pagar' => 0, 
+					'prestamo_monto_interes' =>ceil( $_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
+					'prestamo_saldo_pagar' => $_POST['prestamo_monto'] + ($_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
 					'prestamo_garantia' => $_POST['prestamo_garantia'], 
 					'prestamo_garante' => $_POST['prestamo_garante'], 
 					'prestamo_motivo' => $_POST['prestamo_motivo'], 
 					'prestamo_comentario' => $_POST['prestamo_comentario'], 
 					'prestamo_domingo' => $_POST['select_domingos'], 
-					'prestamo_mt' => $mt, 'prestamo_estado' => 1,
+					'prestamo_mt' => $mt,
+                    'prestamo_estado' => 1,
 					));
 
 				if($result == 1){
@@ -213,7 +220,8 @@ class PrestamosController
 				}
 			}else{
 				$result = 3; // No hay suficiente dinero en caja
-			}
+			    }
+            }
 		} catch (Exception $e) {
 			$this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
 			$message = $e->getMessage();
@@ -262,6 +270,7 @@ class PrestamosController
 	public function generar_documento(){
 		try{
 			$id_prestamo = $_GET['id'];
+            $prestamo_num_cuotas=$_GET['prestamo_num_cuotas'];
 			$data_prestamo = $this->prestamos->listar_x_id($id_prestamo);
 			$data_cliente = $this->clientes->listar_x_id($data_prestamo->id_cliente);
 			$fecha_= explode("-",$data_prestamo->prestamo_fecha);
@@ -307,9 +316,9 @@ class PrestamosController
 					$mes = 'Diciembre';
 					break;
 			}
-			
+
 			$pdf = new Fpdf();
-			
+
 			$pdf->AliasNbPages();
 			$pdf->AddPage();
 			$pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png',5,5,18);
@@ -373,10 +382,9 @@ class PrestamosController
 			}
 
 			if($data_prestamo->prestamo_tipo_pago=='Diario'){
-				$monto_diario_ = round($data_prestamo->prestamo_monto / $data_prestamo->prestamo_num_cuotas,2) * $data_prestamo->prestamo_interes /100;  // 500
-				$monto_diario = round($data_prestamo->prestamo_monto / $data_prestamo->prestamo_num_cuotas,2) + $monto_diario_;
-				$monto_diario_redondeado = ceil($monto_diario / $data_prestamo->prestamo_num_cuotas); // 1
-				$total_redondeado = $monto_diario_redondeado * $data_prestamo->prestamo_num_cuotas;
+				$monto_diario = round($data_prestamo->prestamo_monto + $data_prestamo->prestamo_monto_interes,2);
+                $monto_diario_redondeado = round($monto_diario / $data_prestamo->prestamo_num_cuotas, 2);
+                $total_redondeado = round($monto_diario_redondeado * $data_prestamo->prestamo_num_cuotas, 2);
 				$date = $data_prestamo->prestamo_fecha;
 				$fecha_pago_diario = new DateTime($date);
 				$pdf->AddPage();
@@ -411,8 +419,8 @@ class PrestamosController
 
 						$fecha_pagar = $fecha_pago_diario->format('Y-m-d');
 						$this->builder->save("pagos_diarios",[
-							'id_prestamo' => $id_prestamo,
-							'pago_diario_monto' => $monto_diario,
+							'id_prestamos' => $id_prestamo,
+							'pago_diario_monto' => $monto_diario_redondeado,
 							'pago_diario_fecha' => $fecha_pagar,
 							'pago_diario_estado' => 1
 						]);
@@ -430,7 +438,7 @@ class PrestamosController
 						$fecha_pagar = $fecha_pago_diario->format('Y-m-d');
 						$this->builder->save("pagos_diarios",[
 							'id_prestamos' => $id_prestamo,
-							'pago_diario_monto' => $monto_diario,
+							'pago_diario_monto' => $monto_diario_redondeado,
 							'pago_diario_fecha' => $fecha_pagar,
 							'pago_diario_estado' => 1
 						]);
@@ -446,7 +454,7 @@ class PrestamosController
 				$pdf->SetFont('Arial','B',10);
 				$pdf->SetX(10);
 				$pdf->Cell(25,6,'Total',1,0,'L');
-				$pdf->Cell(25,6,'S/. '.$total_redondeado,1,1,'R');
+				$pdf->Cell(25,6,'S/. '.ceil($total_redondeado),1,1,'R');
 
 // === COLUMNA DERECHA: DATOS CLIENTE ===
 				$posX = 110;
@@ -488,7 +496,248 @@ class PrestamosController
 				$pdf->Cell(180,6,'Iquitos, '.$dia_fecha.' de '.$mes.' del '.$anho_fecha,0,1,'R');
 
 			}
-			$pdf->Output();
+            else if($data_prestamo->prestamo_tipo_pago=='Semanal'){
+
+                    $monto_diario = round($data_prestamo->prestamo_monto + $data_prestamo->prestamo_monto_interes,2);
+                    $monto_diario_redondeado = ceil($monto_diario / $data_prestamo->prestamo_num_cuotas); // 1
+                    $total_redondeado = $monto_diario_redondeado * $data_prestamo->prestamo_num_cuotas;
+                    $date = $data_prestamo->prestamo_fecha;
+                    $fecha_pago_diario = new DateTime($date);
+
+                    $pdf->AddPage();
+                    $pdf->SetFillColor(232,232,232);
+                    $pdf->Cell(180,6,'CRONOGRAMA DE PAGOS',0,1,'C',0);
+                    $pdf->Cell(25,6,'Monto sin redondear: S/. ' . $monto_diario,0,1,'L',0);
+                    $pdf->Cell(25,6,'Total sin redondear: S/. ' . $monto_diario,0,0,'L',0);
+                    $pdf->SetFont('Arial','',10);
+                    $pdf->SetFillColor(232,232,232);
+                    $pdf->Ln();
+
+                    // Guardamos el Y actual antes de comenzar
+                    $inicioY = $pdf->GetY();
+
+                    // === COLUMNA IZQUIERDA: CRONOGRAMA ===
+                    $pdf->SetXY(10, $inicioY); // mitad izquierda
+                    $pdf->SetFont('Arial','B',10);
+                    $pdf->Cell(25,6,'Fecha',1,0,'C',1);
+                    $pdf->Cell(25,6,'Monto',1,0,'C',1);
+                    $pdf->Cell(25,6,'Pago',1,1,'C',1);
+                    $pdf->SetFont('Arial','',10);
+
+                    // Recorremos cuotas
+                    $fechaY = $pdf->GetY();
+                    if ($diarl == 6) {
+                        for ($i = 1; $i <= $data_prestamo->prestamo_num_cuotas; $i++) {
+
+                            // ✅ SEMANAL: suma 7 días por cuota
+                            if ($i == 1) $fecha_pago_diario->add(new DateInterval('P14D')); // 2 semanas en la primera (equivalente a tu P2D en diario)
+                            else $fecha_pago_diario->add(new DateInterval('P7D'));
+
+                            // Si cae domingo, pasa a lunes
+                            if ($fecha_pago_diario->format('w') == 0) $fecha_pago_diario->add(new DateInterval('P1D'));
+
+                            $fecha_pagar = $fecha_pago_diario->format('Y-m-d');
+                            $this->builder->save("pagos_diarios",[
+                                'id_prestamos' => $id_prestamo,
+                                'pago_diario_monto' => $monto_diario_redondeado,
+                                'pago_diario_fecha' => $fecha_pagar,
+                                'pago_diario_estado' => 1
+                            ]);
+
+                            $pdf->SetX(10);
+                            $pdf->Cell(25, 6, date('d-m-Y', strtotime($fecha_pagar)), 1, 0, 'L');
+                            $pdf->Cell(25, 6, 'S/. ' . $monto_diario_redondeado, 1, 0, 'R');
+                            $pdf->Cell(25, 6, '', 1, 1, 'R');
+                        }
+                    } else {
+                        for ($i = 1; $i <= $data_prestamo->prestamo_num_cuotas; $i++) {
+
+                            // ✅ SEMANAL: suma 7 días por cuota
+                            $fecha_pago_diario->add(new DateInterval('P7D'));
+                            if ($fecha_pago_diario->format('w') == 0) $fecha_pago_diario->add(new DateInterval('P1D'));
+
+                            $fecha_pagar = $fecha_pago_diario->format('Y-m-d');
+                            $this->builder->save("pagos_diarios",[
+                                'id_prestamos' => $id_prestamo,
+                                'pago_diario_monto' => $monto_diario_redondeado,
+                                'pago_diario_fecha' => $fecha_pagar,
+                                'pago_diario_estado' => 1
+                            ]);
+
+                            $pdf->SetX(10);
+                            $pdf->Cell(25, 6, date('d-m-Y', strtotime($fecha_pagar)), 1, 0, 'L');
+                            $pdf->Cell(25, 6, 'S/. ' . $monto_diario_redondeado, 1, 0, 'R');
+                            $pdf->Cell(25, 6, '', 1, 1, 'R');
+                        }
+                    }
+
+                    // TOTAL
+                    $pdf->SetFont('Arial','B',10);
+                    $pdf->SetX(10);
+                    $pdf->Cell(25,6,'Total',1,0,'L');
+                    $pdf->Cell(25,6,'S/. '.ceil($total_redondeado),1,1,'R');
+
+                    // === COLUMNA DERECHA: DATOS CLIENTE ===
+                    $posX = 110;
+                    $posY = $inicioY;
+
+                    $pdf->SetXY($posX, $posY);
+                    $pdf->SetFont('Arial','B',10);
+                    $pdf->MultiCell(80,6,'DATOS DEL CLIENTE',0,'J',0);
+                    $pdf->SetFont('Arial','',10);
+                    $pdf->SetX($posX); $pdf->MultiCell(80,6,'DNI: '.$data_cliente->cliente_dni,0,'L');
+                    $pdf->SetX($posX); $pdf->MultiCell(80,6,'Monto Prestado: S/. ' . number_format($data_prestamo->prestamo_monto, 2),0,'L');
+                    $pdf->SetX($posX); $pdf->MultiCell(80,6,'Interés Aplicado: '.$data_prestamo->prestamo_interes.'%',0,'L');
+                    $pdf->SetX($posX); $pdf->MultiCell(80,6,'Fecha de Préstamo: '.$data_prestamo->prestamo_fecha,0,'L');
+                    $pdf->SetX($posX); $pdf->MultiCell(80,6,'Fecha de Vencimiento: __________________________',0,'L');
+
+                    // CLÁUSULAS
+                    $pdf->SetX($posX);
+                    $pdf->MultiCell(80,6,'Cláusulas:',0,'L');
+                    $pdf->SetX($posX);
+                    $pdf->MultiCell(80,6,'1. Primero: El cliente tiene un plazo de 30 días para pagar las cuotas establecidas.',0,'J');
+                    $pdf->SetX($posX);
+                    $pdf->MultiCell(80,6,'2. Segundo: Si al final del periodo de pago... (etc)',0,'J');
+                    $pdf->SetX($posX);
+                    $pdf->MultiCell(80,6,'3. Tercero: Si el cliente quiere cancelar...',0,'J');
+                    $pdf->SetX($posX);
+                    $pdf->MultiCell(80,6,'4. Cuarto: Para toda información llamar al 969553545.',0,'J');
+
+                    // FIRMAS
+                    $pdf->Ln(); $pdf->Ln();
+                    $pdf->SetX($posX);
+                    $pdf->Cell(80,6,'..............................................',0,1,'L');
+                    $pdf->SetX($posX);
+                    $pdf->Cell(80,6,$data_cliente->cliente_nombre .' '.$data_cliente->cliente_apellido_paterno.' '.$data_cliente->cliente_apellido_materno,0,1,'L');
+                    $pdf->SetX($posX);
+                    $pdf->Cell(80,6,"DNI: " .$data_cliente->cliente_dni,0,1,'L');
+
+                    // FECHA FINAL
+                    $pdf->Ln();
+                    $pdf->Cell(180,6,'Iquitos, '.$dia_fecha.' de '.$mes.' del '.$anho_fecha,0,1,'R');
+                }
+            else if($data_prestamo->prestamo_tipo_pago=='Mensual'){
+
+                $monto_diario = round($data_prestamo->prestamo_monto + $data_prestamo->prestamo_monto_interes,2);
+                $monto_diario_redondeado = ceil($monto_diario / $data_prestamo->prestamo_num_cuotas); // 1
+                $total_redondeado = $monto_diario_redondeado * $data_prestamo->prestamo_num_cuotas;
+                $date = $data_prestamo->prestamo_fecha;
+                $fecha_pago_diario = new DateTime($date);
+
+                $pdf->AddPage();
+                $pdf->SetFillColor(232,232,232);
+                $pdf->Cell(180,6,'CRONOGRAMA DE PAGOS',0,1,'C',0);
+                $pdf->Cell(25,6,'Monto sin redondear: S/. ' . $monto_diario,0,1,'L',0);
+                $pdf->Cell(25,6,'Total sin redondear: S/. ' . $monto_diario,0,0,'L',0);
+                $pdf->SetFont('Arial','',10);
+                $pdf->SetFillColor(232,232,232);
+                $pdf->Ln();
+
+                // Guardamos el Y actual antes de comenzar
+                $inicioY = $pdf->GetY();
+
+                // === COLUMNA IZQUIERDA: CRONOGRAMA ===
+                $pdf->SetXY(10, $inicioY); // mitad izquierda
+                $pdf->SetFont('Arial','B',10);
+                $pdf->Cell(25,6,'Fecha',1,0,'C',1);
+                $pdf->Cell(25,6,'Monto',1,0,'C',1);
+                $pdf->Cell(25,6,'Pago',1,1,'C',1);
+                $pdf->SetFont('Arial','',10);
+
+                // Recorremos cuotas
+                $fechaY = $pdf->GetY();
+                if ($diarl == 6) {
+                    for ($i = 1; $i <= $data_prestamo->prestamo_num_cuotas; $i++) {
+
+                        // ✅ MENSUAL: suma 1 mes por cuota
+                        if ($i == 1) $fecha_pago_diario->add(new DateInterval('P2M')); // equivalente a tu P2D del diario (primer salto)
+                        else $fecha_pago_diario->add(new DateInterval('P1M'));
+
+                        // Si cae domingo, pasa a lunes
+                        if ($fecha_pago_diario->format('w') == 0) $fecha_pago_diario->add(new DateInterval('P1D'));
+
+                        $fecha_pagar = $fecha_pago_diario->format('Y-m-d');
+                        $this->builder->save("pagos_diarios",[
+                            'id_prestamos' => $id_prestamo,
+                            'pago_diario_monto' => $monto_diario_redondeado,
+                            'pago_diario_fecha' => $fecha_pagar,
+                            'pago_diario_estado' => 1
+                        ]);
+
+                        $pdf->SetX(10);
+                        $pdf->Cell(25, 6, date('d-m-Y', strtotime($fecha_pagar)), 1, 0, 'L');
+                        $pdf->Cell(25, 6, 'S/. ' . $monto_diario_redondeado, 1, 0, 'R');
+                        $pdf->Cell(25, 6, '', 1, 1, 'R');
+                    }
+                } else {
+                    for ($i = 1; $i <= $data_prestamo->prestamo_num_cuotas; $i++) {
+
+                        // ✅ MENSUAL: suma 1 mes por cuota
+                        $fecha_pago_diario->add(new DateInterval('P1M'));
+                        if ($fecha_pago_diario->format('w') == 0) $fecha_pago_diario->add(new DateInterval('P1D'));
+
+                        $fecha_pagar = $fecha_pago_diario->format('Y-m-d');
+                        $this->builder->save("pagos_diarios",[
+                            'id_prestamos' => $id_prestamo,
+                            'pago_diario_monto' => $monto_diario_redondeado,
+                            'pago_diario_fecha' => $fecha_pagar,
+                            'pago_diario_estado' => 1
+                        ]);
+
+                        $pdf->SetX(10);
+                        $pdf->Cell(25, 6, date('d-m-Y', strtotime($fecha_pagar)), 1, 0, 'L');
+                        $pdf->Cell(25, 6, 'S/. ' . $monto_diario_redondeado, 1, 0, 'R');
+                        $pdf->Cell(25, 6, '', 1, 1, 'R');
+                    }
+                }
+
+                // TOTAL
+                $pdf->SetFont('Arial','B',10);
+                $pdf->SetX(10);
+                $pdf->Cell(25,6,'Total',1,0,'L');
+                $pdf->Cell(25,6,'S/. '.ceil($total_redondeado),1,1,'R');
+
+                // === COLUMNA DERECHA: DATOS CLIENTE ===
+                $posX = 110;
+                $posY = $inicioY;
+
+                $pdf->SetXY($posX, $posY);
+                $pdf->SetFont('Arial','B',10);
+                $pdf->MultiCell(80,6,'DATOS DEL CLIENTE',0,'J',0);
+                $pdf->SetFont('Arial','',10);
+                $pdf->SetX($posX); $pdf->MultiCell(80,6,'DNI: '.$data_cliente->cliente_dni,0,'L');
+                $pdf->SetX($posX); $pdf->MultiCell(80,6,'Monto Prestado: S/. ' . number_format($data_prestamo->prestamo_monto, 2),0,'L');
+                $pdf->SetX($posX); $pdf->MultiCell(80,6,'Interés Aplicado: '.$data_prestamo->prestamo_interes.'%',0,'L');
+                $pdf->SetX($posX); $pdf->MultiCell(80,6,'Fecha de Préstamo: '.$data_prestamo->prestamo_fecha,0,'L');
+                $pdf->SetX($posX); $pdf->MultiCell(80,6,'Fecha de Vencimiento: __________________________',0,'L');
+
+                // CLÁUSULAS
+                $pdf->SetX($posX);
+                $pdf->MultiCell(80,6,'Cláusulas:',0,'L');
+                $pdf->SetX($posX);
+                $pdf->MultiCell(80,6,'1. Primero: El cliente tiene un plazo de 30 días para pagar las cuotas establecidas.',0,'J');
+                $pdf->SetX($posX);
+                $pdf->MultiCell(80,6,'2. Segundo: Si al final del periodo de pago... (etc)',0,'J');
+                $pdf->SetX($posX);
+                $pdf->MultiCell(80,6,'3. Tercero: Si el cliente quiere cancelar...',0,'J');
+                $pdf->SetX($posX);
+                $pdf->MultiCell(80,6,'4. Cuarto: Para toda información llamar al 969553545.',0,'J');
+
+                // FIRMAS
+                $pdf->Ln(); $pdf->Ln();
+                $pdf->SetX($posX);
+                $pdf->Cell(80,6,'..............................................',0,1,'L');
+                $pdf->SetX($posX);
+                $pdf->Cell(80,6,$data_cliente->cliente_nombre .' '.$data_cliente->cliente_apellido_paterno.' '.$data_cliente->cliente_apellido_materno,0,1,'L');
+                $pdf->SetX($posX);
+                $pdf->Cell(80,6,"DNI: " .$data_cliente->cliente_dni,0,1,'L');
+
+                // FECHA FINAL
+                $pdf->Ln();
+                $pdf->Cell(180,6,'Iquitos, '.$dia_fecha.' de '.$mes.' del '.$anho_fecha,0,1,'R');
+            }
+
+            $pdf->Output();
 		}catch (Exception $e){
 			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
 			$message = $e->getMessage();

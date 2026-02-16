@@ -145,8 +145,8 @@
             <div class="card shadow mb-4">
                 <div class="card-header bg-gradient-primary py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="m-0 font-weight-bold text-white">
-                            <i class="fas fa-users me-2"></i>CLIENTES REGISTRADOS
+                        <h5 class="m-0 font-weight-bold text-black">
+                            <i></i>CLIENTES REGISTRADOS (Busqueda por DNI)
                         </h5>
                         <button onclick="limpiar_clientes()" data-toggle="modal" data-target="#gestionCliente" 
                                 class="btn btn-success btn-sm shadow-sm">
@@ -212,42 +212,49 @@
                                         }
                                         ?>
                                     </td>
-                                    <td >
-                                        <a class="btn btn-primary btn-sm" data-toggle="modal" data-target="#gestionCliente" onclick="editar_clientes(<?= $c->id_cliente ?>)">
-                                            <i class="fa fa-edit text-white"></i>
-                                        </a>
-                                        <a href="<?=_SERVER_?>Clientes/historial_cliente/<?= $c->id_cliente ?>"
-                                           class="btn btn-sm btn-warning">
-                                            <i class="fa fa-history"></i> Historial
-                                        </a>
-                                        <br>
-                                        <a href="<?=_SERVER_?>Clientes/garante/<?= $c->id_cliente ?>" 
-                                           class="btn btn-primary btn-sm">
-                                            <i class="fa fa-user-circle"></i> Garantes
-                                        </a>
-                                        <br>
-                                        <?php
-                                        if($c->cliente_estado == 1){
-                                           ?>
-                                            <a style="cursor: pointer" class="btn-sm btn-danger btn text-white" data-toggle="modal" data-target="#PasarMorosoCliente" 
-                                               onclick="poner_id_modal_moroso(<?= $c->id_cliente ?>)">
-                                                <i class="fa fa-warning"></i> Moroso
-                                                    <!--onclick="preguntar('¿Está seguro que desea poner este cliente como moroso?',
-                                                    'actualizar_cliente_a_moroso','SI','NO',<?php /*= $c->id_cliente */?>,'0')"-->
+                                    <td class="align-middle text-center">
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+
+                                            <a class="btn btn-primary btn-sm btn-square"
+                                               data-toggle="modal" data-target="#gestionCliente"
+                                               onclick="editar_clientes(<?= $c->id_cliente ?>)"
+                                               title="Editar">
+                                                <i class="fa fa-edit bg-white"></i>
                                             </a>
-                                        <?php
-										}else{
-                                            ?>
-                                            <a 
-                                                    onclick="preguntar('¿Está seguro que desea activar a este cliente?',
-                                                    'actualizar_cliente_a_moroso','SI','NO',<?= $c->id_cliente ?>,'1')"
-                                               style="cursor: pointer" class="btn-sm btn-secondary btn text-white">
-                                                <i class="fa fa-warning"></i> Activar
+
+                                            <a href="<?=_SERVER_?>Clientes/historial_cliente/<?= $c->id_cliente ?>"
+                                               class="btn btn-warning btn-sm btn-square"
+                                               title="Historial">
+                                                <i class="fa fa-history"></i>
                                             </a>
-                                        <?php
-										}
-                                        ?>
+
+                                            <a href="<?=_SERVER_?>Clientes/garante/<?= $c->id_cliente ?>"
+                                               class="btn btn-info btn-sm btn-square text-white"
+                                               title="Garantes">
+                                                <i class="fa fa-user-circle bg-white"></i>
+                                            </a>
+
+                                            <?php if($c->cliente_estado == 1){ ?>
+                                                <a style="cursor: pointer"
+                                                   class="btn btn-danger btn-sm btn-square"
+                                                   data-toggle="modal" data-target="#PasarMorosoCliente"
+                                                   onclick="poner_id_modal_moroso(<?= $c->id_cliente ?>)"
+                                                   title="Marcar moroso">
+                                                    <i class="fa fa-warning bg-white"></i>
+                                                </a>
+                                            <?php } else { ?>
+                                                <a onclick="preguntar('¿Está seguro que desea activar a este cliente?',
+                                                        'actualizar_cliente_a_moroso','SI','NO',<?= $c->id_cliente ?>,'1')"
+                                                   style="cursor: pointer"
+                                                   class="btn btn-secondary btn-sm btn-square"
+                                                   title="Activar">
+                                                    <i class="fa fa-check"></i>
+                                                </a>
+                                            <?php } ?>
+
+                                        </div>
                                     </td>
+
                                     <!--<td class="align-middle">
                                         <div class="d-flex gap-2 justify-content-center">
                                             

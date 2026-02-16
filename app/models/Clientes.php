@@ -102,9 +102,9 @@ class Clientes
     }
     public function listar_clientes_garantes($id){
         try{
-            $sql = 'select * from clientes_garantes as cg
-         			inner join clientes as c on c.id_cliente = cg.id_garante
-		 			where cg.id_cliente = ?';
+            $sql = 'select * from prestamos as p
+         			inner join clientes as c on c.id_cliente = p.prestamo_garante
+		 			where p.id_cliente = ?';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$id]);
             return $stm->fetchAll();
@@ -113,6 +113,8 @@ class Clientes
             return [];
         }
     }
+
+
     public function listar_x_dni($dni){
         try{
             $sql = 'select * from clientes where cliente_dni = ?' ;

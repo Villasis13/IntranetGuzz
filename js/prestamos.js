@@ -188,6 +188,7 @@ function guardar_prestamo(){
     valor = validar_campo_vacio('id_cliente', id_cliente, valor);
     valor = validar_campo_vacio('monto_prestamo', prestamo_monto, valor);
     valor = validar_campo_vacio('interes', prestamo_interes, valor);
+  //  valor = validar_campo_vacio('prestamo_garante', prestamo_garante, valor);
     valor = validar_campo_vacio('prestamo_num_cuotas', prestamo_num_cuotas, valor);
     valor = validar_campo_vacio('fecha_prestamo2', prestamo_fecha, valor);
     valor = validar_campo_vacio('fecha_prox_cobro2', prestamo_prox_cobro, valor);
@@ -230,11 +231,6 @@ function guardar_prestamo(){
                             window.location.href = urlweb + 'Clientes/inicio';
                             // location.reload();
                         }, 1000);
-
-
-
-
-
                         /*setTimeout(function () {
                             // Abre nueva pestaña con el comprobante
                             window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
@@ -248,6 +244,9 @@ function guardar_prestamo(){
                         break;
                     case 3:
                         respuesta('Monto insuficiente en caja', 'error');
+                        break;
+                    case 4:
+                        respuesta('El garante ya esta vinculado a otro prestamo', 'error');
                         break;
                     default:
                         respuesta('¡Algo catastrofico ha ocurrido!', 'error');
@@ -291,14 +290,14 @@ function transferir_prestamo(id_prestamos){
 function guardar_pago_prestamo(){
     var valor = true;
     var id_prestamo = $('#id_prestamo').val();
-    var pago_monto = $('#pago_monto').val();
+    var id_pago = $('#id_pago').val();
     var pago_recepcion = $('#pago_recepcion').val();
     var pago_metodo = $('#pago_metodo').val();
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
     var pago_recepcion_yp = $('#pago_recepcion_yp').val();
     
     valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
-    valor = validar_campo_vacio('pago_monto', pago_monto, valor);
+    // valor = validar_campo_vacio('id_pago', id_pago, valor);
     valor = validar_campo_vacio('pago_recepcion', pago_recepcion, valor);
     valor = validar_campo_vacio('pago_metodo', pago_metodo, valor);
     valor = validar_campo_vacio('prestamo_prox_cobro', prestamo_prox_cobro, valor);
@@ -308,8 +307,8 @@ function guardar_pago_prestamo(){
             type: "POST",
             url: urlweb + "api/cobros/guardar_pago",
             data: {
-                id_prestamo : id_prestamo,  
-                pago_monto: pago_monto,
+                id_prestamo : id_prestamo,
+                id_pago: id_pago,
                 pago_recepcion: pago_recepcion,
                 pago_metodo: pago_metodo,
                 prestamo_prox_cobro: prestamo_prox_cobro,
@@ -353,6 +352,51 @@ function guardar_pago_prestamo(){
         });
     }
 }
+
+
+
+function cambiar_prestamo_a_antiguo(id_prestamo){
+    var valor = true;
+    if(valor){
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/admin/cambiar_estado",
+            data: {
+                id_prestamo : id_prestamo,
+            },
+            dataType: 'json',
+            // beforeSend: function () {
+            //     cambiar_estado_boton(boton, 'Guardando...', true);
+            // },
+            success:function (r) {
+                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
+                switch (r.result.code) {
+                    case 1:
+                        /*respuesta('¡Pago Guardado!', 'success');
+                        setTimeout(function () {
+                            // location.reload();
+                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
+                        }, 1000);
+                        break;*/
+
+                        respuesta('¡Prestamo actualizado!', 'success');
+                        setTimeout(function () {
+                            // Abre nueva pestaña con el comprobante
+                            window.location.href = (urlweb + 'Admin/inicio/');
+                        }, 1000);
+                        break;
+                    case 2:
+                        respuesta('Error al guardar', 'error');
+                        break;
+                    default:
+                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        break;
+                }
+            }
+        });
+    }
+}
+
 function guardar_aplicar_descuento(id_prestamo){
     var valor = true;
     var input_resta_por_pagar = $('#input_resta_por_pagar').val();
