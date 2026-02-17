@@ -4,7 +4,7 @@
         <form class="modal-content" onsubmit="return false;">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitleAlumno">Editar Monto de Ingreso</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body">
@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-success" id="btn-agregar-monto" onclick="guardar_movimiento_caja()">
                     <i class="fa fa-save fa-sm text-white-50"></i> Guardar
                 </button>
