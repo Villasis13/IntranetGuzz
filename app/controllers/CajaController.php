@@ -40,10 +40,17 @@ class CajaController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-            $fecha_caja = $this->caja->traer_fecha()->fecha_caja;
-            $monto_caja_abierta = $this->caja->traer_monto_caja()->monto_caja;
-			$datos_caja_general = $this->caja->traer_datos_caja_general();
-            $ultima_caja=$this->caja->listar_ultima_caja();
+            $ultima_caja = $this->caja->listar_ultima_caja();
+            $movimientos_caja = [];
+            $fecha_caja = null;
+            $monto_caja_abierta = null;
+
+            if($ultima_caja->estado_caja == 1){
+                $fecha_caja = $this->caja->traer_fecha()->fecha_caja;
+                $monto_caja_abierta = $this->caja->traer_monto_caja()->monto_caja;
+                $movimientos_caja = $this->caja->listar_movimientos_caja($ultima_caja->id_caja);
+            }
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'caja/inicio.php';
@@ -55,7 +62,6 @@ class CajaController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
-
 
     public function historial_pagos(){
         try{

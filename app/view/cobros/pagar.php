@@ -200,11 +200,11 @@
 
                 </div>
 
-                <div class="text-center mt-4">
-                    <button onclick="guardar_pago_prestamo()" type="submit" class="btn btn-lg btn-primary px-5">
-                        <i class="fa fa-check-circle me-2"></i>Confirmar Pago
-                    </button>
-                </div>
+            <div class="text-center mt-4">
+                <button id="btn-guardar-pago" onclick="guardar_pago_prestamo()" type="submit" class="btn btn-lg btn-primary px-5">
+                    <i class="fa fa-check-circle me-2"></i>Confirmar Pago
+                </button>
+            </div>
             
         </div>
     </div>

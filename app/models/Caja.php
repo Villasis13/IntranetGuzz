@@ -232,4 +232,16 @@ class Caja
             return 0;
         }
     }
+
+    public function listar_movimientos_caja($id_caja){
+        try{
+            $sql = 'SELECT * FROM caja_movimientos WHERE id_caja = ? ORDER BY caja_movimiento_fecha DESC';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_caja]);
+            return $stm->fetchAll(PDO::FETCH_OBJ);
+        } catch(Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
 }

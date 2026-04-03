@@ -61,22 +61,31 @@
                                 <div class="row mb-3">
                                     <div class="col-md-4 text-center">
                                         <label for="diario">Diario</label><br>
-                                        <input type="radio" checked id="diario" name="tipo" value="diario">
+                                        <input type="radio" checked id="diario" name="tipo" value="diario"
+                                               onchange="cambiar_descripcion(this.value)">
                                     </div>
                                     <div class="col-md-4 text-center">
                                         <label for="mensual">Mensual</label><br>
-                                        <input type="radio" id="mensual" name="tipo" value="mensual">
+                                        <input type="radio" id="mensual" name="tipo" value="mensual"
+                                               onchange="cambiar_descripcion(this.value)">
                                     </div>
                                     <div class="col-md-4 text-center">
                                         <label for="fechas">Intervalo de Fechas</label><br>
-                                        <input type="radio" id="fechas" name="tipo" value="fechas">
+                                        <input type="radio" id="fechas" name="tipo" value="fechas"
+                                               onchange="cambiar_descripcion(this.value)">
                                     </div>
+                                </div>
+
+                                <!-- Mensaje descriptivo -->
+                                <div class="alert alert-info py-2 mb-3" id="descripcion_reporte">
+                                    <i class="fa fa-info-circle mr-1"></i>
+                                    <span id="texto_descripcion">Esto traerá los datos del día de hoy.</span>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label>Desde</label>
-                                        <input type="date" disabled class="form-control" name="" id="fecha_prestamo">
+                                        <input type="date" disabled class="form-control" name="fecha_prestamo" id="fecha_prestamo">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label>Hasta</label>
@@ -109,6 +118,22 @@
     </div>
 </div>
 
+<script>
+    const descripciones = {
+        diario:  'Esto traerá los datos del día de hoy.',
+        mensual: 'Esto traerá los datos de este mes.',
+        fechas:  'Esto traerá los datos que se hayan registrado entre las fechas seleccionadas.'
+    };
+
+    function cambiar_descripcion(valor) {
+        document.getElementById('texto_descripcion').innerText = descripciones[valor];
+
+        // Habilita/deshabilita los inputs de fecha
+        const disabled = valor !== 'fechas';
+        document.getElementById('fecha_prestamo').disabled = disabled;
+        document.getElementById('fecha_prox_cobro').disabled = disabled;
+    }
+</script>
 
 <script>
     $(document).ready(function () {

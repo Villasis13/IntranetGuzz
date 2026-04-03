@@ -8,6 +8,21 @@ class Cobros
         $this->log = new Log();
     }
 
+    // Inicia la transacción (Pone la base de datos en modo "espera")
+    public function iniciar_transaccion() {
+        $this->pdo->beginTransaction();
+    }
+
+    // Confirma y guarda todos los cambios definitivamente
+    public function confirmar_transaccion() {
+        $this->pdo->commit();
+    }
+
+    // Cancela y revierte todo si hubo algún error
+    public function revertir_transaccion() {
+        $this->pdo->rollBack();
+    }
+
 	public function listar_total_pagos_x_prestamo($id){
 		try{
 			$sql = 'SELECT SUM(pago_diario_monto) AS total FROM pagos_diarios WHERE id_prestamos = ?';
@@ -178,20 +193,158 @@ class Cobros
 			return 0;
 		}
 	}
-	public function listar_proximos_cobros(){
-		try{
-			$sql = 'SELECT * from pagos_diarios pd
-         			inner join prestamos p on pd.id_prestamos = p.id_prestamos
-                    inner join clientes c on p.id_cliente = c.id_cliente
-         			where pd.pago_diario_fecha <= date_add(CURDATE(),interval 1 day ) and pd.pago_diario_estado=1 and p.prestamo_estado=1
-         			order by pd.pago_diario_fecha desc';
-			$stm = $this->pdo->prepare($sql);
-			$stm->execute();
-			return $stm->fetchAll();
-		} catch (Throwable $e){
-			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-			return 0;
-		}
-	}
+    public function listar_proximos_cobros(){
+        try{
+            $sql = 'SELECT * FROM prestamos p
+               INNER JOIN clientes c ON p.id_cliente = c.id_cliente
+               WHERE p.prestamo_prox_cobro <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
+               AND p.prestamo_estado = 1
+               ORDER BY p.prestamo_prox_cobro ASC';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute();
+            return $stm->fetchAll(PDO::FETCH_OBJ);
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function listar_prestamo($id){
+        try{
+            $sql = 'SELECT * from prestamos 
+					where id_prestamos = ?
+';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 0;
+        }
+    }
+
+    public function obtener_caja_abierta(){
+        try{
+            // Buscamos cajas con estado 1, las ordenamos de la más nueva a la más vieja,
+            // y con LIMIT 1 nos traemos solo la última que se abrió.
+            $sql = 'SELECT * FROM caja 
+                WHERE estado_caja = 1 
+                ORDER BY id_caja DESC 
+                LIMIT 1';
+
+            $stm = $this->pdo->prepare($sql);
+            // Ya no necesitamos pasarle el [$id] al execute() porque no hay parámetros dinámicos
+            $stm->execute();
+
+            return $stm->fetch(); // Retorna el objeto/array con los datos de la caja
+
+        } catch (Throwable $e){
+            // Si hay error, lo guarda en tu log
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 0;
+        }
+    }
+
+    public function cambiar_estado($id_prestamo, $nuevo_estado){
+        try{
+            // Preparamos la consulta UPDATE
+            $sql = 'UPDATE prestamos 
+                SET prestamo_estado = ? 
+                WHERE id_prestamos = ?';
+
+            $stm = $this->pdo->prepare($sql);
+
+            // Ejecutamos pasando los parámetros en el orden exacto de los "?"
+            if ($stm->execute([$nuevo_estado, $id_prestamo])) {
+                return 1; // <-- Cambio solicitado: retorna 1 si tuvo éxito
+            } else {
+                return 2; // Retorna false si la ejecución falló silenciosamente
+            }
+
+        } catch (Throwable $e){
+            // Si hay un error de base de datos, lo registramos en el log
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 2;
+        }
+    }
+
+    public function actualizar_monto_caja($id_caja, $nuevo_saldo){
+        try{
+            // Preparamos la consulta UPDATE
+            $sql = 'UPDATE caja
+                SET monto_caja = ? 
+                WHERE id_caja = ?';
+
+            $stm = $this->pdo->prepare($sql);
+
+            // Ejecutamos pasando los parámetros en el orden exacto de los "?"
+            // Primero el nuevo saldo, luego el ID de la caja
+            if ($stm->execute([$nuevo_saldo, $id_caja])) {
+                return 1; // <-- Retorna 1 si la actualización tuvo éxito
+            } else {
+                return false; // Retorna false si la ejecución falló silenciosamente
+            }
+
+        } catch (Throwable $e){
+            // Si hay un error de base de datos, lo registramos en el log
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return false;
+        }
+    }
+
+
+    public function registrar_movimiento_caja($id_caja, $tipo, $monto, $fecha){
+        try{
+            // Preparamos la consulta INSERT
+            $sql = 'INSERT INTO caja_movimientos (id_caja, caja_movimiento_tipo,caja_movimiento_monto,caja_movimiento_fecha) 
+                VALUES (?, ?,?,?)';
+
+            $stm = $this->pdo->prepare($sql);
+
+            // Ejecutamos pasando los parámetros en el orden exacto de los "?"
+            // Primero el ID de la caja, luego el saldo
+            if ($stm->execute([$id_caja, $tipo, $monto, $fecha])) {
+                return 1; // <-- Retorna 1 si la inserción tuvo éxito
+            } else {
+                return false; // Retorna false si la ejecución falló silenciosamente
+            }
+
+        } catch (Throwable $e){
+            // Si hay un error de base de datos, lo registramos en el log
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return false;
+        }
+    }
+
+    public function listar_proximo_pago_diario($id_prestamo){
+        try{
+            $sql = 'SELECT * FROM pagos_diarios 
+                WHERE id_prestamos = ? 
+                AND pago_diario_estado = 1 
+                ORDER BY pago_diario_fecha ASC
+                LIMIT 1';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
+
+    public function listar_cuota_proxima($id){
+        try{
+            $sql = 'SELECT * FROM pagos_diarios 
+                WHERE id_prestamos = ? 
+                AND pago_diario_estado = 1
+                ORDER BY pago_diario_fecha ASC
+                LIMIT 1';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetch(PDO::FETCH_OBJ);
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
 
 }

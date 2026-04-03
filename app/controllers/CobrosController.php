@@ -91,7 +91,7 @@ class CobrosController
 			$descuentos_prestamos = $this->cobros->listar_datos_decuentos_x_prestamo($id_prestamo);
 			$descuentos_monto = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
 			$listar_cliente_x_prestamo = $this->clientes->listar_x_id_presrtamo($id_prestamo);
-			
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'cobros/pagos.php';
@@ -108,7 +108,7 @@ class CobrosController
 		$result = 2;
 		$message = 'OK';
 		try {
-			$id_prestamo=$_POST['id_prestamo'];
+            $id_prestamo=$_POST['id_prestamo'];
             $id_pago_cuota=$_POST['id_pago'];
             $cuota_a_pagar=$this->cobros->listar_cuota_individual($id_pago_cuota);
             $monto_caja_abierta = $this->caja->traer_datos_caja();
@@ -120,6 +120,8 @@ class CobrosController
             $ya_pago =$total_pagos->total ?? 0;//150
             $interes=$this->prestamos->listar_x_id($_POST['id_prestamo'])->prestamo_monto_interes ?? 00;
             $prestamo_total_mas_interes=$prestamo->prestamo_monto + $prestamo->prestamo_monto_interes;
+            $listar_ultima_caja=$this->caja->listar_ultima_caja();
+            $hoy=date("Y-m-d H:i:s");
 
             //$descuento = $this->cobros->listar_decuentos_x_prestamo($_POST['id_prestamo'])[0]->total ?? 0 ;//80
             if (($total_pagos_cuenta->cuenta + 1) == $prestamo->prestamo_num_cuotas) {
@@ -154,12 +156,27 @@ class CobrosController
 					'pago_estado' => 1,
 					'pago_mt' => $mt,
 				));
+                $result = $this->builder->save("caja_movimientos",array(
+                    'id_caja' => $listar_ultima_caja->id_caja,
+                    'caja_movimiento_tipo' =>1,
+                    'caja_movimiento_monto' => $cuota_a_pagar->pago_diario_monto,
+                    'caja_movimiento_fecha' => $hoy,
+
+                ));
                 $result=$this->cobros->cambiar_estado_cuota($id_pago_cuota);
-				if($result == 1){
+                $listar_cuota_proxima=$this->cobros->listar_cuota_proxima($id_prestamo);
+
+                $result = $this->builder->update("prestamos", array(
+                    'prestamo_prox_cobro' => $listar_cuota_proxima->pago_diario_fecha,
+
+                ), array(
+                    'id_prestamos' => $id_prestamo // <-- el id del registro a actualizar
+                ));
+
+                if($result == 1){
                     $prestamo_saldo= $prestamo->prestamo_saldo_pagar - ($cuota_a_pagar->pago_diario_monto+ $diferencia);
 					$id_pago = $this->cobros->listar_pago_guardado_x_mt($mt)->id_pago;
 					$result = $this->builder->update("prestamos",array(
-						'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'],
                         'prestamo_saldo_pagar' =>$prestamo_saldo, //Pagado
 
                     ),array(
@@ -318,4 +335,101 @@ class CobrosController
 			$message = $e->getMessage();
 		}
 	}
+
+    public function anular(){
+        // Preparamos el array de respuesta para el AJAX
+        $res = array('codigo' => 0, 'mensaje' => 'Error desconocido');
+        $hoy=date("Y-m-d H:i:s");
+
+        try {
+            $id_prestamo = isset($_POST['id_prestamo']) ? $_POST['id_prestamo'] : null;
+
+            if (empty($id_prestamo)) {
+                throw new Exception("ID de préstamo no recibido.");
+            }
+
+            // 1. Obtener los datos del préstamo antes de anularlo
+            $prestamo = $this->cobros->listar_prestamo($id_prestamo);
+
+            if (empty($prestamo)) {
+                throw new Exception("El préstamo no existe.");
+            }
+
+            // 2. Obtener la última caja abierta
+            // (Asumiendo que tienes un modelo/función que trae la caja activa del día)
+            $caja_abierta = $this->cobros->obtener_caja_abierta();
+
+            if (empty($caja_abierta)) {
+                throw new Exception("No hay ninguna caja abierta. Debe abrir caja para procesar la devolución del dinero.");
+            }
+
+            // 3. Preparar la matemática
+            $monto_capital = floatval($prestamo->prestamo_monto);
+            $monto_interes = floatval($prestamo->prestamo_monto_interes);
+
+            // ADVERTENCIA: Aquí se suman ambos según tu requerimiento.
+            // Contablemente se recomienda que sea solo $monto_capital.
+            $monto_a_devolver = $monto_capital ;
+
+            $saldo_caja_actual = floatval($caja_abierta->monto_caja);
+            $nuevo_saldo_caja = $saldo_caja_actual + $monto_a_devolver;
+
+
+            // ==========================================
+            // INICIO DE LA TRANSACCIÓN SQL
+            // ==========================================
+            // Es vital usar transacciones: Si falla actualizar la caja, el préstamo no se anula.
+            $this->cobros->iniciar_transaccion();
+
+            // PASO 1: Cambiar el estado del préstamo a 2 (Anulado)
+            // Necesitas tener esta función en tu modelo Prestamos
+            $estado_actualizado = $this->cobros->cambiar_estado($id_prestamo, 2);
+
+            if (!$estado_actualizado) {
+                throw new Exception("Error al cambiar el estado del préstamo en la base de datos.");
+            }
+
+            // PASO 2: Actualizar el monto total de la caja
+            // Necesitas tener esta función en tu modelo Cajas
+            $caja_actualizada = $this->cobros->actualizar_monto_caja($caja_abierta->id_caja, $nuevo_saldo_caja);
+
+            if (!$caja_actualizada) {
+                throw new Exception("Error al actualizar el saldo de la caja.");
+            }
+
+            // PASO 3: Registrar el movimiento de caja (Ingreso)
+            $concepto_movimiento = "DEVOLUCIÓN POR ANULACIÓN DE CRÉDITO #" . $id_prestamo;
+            $movimiento_registrado = $this->cobros->registrar_movimiento_caja(
+                $caja_abierta->id_caja,
+                1, // O el ID del tipo de movimiento que uses
+                $monto_capital,
+                $hoy
+            );
+
+            if (!$movimiento_registrado) {
+                throw new Exception("Error al registrar el movimiento en el historial de caja.");
+            }
+
+            // ==========================================
+            // CONFIRMAR TRANSACCIÓN
+            // ==========================================
+            $this->cobros->confirmar_transaccion(); // COMMIT
+
+            $res['codigo'] = 1;
+            $res['mensaje'] = 'Crédito anulado exitosamente y dinero retornado a caja.';
+
+        } catch (Throwable $e) {
+            // Si CUALQUIER cosa falla arriba, deshacemos todo
+            $this->cobros->revertir_transaccion(); // ROLLBACK
+
+            // Opcional: Registrar el error en tu log
+            // $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+
+            $res['mensaje'] = $e->getMessage();
+        }
+
+        // Devolver la respuesta en JSON para el archivo JS
+        echo json_encode($res);
+    }
+
 }

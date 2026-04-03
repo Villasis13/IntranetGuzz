@@ -52,7 +52,7 @@ function cerrar_caja(id_caja){
             data: cadena,
             dataType: 'json',
             beforeSend: function () {
-                cambiar_estado_boton(boton, 'Abriendo caja...', true);
+                cambiar_estado_boton(boton, 'Cerrando caja...', true);
             },
             success:function (r) {
                 cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Abrir Caja", false);
@@ -60,7 +60,7 @@ function cerrar_caja(id_caja){
                     case 1:
                         respuesta('¡Caja Cerrada! Recargando...', 'success');
                         setTimeout(function () {
-                            window.location.href = urlweb + "Caja/reporte_de_cajas"; // <- tu ruta
+                            window.location.href = urlweb + "Caja/inicio"; // <- tu ruta
                         }, 800);
                         break;
                     case 2:
@@ -281,6 +281,7 @@ function gestionar_caja_ultimo_monto(){
                         // setTimeout(function () { location.reload(); }, 1000);
                         respuesta('Monto encontrado', 'success');
                         $('#caja_monto').val(r.result.dato_m);
+                        gestionar_caja();
                         break;
                     case 2:
                         respuesta('Error al abrir caja', 'error');
@@ -299,5 +300,28 @@ function gestionar_caja_ultimo_monto(){
 function habilitar_input_editar_monto(){
     $('#input_editar_monto').show(200);
     $('#btn_editar').show(200);
+}
+
+
+function preguntar_apertura_caja(ultimo_monto) {
+    Swal.fire({
+        title: 'Aperturar Caja',
+        html: `El monto de la última caja fue <strong>S/. ${ultimo_monto}</strong><br>¿Cómo deseas abrir la caja?`,
+        icon: 'question',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Abrir con ese monto',
+        denyButtonText: 'Empezar desde cero',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745',
+        denyButtonColor: '#ffc107',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            gestionar_caja_ultimo_monto(); // <-- abre con el último monto
+        } else if (result.isDenied) {
+            $('#caja_monto').val('0'); // <-- setea en 0
+            gestionar_caja(); // <-- abre desde cero (con el input manual)
+        }
+    });
 }
 

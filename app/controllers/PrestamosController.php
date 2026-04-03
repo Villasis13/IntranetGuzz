@@ -48,7 +48,7 @@ class PrestamosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$listar_estado_caja = $this->caja->traer_estado_caja()->estado_caja;
+			$listar_estado_caja = $this->caja->listar_ultima_caja()->estado_caja;
 			if($listar_estado_caja == 1){
 				if($_POST['dni_post']){
 					$data_cliente = $this->clientes->listar_x_dni($_POST['dni_post']);
@@ -179,7 +179,11 @@ class PrestamosController
 		try {
             $garante = !empty($_POST['prestamo_garante']) ? (int)$_POST['prestamo_garante'] : 0;
             $validar_duplicidad=$this->prestamos->duplicidad_garante($garante);
-			if ($validar_duplicidad){
+            $ultima_caja = $this->caja->listar_ultima_caja();
+            $fecha= $_POST['prestamo_fecha']. ' ' . date('H:i:s');
+            $forzar = isset($_POST['forzar_garante']) && $_POST['forzar_garante'] == '1';
+
+            if ($validar_duplicidad && !$forzar){
                 $result=4;
             } else {
             $monto_caja_abierta = $this->caja->traer_datos_caja();
@@ -191,7 +195,7 @@ class PrestamosController
 					'prestamo_interes' => $_POST['prestamo_interes'], 
 					'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'], 
 					'prestamo_num_cuotas' => $_POST['prestamo_num_cuotas'], 
-					'prestamo_fecha' => $_POST['prestamo_fecha'], 
+					'prestamo_fecha' => $fecha,
 					'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'], 
 					'prestamo_monto_interes' =>ceil( $_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
 					'prestamo_saldo_pagar' => $_POST['prestamo_monto'] + ($_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
@@ -203,6 +207,13 @@ class PrestamosController
 					'prestamo_mt' => $mt,
                     'prestamo_estado' => 1,
 					));
+
+                $result=$this->builder->save("caja_movimientos",array(
+                    'id_caja' => $ultima_caja->id_caja,
+                    'caja_movimiento_tipo' => 2,
+                    'caja_movimiento_monto' => $_POST['prestamo_monto'],
+                    'caja_movimiento_fecha' => $fecha,
+                ));
 
 				if($result == 1){
 					$id_prestamo = $this->prestamos->listar_x_mt($mt);

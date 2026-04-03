@@ -45,25 +45,31 @@
                                 <h4 class="text-success">CAJA ABIERTA</h4>
                                 <h5>Tiene en caja: S/.<?= $monto_caja_abierta ?></h5>
                                 <h5>Abierto el: <?= $fecha_caja ?></h5>
-                                <a onclick="habilitar_input_editar_monto()" class="btn btn-sm btn-warning text-white">
+                                <!--<a onclick="habilitar_input_editar_monto()" class="btn btn-sm btn-warning text-white">
                                     <i class="fa fa-pencil"></i>
                                     Editar Monto
-                                </a>
-                                <input id="input_editar_monto" name="input_editar_monto" style="display: none" 
+                                </a> -->
+                                 <input id="input_editar_monto" name="input_editar_monto" style="display: none"
                                        class="form-control w-25"
                                        placeholder="Ingrese nuevo monto"
                                        onkeyup="validar_numeros_decimales_dos(this.id)"
                                 >
-                                <a href="<?= _SERVER_ ?>Caja/historial_pagos" class="btn btn-sm btn-info text-white ml-2 ">
+                                <!-- <a href="<?= _SERVER_ ?>Caja/historial_pagos" class="btn btn-sm btn-info text-white ml-2 ">
                                     <i class="fa fa-list"></i>
                                     Historial Pagos Hoy
-                                </a>
+                                </a> -->
                                 <button type="button"
                                         data-toggle="modal"
                                         data-target="#dinero_caja"
                                         onclick="limpiar_modal_alumno()"
                                         class="btn btn-sm btn-primary text-white ml-2">
                                     <i class="fa fa-plus"></i> Añadir a caja
+                                </button>
+                                <button type="button"
+                                        id="btn-cerrar-caja"
+                                        class="btn btn-sm btn-danger text-white ml-2"
+                                        onclick="cerrar_caja(<?= $ultima_caja->id_caja ?>)">
+                                    <i class="fa fa-lock"></i> Cerrar caja
                                 </button>
                                 <a style="display: none" id="btn_editar" onclick="guardar_nuevo_monto()" class="btn btn-sm btn-success text-white">
                                     <i class="fa fa-save"></i>
@@ -83,14 +89,15 @@
                                         <input onkeyup="validar_numeros_decimales_dos(this.id)" type="text" id="caja_monto" name="caja_monto" class="form-control">
                                     </div>
                                     <div class="col-lg-2">
-                                        <button id="btn-abrir_caja" data-toggle="modal" class="form-control btn-success mt-4"  
-                                                onclick="gestionar_caja()">Abrir caja
+                                        <button id="btn-abrir_caja" data-toggle="modal" class="form-control btn-success mt-4"
+                                                onclick="preguntar_apertura_caja(<?=$ultima_caja->monto_caja?>)">Apertura rápida
                                         </button>
                                     </div>
-                                    <div class="col-lg-3">
-                                        <button id="btn-abrir_caja_ultimo_monto" data-toggle="modal" 
-                                                class="form-control btn-warning mt-4"  
-                                                onclick="gestionar_caja_ultimo_monto()">Abrir con último monto
+                                    <div class="col-lg-2">
+                                        <button id="btn-abrir_caja_manual"
+                                                class="form-control btn-info mt-4"
+                                                onclick="gestionar_caja()">
+                                            Abrir con monto manual
                                         </button>
                                     </div>
                                 </div>
@@ -106,72 +113,59 @@
     <div class="row">
         <div class="col-lg-12 mt-3">
             <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Movimientos de caja</h6>
+                </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped" width="100%">
-                            <thead class="text-center">
-                            <tr>
-                                <th>#</th>
-                                <th>Fecha</th>
-                                <th>Monto de apertura</th>
-                                <th>Ingresos del día</th>
-                                <th>Egresos del día</th>
-                                <th>Gastos del día</th>
-                                <th>Saldo del día</th>
-<!--                                <th>Ver reporte</th>-->
-                            </tr>
-                            </thead>
-                            <tbody>
-							<?php
-                            $con = 1;
-							foreach ($datos_caja_general as $cg){
-								?>
-                                <tr class="text-center">
-                                    <td><?= $con?></td>
-                                    <td><?= date("Y-m-d", strtotime($cg->fecha_caja))?></td>
-                                    <td><?= $cg->monto_apertura_caja?></td>
-                                    <td>
-                                        <?php
-										$ingresos_hoy = $this->cobros->prestamos_hoy_fecha(date("Y-m-d", strtotime($cg->fecha_caja)))->total;
-                                        ?>
-                                        <?= $ingresos_hoy ?>
-                                    </td>
-                                    <td>
-										<?php
-										$egresos_hoy = $this->prestamos->egresos_hoy_fecha(date("Y-m-d", strtotime($cg->fecha_caja)))->total;
-										?>
-										<?= $egresos_hoy ?>
-                                    </td>
-                                    <td>
-                                        0.00
-                                    </td>
-                                    <td>
-                                        <?= $cg->monto_caja ?>
-                                    </td>
-<!--                                    <td>-->
-<!--                                        -->
-<!--                                    </td>-->
+                    <?php if($ultima_caja->estado_caja != 1): ?>
+                        <div class="text-center py-5">
+                            <i class="fa fa-lock fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay una caja abierta</h5>
+                            <p class="text-muted">Debes aperturar la caja para ver los movimientos del día.</p>
+                        </div>
+                    <?php elseif(empty($movimientos_caja)): ?>
+                        <div class="text-center py-5">
+                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Sin movimientos aún</h5>
+                            <p class="text-muted">La caja está abierta pero no registra movimientos todavía.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-striped text-center" width="100%">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Monto</th>
                                 </tr>
-								<?php
-								$con++;
-							}
-							?>
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <!--                            <a href="cobros/inicio" class="btn btn-secondary mt-3">-->
-                    <!--                                <i class="fa fa-list fa-sm text-white-50"></i> Ver Todos-->
-                    <!--                            </a>-->
+                                </thead>
+                                <tbody>
+                                <?php $con = 1; foreach($movimientos_caja as $mov): ?>
+                                    <tr>
+                                        <td><?= $con ?></td>
+                                        <td><?= $mov->caja_movimiento_fecha ?></td>
+                                        <td>
+                                            <?php if($mov->caja_movimiento_tipo == 1): ?>
+                                                <span class="badge badge-success" style="color: #697a8d">Ingreso</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-danger" style="color: #697a8d">Egreso</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if($mov->caja_movimiento_tipo == 2): ?>
+                                                <span class="text-danger">-S/. <?= number_format($mov->caja_movimiento_monto, 2) ?></span>
+                                            <?php else: ?>
+                                                <span class="text-success">S/. <?= number_format($mov->caja_movimiento_monto, 2) ?></span>
+                                            <?php endif; ?>
+                                        </td>                                    </tr>
+                                    <?php $con++; endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <?php  if($ultima_caja->estado_caja==1){ ?>
-            <div class="text-center mt-4">
-                <button type="button" id="btn-cerrar-caja" class="btn btn-danger btn-lg px-5 py-2" onclick="cerrar_caja(<?=$ultima_caja->id_caja ?>)">
-                    <i class="fa fa-lock"></i> Cerrar Caja
-                </button>
-            </div>
-            <?php  }?>
         </div>
     </div>
 </div>

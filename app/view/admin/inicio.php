@@ -210,47 +210,56 @@
                                         </thead>
                                         <tbody>
                                         <?php
-                                        $style="";
+                                        $style = "";
+                                        $hoy = date('Y-m-d');
                                         foreach ($proximos_cobros as $pc){
-                                            if ($pc->pago_diario_fecha < $fecha) {
-                                                $style='red';
-                                            } elseif ($pc->pago_diario_fecha == $fecha) {
-                                                $style='#C9A227';
+                                            $fecha_cobro = date('Y-m-d', strtotime($pc->prestamo_prox_cobro));
+                                            if ($fecha_cobro < $hoy) {
+                                                $style = 'red';
+                                            } elseif ($fecha_cobro == $hoy) {
+                                                $style = '#C9A227';
                                             } else {
-                                                $style='green';
+                                                $style = 'green';
                                             }
-
                                             ?>
                                             <tr class="text-center">
-                                                <td style="color: <?= $style?>">
+                                                <td style="color: <?= $style ?>">
                                                     <?= $pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno ?>
                                                 </td>
-                                                <td style="color:<?= $style?>">
-                                                    S/ <?= $pc->pago_diario_monto ?>
+                                                <?php $cuota_cercana = $this->cobros->listar_proximo_pago_diario($pc->id_prestamos); ?>
+                                                <td style="color: <?= $style ?>">
+                                                    <?= $cuota_cercana ? 'S/ ' . number_format($cuota_cercana->pago_diario_monto, 2) : 'Deuda no acordada en cuotas' ?>
                                                 </td>
-                                                <td style="color:<?= $style?>">
-                                                    <?= $pc->pago_diario_fecha ?>
+                                                <td style="color: <?= $style ?>">
+                                                    <?= $fecha_cobro ?>
                                                 </td>
-                                                <?php if($pc->pago_diario_fecha < $fecha){ ?>
-                                                <td>
-                                                    <button onclick="cambiar_prestamo_a_antiguo(<?=$pc->id_prestamos?>)"
-                                                            class="btn btn-sm btn-warning">
-                                                        <i class="fa fa-exclamation-triangle"></i>
-                                                    </button>
-                                                </td>
-                                                <?php } else { ?>
-                                                        <td>Cuota aún a tiempo</td>
-                                                <?php } ?>
+                                                <?php if($fecha_cobro < $hoy): ?>
+                                                    <td>
+                                                        <button onclick="preguntar('¿El préstamo ya venció, desea convertirlo a un préstamo antiguo?', 'cambiar_prestamo_a_antiguo', 'Sí, convertir', 'Cancelar', <?= $pc->id_prestamos ?>)"
+                                                                class="btn btn-sm btn-danger"
+                                                                title="Este préstamo ya venció, pasarlo a antiguos">
+                                                            <i class="fa fa-exclamation-triangle"></i> Vencido
+                                                        </button>
+                                                    </td>
+                                                <?php else: ?>
+                                                    <td>Cuota aún a tiempo</td>
+                                                <?php endif; ?>
                                             </tr>
-                                        <?php
+                                            <?php
                                         }
                                         ?>
                                     </tbody>
                                 </table>
-                                <div class="mt-3">
-                                    <span style="color: #C9A227; font-weight: bold;">●</span> Vence hoy |
-                                    <span style="color: red; font-weight: bold;">●</span> Ya venció |
-                                    <span style="color: green; font-weight: bold;">●</span> Por vencer
+                                <div class="mt-3 p-2 rounded" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                                    <strong>Referencias:</strong>&nbsp;&nbsp;
+                                    <span style="color: #C9A227; font-weight: bold; font-size: 16px;">●</span>
+                                    <span style="font-weight: bold; color: #C9A227;"> Vence hoy</span>
+                                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                                    <span style="color: red; font-weight: bold; font-size: 16px;">●</span>
+                                    <span style="font-weight: bold; color: red;"> Ya venció</span>
+                                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                                    <span style="color: green; font-weight: bold; font-size: 16px;">●</span>
+                                    <span style="font-weight: bold; color: green;"> Por vencer</span>
                                 </div>
                             </div>
 <!--                            <a href="cobros/inicio" class="btn btn-secondary mt-3">-->

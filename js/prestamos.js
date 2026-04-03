@@ -183,6 +183,7 @@ function guardar_prestamo(){
     var prestamo_motivo = $('#prestamo_motivo').val();
     var prestamo_comentario = $('#prestamo_comentario').val();
     var select_domingos = $('#select_domingos').val();
+    var forzar = $('#forzar_garante').val();
     // var prestamo_monto_interes = $('#prestamo_monto_interes').val();
 
     valor = validar_campo_vacio('id_cliente', id_cliente, valor);
@@ -213,7 +214,8 @@ function guardar_prestamo(){
                 prestamo_garante: prestamo_garante,
                 prestamo_motivo: prestamo_motivo,
                 prestamo_comentario: prestamo_comentario,
-                select_domingos: select_domingos
+                select_domingos: select_domingos,
+                forzar_garante: forzar
                 // prestamo_monto_interes: prestamo_monto_interes
             },
             dataType: 'json',
@@ -246,7 +248,22 @@ function guardar_prestamo(){
                         respuesta('Monto insuficiente en caja', 'error');
                         break;
                     case 4:
-                        respuesta('El garante ya esta vinculado a otro prestamo', 'error');
+                        Swal.fire({
+                            title: 'Garante ya asociado',
+                            text: 'Esta persona ya está asociada como garante en otro préstamo. ¿Desea continuar igual?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#28a745',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Sí, continuar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Agrega el flag y reenvía
+                                $('#forzar_garante').val('1');
+                                guardar_prestamo(); // <-- la función que hace el AJAX
+                            }
+                        });
                         break;
                     default:
                         respuesta('¡Algo catastrofico ha ocurrido!', 'error');
@@ -289,19 +306,19 @@ function transferir_prestamo(id_prestamos){
 }
 function guardar_pago_prestamo(){
     var valor = true;
+    var boton = "btn-guardar-pago"; // <-- asegúrate que el id de tu botón sea este
     var id_prestamo = $('#id_prestamo').val();
     var id_pago = $('#id_pago').val();
     var pago_recepcion = $('#pago_recepcion').val();
     var pago_metodo = $('#pago_metodo').val();
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
     var pago_recepcion_yp = $('#pago_recepcion_yp').val();
-    
+
     valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
-    // valor = validar_campo_vacio('id_pago', id_pago, valor);
     valor = validar_campo_vacio('pago_recepcion', pago_recepcion, valor);
     valor = validar_campo_vacio('pago_metodo', pago_metodo, valor);
     valor = validar_campo_vacio('prestamo_prox_cobro', prestamo_prox_cobro, valor);
-    
+
     if(valor){
         $.ajax({
             type: "POST",
@@ -315,26 +332,15 @@ function guardar_pago_prestamo(){
                 pago_recepcion_yp: pago_recepcion_yp
             },
             dataType: 'json',
-            // beforeSend: function () {
-            //     cambiar_estado_boton(boton, 'Guardando...', true);
-            // },
+            beforeSend: function () {
+                cambiar_estado_boton(boton, 'Guardando...', true); // <-- bloquea el botón
+            },
             success:function (r) {
-                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
                 switch (r.result.code) {
                     case 1:
-                        /*respuesta('¡Pago Guardado!', 'success');
-                        setTimeout(function () {
-                            // location.reload();
-                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
-                        }, 1000);
-                        break;*/
-                        
                         respuesta('¡Pago Guardado!', 'success');
                         setTimeout(function () {
-                            // Abre nueva pestaña con el comprobante
                             window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
-
-                            // Redirige la ventana actual
                             window.location.href = urlweb + 'Clientes/inicio';
                         }, 1000);
                         break;
@@ -352,7 +358,6 @@ function guardar_pago_prestamo(){
         });
     }
 }
-
 
 
 function cambiar_prestamo_a_antiguo(id_prestamo){
@@ -452,4 +457,170 @@ function aplicar_descuento(){
         $('#div_descontar').hide(200);
         $('#descontar_cantidad').val('');
     }
+}
+
+
+
+$(function () {
+    // Select2 configurado al 100% de ancho
+    $("#prestamo_garante").select2({
+        width: '100%',
+        placeholder: "Seleccionar Garante",
+        allowClear: true
+    });
+
+    $('#formBuscar').on('submit', function (e) {
+        let dni = $('#dni_post').val()?.trim();
+        if (!dni) {
+            e.preventDefault();
+            respuesta('Ingrese DNI para buscar', 'error');
+            return;
+        }
+        respuesta('Buscando cliente...', 'success');
+    });
+
+    // Inicializar interfaz al cargar
+    ajustar_interfaz_tipo_pago();
+    calcular_cuota();
+});
+
+// Función que ajusta textos y muestra/oculta campos según el tipo de pago
+// Función para obtener los días del mes de la fecha seleccionada
+function obtenerDiasDelMes() {
+    let fechaSeleccionada = $('#fecha_prestamo2').val();
+    let fecha = fechaSeleccionada ? new Date(fechaSeleccionada + 'T00:00:00') : new Date();
+    // El día 0 del mes siguiente es el último día del mes actual
+    return new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
+}
+
+// Función principal que controla todo al cambiar de tipo de pago
+function ajustar_interfaz_tipo_pago() {
+    let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
+    let nuevasCuotas = $('#prestamo_num_cuotas').val(); // Empezamos con el valor actual
+
+    if (tipoPago === 'diario') {
+        $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
+        $('#div_cuota_diaria').show();
+        $('#div_diario_domingos').show();
+
+        let incluirDom = $('#select_domingos').val();
+        if (incluirDom === 'si') {
+            nuevasCuotas = obtenerDiasDelMes(); // Asigna 28, 29, 30 o 31
+        } else {
+            nuevasCuotas = 26; // Asigna 26 fijo si no hay domingos
+        }
+    } else {
+        $('#label_cuotas_dias').html('Número de Cuotas <span class="text-danger">*</span>');
+        $('#div_cuota_diaria').hide();
+        $('#div_diario_domingos').hide();
+
+        if (tipoPago === 'semanal') nuevasCuotas = 4;
+        if (tipoPago === 'mensual') nuevasCuotas = 1;
+    }
+
+    // 1. Asignamos el nuevo número de cuotas/días al input
+    $('#prestamo_num_cuotas').val(nuevasCuotas);
+
+    // 2. Calculamos las fechas en base a lo nuevo
+    cambiar_proximo_cobro();
+
+    // 3. Calculamos el dinero en base a los nuevos días
+    calcular_cuota();
+}
+
+// Cálculo matemático: [Préstamo + (Préstamo * Porcentaje / 100)] / Cuotas(Días)
+function calcular_cuota() {
+    if (!$('#diario').is(':checked')) return;
+
+    let montoStr = $('#monto_prestamo').val();
+    let interesStr = $('#interes').val();
+    let cuotasStr = $('#prestamo_num_cuotas').val();
+
+    let monto = parseFloat(montoStr) || 0;
+    let porcentajeInteres = parseFloat(interesStr) || 0;
+    let cuotas = parseInt(cuotasStr) || 1;
+
+    let cuota_diaria = 0;
+
+    if (monto > 0 && cuotas > 0) {
+        let monto_interes = monto * (porcentajeInteres / 100);
+        let total_prestamo = monto + monto_interes;
+        cuota_diaria = total_prestamo / cuotas;
+    }
+
+    $('#cuota_diaria_visual').val(cuota_diaria.toFixed(2));
+    $('#cuota_calculada_hidden').val(cuota_diaria);
+}
+function cambiar_proximo_cobro() {
+    // 1. Obtener la fecha de préstamo seleccionada
+    let fechaBaseStr = $('#fecha_prestamo2').val();
+    if (!fechaBaseStr) return;
+
+    // Creamos el objeto Date (añadimos T00:00:00 para evitar desfases por zona horaria)
+    let fecha = new Date(fechaBaseStr + 'T00:00:00');
+
+    // 2. Obtener parámetros de tipo de pago e incluir domingos
+    let tipoPago = $('input[name="tipo_pago2"]:checked').val(); // 'Diario', 'Semanal' o 'Mensual'
+    let incluirDomingos = $('#select_domingos').val(); // 'si' o 'no'
+
+    // 3. Sumar el intervalo correspondiente
+    if (tipoPago === 'Diario' || tipoPago === 'diario') {
+        fecha.setDate(fecha.getDate() + 1);
+    } else if (tipoPago === 'Semanal' || tipoPago === 'semanal') {
+        fecha.setDate(fecha.getDate() + 7);
+    } else if (tipoPago === 'Mensual' || tipoPago === 'mensual') {
+        fecha.setMonth(fecha.getMonth() + 1);
+    }
+
+    // 4. Lógica de saltar Domingo:
+    // .getDay() devuelve 0 para Domingo, 1 para Lunes, etc.
+    if (incluirDomingos === 'no' && fecha.getDay() === 0) {
+        fecha.setDate(fecha.getDate() + 1); // Si es domingo y no se incluye, pasar a lunes
+    }
+
+    // 5. Formatear la fecha resultante a YYYY-MM-DD para el input
+    let anio = fecha.getFullYear();
+    let mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    let dia = String(fecha.getDate()).padStart(2, '0');
+    let fechaFinal = `${anio}-${mes}-${dia}`;
+
+    // 6. Actualizar el campo de próximo cobro
+    $('#fecha_prox_cobro2').val(fechaFinal);
+}
+
+function preguntar_anular_prestamo(id_prestamo) {
+    Swal.fire({
+        title: '¿Anular este crédito?',
+        text: "El préstamo se cancelará y el dinero prestado retornará automáticamente a la caja actual. Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, anular crédito',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            // Petición AJAX al controlador
+            $.ajax({
+                type: "POST",
+                url: urlweb + "api/cobros/anular",
+                data: { id_prestamo: id_prestamo },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.codigo === 1) {
+                        respuesta('Crédito anulado y dinero devuelto a caja', 'success');
+                        setTimeout(function () {
+                            location.href = urlweb + 'Prestamos/inicio'; // <-- Redirige a Prestamos/inicio
+                        }, 1500);
+                    } else {
+                        respuesta(res.mensaje, 'error');
+                    }
+                },
+                error: function () {
+                    respuesta('Error de comunicación con el servidor', 'error');
+                }
+            });
+        }
+    });
 }
