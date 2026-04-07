@@ -1,5 +1,11 @@
 <?php
 class Log{
+    public $ruta;
+    public $ruta_completa;
+    public $nombre_archivo;
+    public $fecha;
+    public $hora;
+    public $ip;
     public function __construct()
     {
         //Ruta de carpeta(Con año)
