@@ -113,54 +113,142 @@
     <div class="row">
         <div class="col-lg-12 mt-3">
             <div class="card shadow mb-4">
-                <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Movimientos de caja</h6>
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Detalle de Arqueo de Caja</h6>
+                    <?php if($ultima_caja->estado_caja == 1): ?>
+                        <span class="badge bg-success text-white px-3 py-2">Caja Activa</span>
+                    <?php endif; ?>
                 </div>
+
                 <div class="card-body">
                     <?php if($ultima_caja->estado_caja != 1): ?>
                         <div class="text-center py-5">
                             <i class="fa fa-lock fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">No hay una caja abierta</h5>
-                            <p class="text-muted">Debes aperturar la caja para ver los movimientos del día.</p>
-                        </div>
-                    <?php elseif(empty($movimientos_caja)): ?>
-                        <div class="text-center py-5">
-                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Sin movimientos aún</h5>
-                            <p class="text-muted">La caja está abierta pero no registra movimientos todavía.</p>
+                            <p class="text-muted">Debes aperturar la caja para ver el arqueo actual.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-striped text-center" width="100%">
-                                <thead>
+                            <table class="table table-bordered table-sm text-center align-middle" width="100%">
+                                <thead class="bg-light">
                                 <tr>
-                                    <th>#</th>
                                     <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Monto</th>
+                                    <th>Hora</th>
+                                    <th>Usuario / Cliente</th>
+                                    <th>Descripción / Método</th>
+                                    <th class="text-success">Ingresos</th>
+                                    <th class="text-danger">Egresos</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <?php $con = 1; foreach($movimientos_caja as $mov): ?>
-                                    <tr>
-                                        <td><?= $con ?></td>
-                                        <td><?= $mov->caja_movimiento_fecha ?></td>
-                                        <td>
-                                            <?php if($mov->caja_movimiento_tipo == 1): ?>
-                                                <span class="badge badge-success" style="color: #697a8d">Ingreso</span>
-                                            <?php else: ?>
-                                                <span class="badge badge-danger" style="color: #697a8d">Egreso</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <?php if($mov->caja_movimiento_tipo == 2): ?>
-                                                <span class="text-danger">-S/. <?= number_format($mov->caja_movimiento_monto, 2) ?></span>
-                                            <?php else: ?>
-                                                <span class="text-success">S/. <?= number_format($mov->caja_movimiento_monto, 2) ?></span>
-                                            <?php endif; ?>
-                                        </td>                                    </tr>
-                                    <?php $con++; endforeach; ?>
+
+                                <tr class="table-secondary">
+                                    <td colspan="6" class="text-left font-weight-bold">Apertura de Caja</td>
+                                </tr>
+                                <tr>
+                                    <td><?= date('d/m/Y', strtotime($fecha_caja)) ?></td>
+                                    <td><?= date('H:i:s', strtotime($fecha_caja)) ?></td>
+                                    <td><?= $usuario_actual ?></td>
+                                    <td>Saldo del día Anterior / Monto inicial</td>
+                                    <td class="text-success font-weight-bold">S/ <?= number_format($ultima_caja->monto_caja, 2) ?></td>
+                                    <td></td>
+                                </tr>
+
+                                <tr class="table-secondary">
+                                    <td colspan="6" class="text-left font-weight-bold">Pago de Cuotas</td>
+                                </tr>
+                                <?php
+                                $suma_pagos = 0;
+                                if(!empty($pagos_caja)):
+                                    foreach($pagos_caja as $pago):
+                                        $suma_pagos += $pago->pago_monto;
+                                        ?>
+                                        <tr>
+                                            <td><?= date('d/m/Y', strtotime($pago->pago_fecha)) ?></td>
+                                            <td><?= date('H:i:s', strtotime($pago->pago_fecha)) ?></td>
+                                            <td><?= $pago->cliente_nombre . ' ' . $pago->cliente_apellido_paterno ?></td>
+                                            <td><?= ucfirst($pago->pago_metodo) ?></td>
+                                            <td class="text-success">S/ <?= number_format($pago->pago_monto, 2) ?></td>
+                                            <td></td>
+                                        </tr>
+                                    <?php endforeach; else: ?>
+                                    <tr><td colspan="6" class="text-muted fst-italic">No se han registrado pagos en este turno.</td></tr>
+                                <?php endif; ?>
+
+                                <tr class="table-secondary">
+                                    <td colspan="6" class="text-left font-weight-bold">Préstamos</td>
+                                </tr>
+                                <?php
+                                $suma_prestamos = 0;
+                                if(!empty($prestamos_caja)):
+                                    foreach($prestamos_caja as $prestamo):
+                                        $suma_prestamos += $prestamo->prestamo_monto;
+                                        ?>
+                                        <tr>
+                                            <td><?= date('d/m/Y', strtotime($prestamo->prestamo_fecha)) ?></td>
+                                            <td><?= date('H:i:s', strtotime($prestamo->prestamo_fecha)) ?></td>
+                                            <td><?= $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno ?></td>
+                                            <td>Préstamo <?= ucfirst($prestamo->prestamo_tipo_pago) ?></td>
+                                            <td></td>
+                                            <td class="text-danger">S/ <?= number_format($prestamo->prestamo_monto, 2) ?></td>
+                                        </tr>
+                                    <?php endforeach; else: ?>
+                                    <tr><td colspan="6" class="text-muted fst-italic">No se han otorgado préstamos en este turno.</td></tr>
+                                <?php endif; ?>
+
+                                <tr class="table-secondary">
+                                    <td colspan="6" class="text-left font-weight-bold">Ingreso de Monto Manual</td>
+                                </tr>
+                                <?php
+                                $suma_ingresos_manuales = 0;
+                                if(!empty($ingresos_manuales)):
+                                    foreach($ingresos_manuales as $mov):
+                                        $suma_ingresos_manuales += $mov->caja_movimiento_monto;
+                                        ?>
+                                        <tr>
+                                            <td><?= date('d/m/Y', strtotime($mov->caja_movimiento_fecha)) ?></td>
+                                            <td><?= date('H:i:s', strtotime($mov->caja_movimiento_fecha)) ?></td>
+                                            <td><?= $usuario_actual ?></td>
+                                            <td>Añadido a Caja Manualmente</td>
+                                            <td class="text-success">S/ <?= number_format($mov->caja_movimiento_monto, 2) ?></td>
+                                            <td></td>
+                                        </tr>
+                                    <?php endforeach; else: ?>
+                                    <tr><td colspan="6" class="text-muted fst-italic">No hay ingresos manuales registrados.</td></tr>
+                                <?php endif; ?>
+
                                 </tbody>
+
+                                <tfoot class="bg-light">
+                                <?php
+                                // Cálculo final para el cuadre
+                                $monto_apertura = $ultima_caja->monto_apertura_caja; // Asegúrate de que esta sea la variable del saldo inicial
+                                $total_ingresos = $suma_pagos + $suma_ingresos_manuales;
+                                $total_egresos = $suma_prestamos;
+
+                                // Saldo Actual = Apertura + Ingresos - Egresos
+                                $saldo_actual_calculado = $monto_apertura + $total_ingresos - $total_egresos;
+                                ?>
+                                <tr>
+                                    <td colspan="3" class="border-0"></td>
+                                    <td class="text-right font-weight-bold">Total Ingresos Turno:</td>
+                                    <td class="text-success font-weight-bold">S/ <?= number_format($total_ingresos, 2) ?></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="border-0"></td>
+                                    <td class="text-right font-weight-bold">Total Egresos Turno:</td>
+                                    <td></td>
+                                    <td class="text-danger font-weight-bold">S/ <?= number_format($total_egresos, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="border-0 bg-white"></td>
+                                    <td class="text-right text-primary h5 font-weight-bold py-3">Saldo Actual en Caja:</td>
+                                    <td colspan="2" class="text-center text-primary h5 font-weight-bold py-3 bg-white" style="border: 2px solid #4e73df;">
+                                        S/ <?= number_format($saldo_actual_calculado, 2) ?>
+                                    </td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     <?php endif; ?>

@@ -62,14 +62,42 @@ class CobrosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$id_prestamo = $_GET['id'];
-			$prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
-			$garante = $this->prestamos->listar_garante_prestamo($id_prestamo);
-			$cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
-			$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
-			$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
-            $cuotas=$this->cobros->listar_cuotas_x_prestamo($id_prestamo);
-            $total_pagos_cuenta=$this->prestamos->listar_total_pagos_contados($id_prestamo);
+
+            $id_prestamo = $_GET['id'];
+            $prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
+            $garante = $this->prestamos->listar_garante_prestamo($id_prestamo);
+            $cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
+            $resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
+            $descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
+
+            // Obtenemos TODAS las cuotas
+            $todas_las_cuotas = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
+
+            $total_pagos_cuenta = $this->prestamos->listar_total_pagos_contados($id_prestamo);
+
+            // --- LÓGICA DE CUOTAS SECUENCIALES ---
+
+            // 1. Filtrar solo las cuotas pendientes (Asumo que estado 1 es pendiente, cambialo si usas 0 u otro valor)
+            $cuotas_pendientes = array_filter($todas_las_cuotas, function($cuota) {
+                return $cuota->pago_diario_estado == 1;
+            });
+
+            // Reindexar el array para que empiece desde 0
+            $cuotas_pendientes = array_values($cuotas_pendientes);
+
+            $cuota_a_pagar = null;
+            $fecha_proximo_cobro = "Préstamo Finalizado"; // Mensaje por defecto
+
+            if (count($cuotas_pendientes) > 0) {
+                // La cuota a pagar es la primera pendiente (la más antigua)
+                $cuota_a_pagar = $cuotas_pendientes[0];
+
+                // Si hay una segunda cuota pendiente, esa es el próximo cobro
+                if (count($cuotas_pendientes) > 1) {
+                    $fecha_proximo_cobro = date('Y-m-d', strtotime($cuotas_pendientes[1]->pago_diario_fecha));
+                }
+            }
+            // -------------------------------------
 
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -82,6 +110,7 @@ class CobrosController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
+
     public function pagos(){
         try{
             $this->nav = new Navbar();
@@ -156,13 +185,7 @@ class CobrosController
 					'pago_estado' => 1,
 					'pago_mt' => $mt,
 				));
-                $result = $this->builder->save("caja_movimientos",array(
-                    'id_caja' => $listar_ultima_caja->id_caja,
-                    'caja_movimiento_tipo' =>1,
-                    'caja_movimiento_monto' => $cuota_a_pagar->pago_diario_monto,
-                    'caja_movimiento_fecha' => $hoy,
 
-                ));
                 $result=$this->cobros->cambiar_estado_cuota($id_pago_cuota);
                 $listar_cuota_proxima=$this->cobros->listar_cuota_proxima($id_prestamo);
 

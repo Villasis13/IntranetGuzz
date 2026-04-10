@@ -164,20 +164,24 @@ class Cobros
 			return 0;
 		}
 	}
-	public function prestamos_hoy($fecha){
-		try{
-			$sql = 'SELECT SUM(pago_monto) AS total
-					FROM pagos
-					WHERE DATE(pago_fecha) = ?
-					';
-			$stm = $this->pdo->prepare($sql);
-			$stm->execute([$fecha]);
-			return $stm->fetch();
-		} catch (Throwable $e){
-			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-			return 0;
-		}
-	}
+    public function prestamos_hoy($fecha){
+        try{
+            // Usamos COALESCE para garantizar que si no hay pagos, devuelva 0 y no NULL
+            $sql = 'SELECT COALESCE(SUM(pago_monto), 0) AS total
+               FROM pagos
+               WHERE DATE(pago_fecha) = ?';
+
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$fecha]);
+
+            return $stm->fetch();
+
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            // Devolvemos un objeto con 'total' en 0 para que el controlador no se rompa
+            return (object)['total' => 0];
+        }
+    }
 	public function prestamos_hoy_fecha($fecha){
 		try{
 			$fecha = date('Y-m-d', strtotime($fecha));

@@ -1,112 +1,195 @@
 <style>
+    :root {
+        --primary-color: #007bff;
+        --secondary-bg: #f8f9fa;
+        --border-color: #e3e6f0;
+        --text-muted: #566a7f;
+    }
+
     .panel {
         background-color: #ffffff;
-        border: 1px solid #cce5ff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
         overflow: hidden;
     }
 
     .panel-heading {
-        background-color: #007bff;
+        background: linear-gradient(45deg, #007bff, #0056b3);
         color: #ffffff;
-        padding: 15px;
-        border-bottom: 1px solid #cce5ff;
+        padding: 20px;
+        border: none;
     }
 
     .panel-title {
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 1.25rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
         margin: 0;
         text-align: center;
     }
 
     .panel-body {
-        background-color: #ffffff;
-        padding: 25px;
+        padding: 30px;
     }
 
     fieldset {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        background-color: var(--secondary-bg);
     }
 
     legend {
-        font-size: 16px;
+        float: none;
+        width: auto;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        padding: 0 15px;
+        margin-bottom: 0;
+        text-transform: uppercase;
+    }
+
+    /* Estilo para los Radio Buttons como botones de grupo */
+    .report-type-group .btn-check:checked + .btn {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    }
+
+    .report-type-group .btn {
+        border: 1px solid var(--border-color);
+        background-color: #fff;
+        color: var(--text-muted);
+        padding: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .alert-info {
+        background-color: #e7f3ff;
+        border: none;
+        border-left: 4px solid var(--primary-color);
+        color: #0056b3;
+        font-size: 0.85rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        padding: 10px 15px;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.1);
+    }
+
+    /* Checkboxes personalizados */
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-generate {
+        padding: 12px;
         font-weight: bold;
-        padding: 0 10px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 </style>
 
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
-
 <div class="container-fluid">
     <div class="contenido">
-        <div class="row mt-4 justify-content-center">
-            <div class="col-lg-6">
+        <div class="row mt-5 justify-content-center">
+            <div class="col-lg-6 col-md-8">
                 <div class="panel">
                     <div class="panel-heading">
-                        <h3 class="panel-title">REPORTES</h3>
+                        <h3 class="panel-title"><i class="fa fa-chart-line me-2"></i> Reportes de Caja</h3>
                     </div>
 
                     <div class="panel-body">
                         <form method="post" action="<?= _SERVER_ ?>Reporte/ver_reportes" target="_blank">
+
                             <fieldset>
-                                <legend>Tipo de Reporte</legend>
-                                <div class="row mb-3">
-                                    <div class="col-md-4 text-center">
-                                        <label for="diario">Diario</label><br>
-                                        <input type="radio" checked id="diario" name="tipo" value="diario"
-                                               onchange="cambiar_descripcion(this.value)">
-                                    </div>
-                                    <div class="col-md-4 text-center">
-                                        <label for="mensual">Mensual</label><br>
-                                        <input type="radio" id="mensual" name="tipo" value="mensual"
-                                               onchange="cambiar_descripcion(this.value)">
-                                    </div>
-                                    <div class="col-md-4 text-center">
-                                        <label for="fechas">Intervalo de Fechas</label><br>
-                                        <input type="radio" id="fechas" name="tipo" value="fechas"
-                                               onchange="cambiar_descripcion(this.value)">
-                                    </div>
+                                <legend>Configuración de Filtro</legend>
+
+                                <div class="btn-group w-100 report-type-group mb-4" role="group">
+                                    <input type="radio" class="btn-check" name="tipo" id="diario" value="diario" checked>
+                                    <label class="btn btn-outline-primary" for="diario">
+                                        <i class="fa fa-calendar-day d-block mb-1"></i> Diario
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="tipo" id="mensual" value="mensual">
+                                    <label class="btn btn-outline-primary" for="mensual">
+                                        <i class="fa fa-calendar-alt d-block mb-1"></i> Mensual
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="tipo" id="fechas" value="fechas">
+                                    <label class="btn btn-outline-primary" for="fechas">
+                                        <i class="fa fa-calendar-week d-block mb-1"></i> Intervalo
+                                    </label>
                                 </div>
 
-                                <!-- Mensaje descriptivo -->
-                                <div class="alert alert-info py-2 mb-3" id="descripcion_reporte">
-                                    <i class="fa fa-info-circle mr-1"></i>
-                                    <span id="texto_descripcion">Esto traerá los datos del día de hoy.</span>
+                                <div class="alert alert-info py-3 mb-4" id="descripcion_reporte">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-info-circle me-3" style="font-size: 1.2rem;"></i>
+                                        <span id="texto_descripcion">Generar el reporte basado en las operaciones realizadas el día de hoy.</span>
+                                    </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label>Desde</label>
-                                        <input type="date" disabled class="form-control" name="fecha_prestamo" id="fecha_prestamo">
+                                    <div class="col-12 mb-2" id="div_diario">
+                                        <label class="form-label fw-bold small text-muted">Seleccionar Fecha</label>
+                                        <input type="date" class="form-control" name="fecha_diaria" id="fecha_diaria" value="<?= date('Y-m-d') ?>">
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label>Hasta</label>
-                                        <input type="date" disabled class="form-control" name="fecha_prox_cobro" id="fecha_prox_cobro">
+
+                                    <div class="col-12 mb-2" id="div_mensual" style="display:none;">
+                                        <label class="form-label fw-bold small text-muted">Seleccionar Mes (Año <?= date('Y') ?>)</label>
+                                        <select class="form-select" name="mes_seleccionado" id="mes_seleccionado">
+                                            <?php
+                                            $mes_actual = date('n');
+                                            $meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
+                                            foreach ($meses as $index => $nombre):
+                                                $valor = $index + 1; ?>
+                                                <option value="<?= $valor ?>" <?= ($valor == $mes_actual) ? 'selected' : '' ?>><?= $nombre ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-2 div_intervalo" style="display:none;">
+                                        <label class="form-label fw-bold small text-muted">Desde</label>
+                                        <input type="date" class="form-control" name="fecha_desde" id="fecha_desde">
+                                    </div>
+                                    <div class="col-md-6 mb-2 div_intervalo" style="display:none;">
+                                        <label class="form-label fw-bold small text-muted">Hasta</label>
+                                        <input type="date" class="form-control" name="fecha_hasta" id="fecha_hasta">
                                     </div>
                                 </div>
                             </fieldset>
 
                             <fieldset>
-                                <legend>A considerar</legend>
-                                <div class="row">
-                                    <div class="col-md-4 text-center">
-                                        <label for="Ingresos">Ingresos</label><br>
-                                        <input type="checkbox" checked id="Ingresos" name="Ingresos" value="Ingresos">
+                                <legend>Contenido del Reporte</legend>
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mb-2 mb-md-0">
+                                            <input class="form-check-input" type="checkbox" checked id="Ingresos" name="Ingresos" value="Ingresos">
+                                            <label class="form-check-label fw-600" for="Ingresos">Ingresos</label>
+                                        </div>
                                     </div>
-                                    <div class="col-md-4 text-center">
-                                        <label for="Egresos">Egresos</label><br>
-                                        <input type="checkbox" id="Egresos" name="Egresos" value="Egresos">
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mb-3 mb-md-0">
+                                            <input class="form-check-input" type="checkbox" id="Egresos" name="Egresos" value="Egresos">
+                                            <label class="form-check-label fw-600" for="Egresos">Egresos</label>
+                                        </div>
                                     </div>
-                                    <div class="col-md-4 text-center d-flex align-items-end justify-content-center">
-                                        <input type="submit" class="btn btn-primary" value="Generar Reporte">
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary btn-generate w-100">
+                                            <i class="fa fa-file-pdf me-2"></i> Generar
+                                        </button>
                                     </div>
                                 </div>
                             </fieldset>
@@ -119,41 +202,36 @@
 </div>
 
 <script>
-    const descripciones = {
-        diario:  'Esto traerá los datos del día de hoy.',
-        mensual: 'Esto traerá los datos de este mes.',
-        fechas:  'Esto traerá los datos que se hayan registrado entre las fechas seleccionadas.'
-    };
-
-    function cambiar_descripcion(valor) {
-        document.getElementById('texto_descripcion').innerText = descripciones[valor];
-
-        // Habilita/deshabilita los inputs de fecha
-        const disabled = valor !== 'fechas';
-        document.getElementById('fecha_prestamo').disabled = disabled;
-        document.getElementById('fecha_prox_cobro').disabled = disabled;
-    }
-</script>
-
-<script>
     $(document).ready(function () {
-        // Deshabilita ambos al inicio
-        $('#fecha_prestamo, #fecha_prox_cobro').prop('disabled', true);
+        const descripciones = {
+            diario:  'Generar el reporte basado en las operaciones realizadas el día de hoy o la fecha seleccionada.',
+            mensual: 'Consolidado de todas las transacciones correspondientes al mes elegido del presente año.',
+            fechas:  'Reporte detallado de los movimientos registrados entre el rango de fechas establecido.'
+        };
 
-        // Habilita cuando se selecciona el tipo "fechas"
-        $('input[name=tipo]').change(function () {
-            if ($('#fechas').is(':checked')) {
-                $('#fecha_prestamo, #fecha_prox_cobro').prop('disabled', false);
-            } else {
-                $('#fecha_prestamo, #fecha_prox_cobro').prop('disabled', true);
-                $('#fecha_prestamo, #fecha_prox_cobro').val('');
+        $('input[name="tipo"]').change(function () {
+            let valor = $(this).val();
+
+            // Animación suave de cambio de texto
+            $('#texto_descripcion').fadeOut(200, function() {
+                $(this).text(descripciones[valor]).fadeIn(200);
+            });
+
+            // Control de visibilidad con efectos de slide
+            if (valor === 'diario') {
+                $('#div_diario').slideDown();
+                $('#div_mensual, .div_intervalo').slideUp();
+            } else if (valor === 'mensual') {
+                $('#div_mensual').slideDown();
+                $('#div_diario, .div_intervalo').slideUp();
+            } else if (valor === 'fechas') {
+                $('.div_intervalo').css('display', 'flex').hide().slideDown();
+                $('#div_diario, #div_mensual').slideUp();
             }
         });
 
-        // Establece la fecha mínima en "Hasta" según "Desde"
-        $('#fecha_prestamo').on('change', function () {
-            let desde = $(this).val();
-            $('#fecha_prox_cobro').attr('min', desde);
+        $('#fecha_desde').on('change', function () {
+            $('#fecha_hasta').attr('min', $(this).val());
         });
     });
 </script>

@@ -83,17 +83,27 @@ class Prestamos
 			return [];
 		}
 	}
-	public function prestamos_hoy(){
-		try{
-			$sql = 'select * from prestamos where prestamo_fecha = CURDATE()' ;
-			$stm = $this->pdo->prepare($sql);
-			$stm->execute();
-			return $stm->fetchAll();
-		} catch (Throwable $e){
-			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-			return [];
-		}
-	}
+    public function prestamos_hoy($fecha){
+        try{
+            // Traemos la cantidad de préstamos y la suma de sus montos en 1 sola consulta
+            $sql = 'SELECT 
+                    COUNT(id_prestamos) as cantidad, 
+                    COALESCE(SUM(prestamo_monto), 0) as total 
+                FROM prestamos 
+                WHERE DATE(prestamo_fecha) = ?';
+
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$fecha]);
+
+            // Usamos fetch() porque la consulta agrupa todo en una sola fila
+            return $stm->fetch();
+
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            // Retornamos un objeto por defecto para que la vista no se rompa si hay error
+            return (object)['cantidad' => 0, 'total' => 0];
+        }
+    }
 	public function egresos_hoy($fecha){
 		try{
 			$sql = 'select sum(prestamo_monto) as total from prestamos where prestamo_fecha = ? ' ;
@@ -193,6 +203,53 @@ class Prestamos
             $stm->execute([$id_p]);
             return $stm->fetch();
         } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    public function listar_pagos_desde($fecha_apertura) {
+        try {
+            // Hacemos INNER JOIN para traer el nombre del cliente
+            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno 
+                FROM pagos p
+                INNER JOIN prestamos pr ON p.id_prestamo = pr.id_prestamos
+                INNER JOIN clientes c ON pr.id_cliente = c.id_cliente
+                WHERE p.pago_fecha >= ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$fecha_apertura]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    public function listar_prestamos_desde($fecha_apertura) {
+        try {
+            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno 
+                FROM prestamos p
+                INNER JOIN clientes c ON p.id_cliente = c.id_cliente
+                WHERE p.prestamo_fecha >= ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$fecha_apertura]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    public function listar_ingresos_manuales_desde($id_caja) {
+        try {
+            // Traemos movimientos vinculados a este ID de caja que sean ingresos (tipo 1)
+            // Y descartamos los que son pagos de cuotas para no duplicar (asumiendo que los manuales tienen descripción)
+            $sql = "SELECT * FROM caja_movimientos 
+                WHERE id_caja = ? AND caja_movimiento_tipo = 1";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_caja]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];
         }

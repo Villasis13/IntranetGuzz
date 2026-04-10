@@ -113,12 +113,21 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Fecha de Préstamo</label>
-                        <input type="date" class="form-control" id="fecha_prestamo2" name="fecha_prestamo2" value="<?= date('Y-m-d') ?>" onchange="ajustar_interfaz_tipo_pago();">                    </div>
+                    <div class="col-md-4" style="position: relative; margin-bottom: 20px;">
+                        <label class="form-label"><b>Fecha de Emisión</b></label>
+                        <input type="date" class="form-control" id="fecha_prestamo2" name="fecha_prestamo2"
+                               value="<?= date('Y-m-d') ?>"
+                               onchange="ajustar_interfaz_tipo_pago(); actualizar_mensaje_inicio();">
+
+                        <div style="position: absolute; width: 100%; margin-top: 2px;">
+                            <small style="font-size: 0.75rem; color: #566a7f;">
+                                El préstamo inicia el: <span id="fecha_inicio_prestamo" class="fw-bold" style="color: #566a7f;"><?= date('d-m-Y', strtotime('+1 day')) ?></span>
+                            </small>
+                        </div>
+                    </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Próximo Cobro</label>
+                        <label class="form-label">Fecha de Primer Cobro</label>
                         <input  type="date" class="form-control" id="fecha_prox_cobro2" name="fecha_prox_cobro2"  value="<?= date('Y-m-d', strtotime('+1 day')) ?>" >
                     </div>
                 </div>
@@ -133,13 +142,13 @@
                     </div>
 
                     <div id="div_cuota_diaria" class="col-md-3">
-                        <label class="form-label text-success fw-bold">Cuota Diaria Estimada</label>
+                        <label class="form-label text-success fw-bold">Cuota Estimada</label>
                         <div class="input-group">
                             <span class="input-group-text bg-success text-white">S/</span>
                             <input type="text" class="form-control bg-light text-success fw-bold" id="cuota_diaria_visual" readonly value="0.00">
                             <input type="hidden" name="cuota_calculada_hidden" id="cuota_calculada_hidden" value="0">
                         </div>
-                        <small class="text-muted" style="font-size: 0.75rem;">Capital + Interés / Días</small>
+                        <small class="text-muted" style="font-size: 0.75rem;">(Capital + Interés) / Cuotas</small>
                     </div>
                 </div>
 

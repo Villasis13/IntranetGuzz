@@ -130,7 +130,7 @@ function guardar_monto() {
                 cambiar_estado_boton(boton, "Guardando...", true);
             },
             success:function (r) {
-                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar Profesor", false);
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Añadir Monto", false);
 
                 switch (r.result.code) {
                     case 1:
@@ -140,7 +140,7 @@ function guardar_monto() {
                         }, 1000);
                         break;
                     case 2:
-                        respuesta('Error al guardar profesor', 'error');
+                        respuesta('Error al añadir dinero', 'error');
                         break;
                     case 3:
                         respuesta('Necesitas la contraseña de un Supervisor', 'warning');
@@ -151,7 +151,7 @@ function guardar_monto() {
                 }
             },
             error: function () {
-                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar Profesor", false);
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Añadir dinero", false);
                 respuesta('Error de conexión o servidor', 'error');
             }
         });
@@ -184,7 +184,7 @@ function guardar_movimiento_caja() {
                 cambiar_estado_boton(boton, "Guardando...", true);
             },
             success:function (r) {
-                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar Profesor", false);
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Añadir Dinero", false);
 
                 switch (r.result.code) {
                     case 1:
@@ -205,7 +205,7 @@ function guardar_movimiento_caja() {
                 }
             },
             error: function () {
-                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar Profesor", false);
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Añadir dinero", false);
                 respuesta('Error de conexión o servidor', 'error');
             }
         });

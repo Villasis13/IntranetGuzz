@@ -29,18 +29,29 @@ class AdminController{
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$num_clientes = $this->nav->num_clientes();
-            $fecha= date("Y-m-d");
-			$estado_caja = $this->caja->traer_estado_caja();
-			$prestamos_hoy = $this->prestamos->prestamos_hoy();
-			$ingresos_hoy = $this->cobros->prestamos_hoy($fecha)->total;
-			$egresos_hoy = $this->prestamos->egresos_hoy($fecha)->total;
-			$actualizar_clientes = $this->clientes->listar_clientes_actualizar();
-			$proximos_cobros = $this->cobros->listar_proximos_cobros();
+            $num_clientes = $this->nav->num_clientes();
+
+            $fecha = date("Y-m-d");
+            $estado_caja = $this->caja->traer_estado_caja();
+
+            // 1. PRÉSTAMOS Y EGRESOS (Todo en una sola consulta)
+            $datos_prestamos = $this->prestamos->prestamos_hoy($fecha);
+
+            // Separamos los datos para enviarlos a la vista de forma sencilla
+            $cantidad_prestamos_hoy = $datos_prestamos->cantidad;
+            $egresos_hoy            = $datos_prestamos->total;
+
+            // 2. INGRESOS (Cobros)
+            $ingresos_hoy = $this->cobros->prestamos_hoy($fecha)->total;
+
+            $actualizar_clientes = $this->clientes->listar_clientes_actualizar();
+            $proximos_cobros = $this->cobros->listar_proximos_cobros();
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'admin/inicio.php';
             require _VIEW_PATH_ . 'footer.php';
+
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             echo "<script language=\"javascript\">alert(\"Error Al Mostrar Contenido. Redireccionando Al Inicio\");</script>";
