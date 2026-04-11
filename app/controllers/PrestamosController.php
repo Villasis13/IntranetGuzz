@@ -357,6 +357,8 @@ class PrestamosController
             $id_prestamo = $_GET['id'];
             $data_prestamo = $this->prestamos->listar_x_id($id_prestamo);
             $data_cliente = $this->clientes->listar_x_id($data_prestamo->id_cliente);
+            $cuotas_reales = $this->prestamos->listar_cuotas_x_id_prestamo($id_prestamo);
+            $monto_total = round($data_prestamo->prestamo_monto + $data_prestamo->prestamo_monto_interes, 1);
 
             // CORRECCIÓN 1: Llamar al modelo correcto (prestamos, no clientes)
             $primera_cuota = $this->clientes->listar_primera_cuota($id_prestamo);
@@ -501,42 +503,36 @@ class PrestamosController
             // COLUMNA IZQUIERDA: TABLA
             $pdf->SetXY(10, $inicioY);
             $pdf->SetFont('Arial','B',10);
-            $pdf->Cell(25,6,'Fecha',1,0,'C',1);
+            $pdf->Cell(15,6,'N',1,0,'C',1);
+            $pdf->Cell(30,6,'Fecha',1,0,'C',1);
             $pdf->Cell(25,6,'Monto',1,0,'C',1);
-            $pdf->Cell(25,6,'Pago',1,1,'C',1);
+            $pdf->Cell(20,6,'Estado',1,1,'C',1); // Opcional: Para saber si ya pagó
             $pdf->SetFont('Arial','',10);
 
             // Contadores y acumuladores para el PDF
-            $suma_cuotas_pdf = 0;
-            $contador_cuota = 1;
+            $item = 1;
 
-            foreach ($fechas_pagos as $fecha_pagar) {
+            foreach ($cuotas_reales as $cuota) {
                 $pdf->SetX(10);
-                $pdf->Cell(25, 6, date('d-m-Y', strtotime($fecha_pagar)), 1, 0, 'L');
+                $pdf->Cell(15, 6, $item, 1, 0, 'C');
 
-                // Lógica de ajuste para la tabla del PDF
-                if ($contador_cuota == $data_prestamo->prestamo_num_cuotas) {
-                    // Última cuota: el total menos lo que ya hemos acumulado
-                    $monto_esta_cuota_pdf = $monto_total - $suma_cuotas_pdf;
-                } else {
-                    // Cuotas normales
-                    $monto_esta_cuota_pdf = $monto_cuota_redondeado;
-                    $suma_cuotas_pdf += $monto_esta_cuota_pdf;
-                }
+                // Usamos la fecha que viene de la base de datos (pago_diario_fecha)
+                $fecha_pago_db = date('d-m-Y', strtotime($cuota->pago_diario_fecha));
+                $pdf->Cell(30, 6, $fecha_pago_db, 1, 0, 'C');
 
-                // ¡CAMBIO AQUÍ! number_format asegura que siempre muestre 1 decimal visualmente
-                $pdf->Cell(25, 6, 'S/. ' . number_format($monto_esta_cuota_pdf, 1), 1, 0, 'R');
-                $pdf->Cell(25, 6, '', 1, 1, 'R');
+                // Usamos el monto que viene de la base de datos (pago_diario_monto)
+                $pdf->Cell(25, 6, 'S/. ' . number_format($cuota->pago_diario_monto, 1), 1, 0, 'R');
 
-                $contador_cuota++;
+                // Espacio para firma o estado
+                $pdf->Cell(20, 6, '', 1, 1, 'C');
+
+                $item++;
             }
 
             $pdf->SetFont('Arial','B',10);
             $pdf->SetX(10);
-            $pdf->Cell(25,6,'Total',1,0,'L');
-
-            // ¡CAMBIO AQUÍ! El total con 1 decimal
-            $pdf->Cell(25,6,'S/. '. number_format($monto_total, 1),1,1,'R');
+            $pdf->Cell(45,6,'Total General',1,0,'L',1);
+            $pdf->Cell(25,6,'S/. '. number_format($monto_total, 1),1,1,'R',1);
 
             // COLUMNA DERECHA: DATOS DEL CLIENTE
             $posX = 110;

@@ -255,4 +255,20 @@ class Prestamos
         }
     }
 
+
+    public function listar_cuotas_x_id_prestamo($id_prestamo) {
+        try {
+            // Traemos movimientos vinculados a este ID de caja que sean ingresos (tipo 1)
+            // Y descartamos los que son pagos de cuotas para no duplicar (asumiendo que los manuales tienen descripción)
+            $sql = "SELECT * FROM pagos_diarios 
+                WHERE id_prestamos = ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
 }
