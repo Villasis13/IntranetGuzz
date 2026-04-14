@@ -309,7 +309,8 @@ function transferir_prestamo(id_prestamos){
 }
 function guardar_pago_prestamo(){
     var valor = true;
-    var boton = "btn-guardar-pago"; // <-- asegúrate que el id de tu botón sea este
+    var boton = "btn-guardar-pago";
+
     var id_prestamo = $('#id_prestamo').val();
     var id_pago = $('#id_pago').val();
     var pago_recepcion = $('#pago_recepcion').val();
@@ -317,10 +318,22 @@ function guardar_pago_prestamo(){
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
     var pago_recepcion_yp = $('#pago_recepcion_yp').val();
 
+    // CAPTURAMOS EL DESCUENTO DINÁMICAMENTE
+    var descuento = $('#descontar_cantidad').val();
+    var tope_cuota = $('#monto_cuota_actual').val(); // Leemos el input oculto
+
+    if(descuento === "" || isNaN(descuento)) {
+        descuento = 0;
+    }
+
+    if(parseFloat(descuento) > parseFloat(tope_cuota)) {
+        respuesta('Error: El descuento supera el monto de la cuota actual.', 'error');
+        return false; // Cortamos la función para que no guarde
+    }
+
     valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
     valor = validar_campo_vacio('pago_recepcion', pago_recepcion, valor);
     valor = validar_campo_vacio('pago_metodo', pago_metodo, valor);
-    valor = validar_campo_vacio('prestamo_prox_cobro', prestamo_prox_cobro, valor);
 
     if(valor){
         $.ajax({
@@ -332,11 +345,12 @@ function guardar_pago_prestamo(){
                 pago_recepcion: pago_recepcion,
                 pago_metodo: pago_metodo,
                 prestamo_prox_cobro: prestamo_prox_cobro,
-                pago_recepcion_yp: pago_recepcion_yp
+                pago_recepcion_yp: pago_recepcion_yp,
+                descuento: descuento // ENVIAMOS EL DESCUENTO AL PHP
             },
             dataType: 'json',
             beforeSend: function () {
-                cambiar_estado_boton(boton, 'Guardando...', true); // <-- bloquea el botón
+                cambiar_estado_boton(boton, 'Guardando...', true);
             },
             success:function (r) {
                 switch (r.result.code) {
@@ -349,19 +363,21 @@ function guardar_pago_prestamo(){
                         break;
                     case 2:
                         respuesta('Error al guardar', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false); // Reactiva el botón
                         break;
                     case 3:
                         respuesta('El monto supera a lo que falta pagar', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false);
                         break;
                     default:
-                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        respuesta('¡Algo catastrófico ha ocurrido!', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false);
                         break;
                 }
             }
         });
     }
 }
-
 
 function cambiar_prestamo_a_antiguo(id_prestamo){
     var valor = true;
@@ -668,3 +684,20 @@ function preguntar_anular_prestamo(id_prestamo) {
         }
     });
 }
+
+$(document).ready(function() {
+    // Escucha cada vez que el usuario escribe en el input de descuento
+    $('#descontar_cantidad').on('input', function() {
+        let valor_ingresado = parseFloat($(this).val());
+        let monto_maximo = parseFloat($('#monto_cuota_actual').val());
+
+        // Si el valor ingresado es mayor a la cuota real
+        if (valor_ingresado > monto_maximo) {
+            // Le advertimos al usuario (asumiendo que usas SweetAlert en tu función respuesta)
+            respuesta('El descuento no puede ser mayor a la cuota (S/ ' + monto_maximo.toFixed(2) + ')', 'warning');
+
+            // Forzamos el input a que su valor sea el tope máximo permitido
+            $(this).val(monto_maximo.toFixed(2));
+        }
+    });
+});

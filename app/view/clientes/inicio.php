@@ -63,7 +63,7 @@
 
                             </div>
 
-                            <div class="row g-2 mb-3">
+                            <div class="row g-2 mb-3" style="display: none">
                                 <div class="col-md-8">
                                     <label class="form-label">N° Tarjeta</label>
                                     <input type="text" class="form-control" id="cliente_nro_tarjeta" name="cliente_nro_tarjeta">
@@ -77,9 +77,6 @@
                                 <label class="form-label">Información Adicional</label>
                                 <input type="text" class="form-control" id="cliente_otro" name="cliente_otro">
                             </div>
-                        </div>
-
-                        <div class="col-12">
                             <div class="mb-3">
                                 <label class="form-label">Correo Electrónico</label>
                                 <input type="email" class="form-control" id="cliente_correo"
@@ -101,6 +98,8 @@
         </div>
     </div>
 </div>
+
+
 <div class="modal fade" id="PasarMorosoCliente" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow">
@@ -163,7 +162,6 @@
                                 <th class="align-middle">#</th>
                                 <th class="align-middle">Nombre Completo</th>
                                 <th class="align-middle">DNI</th>
-                                <th class="align-middle">Cónyuge</th>
                                 <th class="align-middle">Contacto</th>
                                 <th class="align-middle">Dirección</th>
                                 <th class="align-middle">Línea Crédito</th>
@@ -189,7 +187,6 @@
                                     <td class="align-middle">
                                         <span class="badge bg-primary"><?=$c->cliente_dni?></span>
                                     </td>
-                                    <td class="align-middle"><?=$c->cliente_pareja ?: '--'?></td>
                                     <td class="align-middle">
                                         <div><?=$c->cliente_celular?></div>
                                         <small class="text-info"><?=$c->cliente_correo ?: ''?></small>

@@ -40,10 +40,14 @@
                         <input onchange="aplicar_descuento()" type="radio" name="desc" checked id="descNo"><label for="descNo" class="ms-1">No</label>
                     </div>
                     <div style="display: none" id="div_descontar" class="info-group mb-3">
-                        <div class="d-flex align-items-center justify-content-between w-100">
-                            <label class="fw-bold me-3 mb-0">Ingrese Cantidad a Descontar:</label>
-                            <input class="form-control w-25 me-3" type="text" onkeyup="validar_numeros_decimales_dos(this.id)" id="descontar_cantidad" name="descontar_cantidad">
-                            <a onclick="preguntar('¿Está seguro que desea aplicar este descuento?','guardar_aplicar_descuento','SI','NO',<?= $id_prestamo ?>)" style="cursor: pointer;" class="btn btn-sm btn-primary text-white">Aplicar Descuento</a>
+                        <div class="d-flex align-items-center w-100">
+                            <label class="fw-bold me-3 mb-0" style="white-space: nowrap;">Cantidad a Descontar:</label>
+                            <div class="input-group" style="max-width: 200px;">
+                                <span class="input-group-text bg-light">S/</span>
+                                <input class="form-control" type="text"
+                                       onkeyup="validar_numeros_decimales_dos(this.id)"
+                                       id="descontar_cantidad" name="descontar_cantidad" placeholder="0.00">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -81,6 +85,7 @@
                                     </div>
                                 </div>
                                 <input type="hidden" id="id_pago" name="id_pago" value="<?= $cuota_a_pagar->id_pago_diario ?>">
+                                <input type="hidden" id="monto_cuota_actual" value="<?= $cuota_a_pagar->pago_diario_monto ?>">
                             </div>
                         </div>
                     </div>
@@ -128,7 +133,7 @@
                     <div class="col-md-4">
                         <div class="form-floating">
                             <input id="pago_recepcion_yp" name="pago_recepcion_yp" type="text" class="form-control" placeholder=" ">
-                            <label>Titular del Yape/Plin</label>
+                            <label>Titular</label>
                         </div>
                     </div>
                 </div>
