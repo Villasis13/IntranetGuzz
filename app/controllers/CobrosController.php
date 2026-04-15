@@ -121,6 +121,8 @@ class CobrosController
 			$descuentos_monto = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
 			$listar_cliente_x_prestamo = $this->clientes->listar_x_id_presrtamo($id_prestamo);
             $descuentos_aplicados = $this->cobros->listar_descuentos_x_prestamo($id_prestamo);
+            $usuario=$this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
+            $usuario_nombre = $this->cobros->listar_usuario($usuario);
 
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -142,6 +144,10 @@ class CobrosController
         try {
             $id_prestamo = (int)$_POST['id_prestamo'];
             $id_pago_cuota = (int)$_POST['id_pago'];
+            $id_usuario= $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
+            $fecha_descuento = date('Y-m-d H:i:s');
+            $usuario_nombre = $this->cobros->listar_usuario($id_usuario);
+
 
             // RECIBIMOS EL DESCUENTO DESDE EL JS
             $descuento_monto = isset($_POST['descuento']) && is_numeric($_POST['descuento']) ? (float)$_POST['descuento'] : 0;
@@ -169,7 +175,9 @@ class CobrosController
                     // Actualizamos la cuota añadiendo los dos nuevos campos solicitados
                     $this->builder->update("pagos_diarios", array(
                         'pago_diario_descuento_estado' => 1,               // <-- NUEVO CAMPO AÑADIDO
-                        'pago_diario_descuento_monto'  => $descuento_monto // <-- NUEVO CAMPO AÑADIDO
+                        'pago_diario_descuento_monto'  => $descuento_monto, // <-- NUEVO CAMPO AÑADIDO
+                        'pago_diario_descuento_fecha'  => $fecha_descuento, // <-- NUEVO CAMPO AÑADIDO
+                        'pago_diario_descuento_usuario'  => $usuario_nombre->usuario_nickname // <-- NUEVO CAMPO AÑADIDO
                     ), array(
                         'id_pago_diario' => $id_pago_cuota
                     ));

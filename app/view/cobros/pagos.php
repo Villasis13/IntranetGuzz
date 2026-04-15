@@ -169,7 +169,7 @@
         <?php if($hay_descuentos): ?>
             <div class="col-lg-12">
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3">
+                    <div class="card-header py-3 bg-light">
                         <h6 class="m-0 font-weight-bold text-warning">
                             <i class="fa fa-tags me-2"></i>Descuentos Aplicados en Cuotas
                         </h6>
@@ -177,29 +177,41 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered text-center mb-0">
-                                <thead class="bg-light">
+                                <thead class="thead-light">
                                 <tr>
-                                    <th class="text-muted">#</th>
-                                    <th class="text-muted">FECHA DE CUOTA</th>
-                                    <th class="text-muted">CUOTA ORIGINAL</th>
-                                    <th class="text-danger">DESCUENTO APLICADO</th>
-                                    <th class="text-success">MONTO FINAL COBRADO</th>
+                                    <th class="text-muted" style="width: 50px;">#</th>
+                                    <th class="text-muted">FECHA CUOTA</th>
+                                    <th class="text-muted">FECHA REGISTRO</th> <th class="text-muted">USUARIO</th>        <th class="text-muted">CUOTA ORIGINAL</th>
+                                    <th class="text-danger">DESCUENTO</th>
+                                    <th class="text-success">MONTO FINAL</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <?php
                                 $con_desc = 1;
                                 foreach($descuentos_aplicados as $desc):
-                                    // La cuota original se mantuvo intacta en la base de datos
                                     $monto_original = floatval($desc->pago_diario_monto);
                                     $descuento = floatval($desc->pago_diario_descuento_monto);
-
-                                    // Calculamos cuánto pagó realmente restando el descuento
                                     $monto_real_pagado = $monto_original - $descuento;
                                     ?>
                                     <tr>
                                         <td class="align-middle"><?= $con_desc++ ?></td>
                                         <td class="align-middle"><?= date('d/m/Y', strtotime($desc->pago_diario_fecha)) ?></td>
+
+                                        <td class="align-middle">
+                                            <small class="text-muted">
+                                                <i class="fa fa-clock me-1"></i>
+                                                <?= date('d/m/Y H:i', strtotime($desc->pago_diario_descuento_fecha)) ?>
+                                            </small>
+                                        </td>
+
+                                        <td class="align-middle">
+                                    <span class="badge badge-light border text-dark">
+                                        <i class="fa fa-user me-1 text-secondary"></i>
+                                        <?= htmlspecialchars($desc->pago_diario_descuento_usuario) ?>
+                                    </span>
+                                        </td>
+
                                         <td class="align-middle text-muted">S/ <?= number_format($monto_original, 2) ?></td>
                                         <td class="text-danger font-weight-bold align-middle">- S/ <?= number_format($descuento, 2) ?></td>
                                         <td class="text-success font-weight-bold align-middle">S/ <?= number_format($monto_real_pagado, 2) ?></td>
@@ -208,21 +220,23 @@
                                 </tbody>
                                 <tfoot class="bg-light">
                                 <tr>
-                                    <td colspan="3" class="text-right font-weight-bold align-middle">TOTAL AHORRADO POR EL CLIENTE:</td>
+                                    <td colspan="5" class="text-right font-weight-bold align-middle text-uppercase">Total Ahorrado:</td>
                                     <td class="text-danger font-weight-bold h6 mb-0 align-middle">- S/ <?= number_format($total_descuento, 2) ?></td>
                                     <td></td>
                                 </tr>
                                 </tfoot>
                             </table>
                         </div>
-                        <div class="mt-3 text-muted" style="font-size: 0.9rem;">
-                            <strong><i class="fa fa-chart-pie me-1"></i>Resumen:</strong> Se han aplicado descuentos en <b><?= count($descuentos_aplicados) ?></b> cuota(s) de este préstamo.
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <div class="text-muted" style="font-size: 0.85rem;">
+                                <strong><i class="fa fa-chart-pie me-1"></i>Resumen:</strong>
+                                Se han aplicado descuentos en <b><?= count($descuentos_aplicados) ?></b> cuota(s).
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         <?php endif; ?>
-
     </div>
 </div>
 
