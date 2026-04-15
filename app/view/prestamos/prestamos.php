@@ -117,7 +117,7 @@
 											?>
                                             <a onclick="preguntar('...','transferir_prestamo','SI','NO','<?= $c->id_prestamos ?>')"
                                                class="btn btn-sm btn-secondary text-white mt-1"
-                                               style="cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:6px;">
+                                               style="cursor:pointer; white-space:nowrap; display:none; align-items:center; gap:6px;">
                                                 <i class="fa fa-refresh"></i> Transferir
                                             </a>
 											<?php

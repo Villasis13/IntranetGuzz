@@ -116,10 +116,10 @@ class ClientesController
                             "cliente_celular" => $_POST['cliente_celular'],
                             "cliente_correo" => $_POST['cliente_correo'] ?? null,
                             "cliente_nro_tarjeta" => $_POST['cliente_nro_tarjeta'] ?? null,
-                            "cliente_clave" => $_POST['cliente_clave'] ?? null,
                             "cliente_lugar_trabajo" => $_POST['cliente_lugar_trabajo'] ?? null,
                             "cliente_otro" => $_POST['cliente_otro'] ?? null,
                             "cliente_estado" => 1,
+                            "cliente_credito" => 0,
                             "cliente_fecha" => date("Y-m-d H:i:s")
                         ));
                     }
@@ -162,7 +162,6 @@ class ClientesController
 							"cliente_celular" => $_POST['cliente_celular'],
 							"cliente_correo" => $_POST['cliente_correo'] ?? null,
 							"cliente_nro_tarjeta" => $_POST['cliente_nro_tarjeta'] ?? null,
-							"cliente_clave" => $_POST['cliente_clave'] ?? null,
 							"cliente_lugar_trabajo" => $_POST['cliente_lugar_trabajo'] ?? null,
 							"cliente_otro" => $_POST['cliente_otro'] ?? null, 	
 							"cliente_fecha" => date('Y-m-d'), 	
@@ -194,7 +193,6 @@ class ClientesController
 				$e = 0;
 				$result = $this->builder->update("clientes", array(
 					"cliente_estado" => $e,
-					"cliente_fecha_morosidad" => $fecha
 				), array(
 					"id_cliente" =>  $id_
 				));
@@ -202,7 +200,6 @@ class ClientesController
 				$e = 1;
 				$result = $this->builder->update("clientes", array(
 					"cliente_estado" => $e,
-					"cliente_fecha_morosidad" => null
 				), array(
 					"id_cliente" =>  $guardarid
 				));

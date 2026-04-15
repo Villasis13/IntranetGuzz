@@ -178,7 +178,7 @@ function guardar_prestamo(){
     var prestamo_num_cuotas = $('#prestamo_num_cuotas').val();
     var prestamo_fecha = $('#fecha_prestamo2').val();
     var prestamo_prox_cobro = $('#fecha_prox_cobro2').val();
-    var prestamo_garantia = $('#prestamo_garantia').val();
+    var prestamo_garantia = $('#prestamo_garantia').val(); // ----
     var prestamo_garante = $('#prestamo_garante').val();
     var prestamo_motivo = $('#prestamo_motivo').val();
     var prestamo_comentario = $('#prestamo_comentario').val();
@@ -265,6 +265,9 @@ function guardar_prestamo(){
                             }
                         });
                         break;
+                    case 5:
+                        respuesta('El garante no puede ser el mismo titular del préstamo.', 'error');
+                        break;
                     default:
                         respuesta('¡Algo catastrofico ha ocurrido!', 'error');
                         break;
@@ -306,7 +309,8 @@ function transferir_prestamo(id_prestamos){
 }
 function guardar_pago_prestamo(){
     var valor = true;
-    var boton = "btn-guardar-pago"; // <-- asegúrate que el id de tu botón sea este
+    var boton = "btn-guardar-pago";
+
     var id_prestamo = $('#id_prestamo').val();
     var id_pago = $('#id_pago').val();
     var pago_recepcion = $('#pago_recepcion').val();
@@ -314,10 +318,22 @@ function guardar_pago_prestamo(){
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
     var pago_recepcion_yp = $('#pago_recepcion_yp').val();
 
+    // CAPTURAMOS EL DESCUENTO DINÁMICAMENTE
+    var descuento = $('#descontar_cantidad').val();
+    var tope_cuota = $('#monto_cuota_actual').val(); // Leemos el input oculto
+
+    if(descuento === "" || isNaN(descuento)) {
+        descuento = 0;
+    }
+
+    if(parseFloat(descuento) > parseFloat(tope_cuota)) {
+        respuesta('Error: El descuento supera el monto de la cuota actual.', 'error');
+        return false; // Cortamos la función para que no guarde
+    }
+
     valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
     valor = validar_campo_vacio('pago_recepcion', pago_recepcion, valor);
     valor = validar_campo_vacio('pago_metodo', pago_metodo, valor);
-    valor = validar_campo_vacio('prestamo_prox_cobro', prestamo_prox_cobro, valor);
 
     if(valor){
         $.ajax({
@@ -329,11 +345,12 @@ function guardar_pago_prestamo(){
                 pago_recepcion: pago_recepcion,
                 pago_metodo: pago_metodo,
                 prestamo_prox_cobro: prestamo_prox_cobro,
-                pago_recepcion_yp: pago_recepcion_yp
+                pago_recepcion_yp: pago_recepcion_yp,
+                descuento: descuento // ENVIAMOS EL DESCUENTO AL PHP
             },
             dataType: 'json',
             beforeSend: function () {
-                cambiar_estado_boton(boton, 'Guardando...', true); // <-- bloquea el botón
+                cambiar_estado_boton(boton, 'Guardando...', true);
             },
             success:function (r) {
                 switch (r.result.code) {
@@ -346,19 +363,21 @@ function guardar_pago_prestamo(){
                         break;
                     case 2:
                         respuesta('Error al guardar', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false); // Reactiva el botón
                         break;
                     case 3:
                         respuesta('El monto supera a lo que falta pagar', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false);
                         break;
                     default:
-                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
+                        respuesta('¡Algo catastrófico ha ocurrido!', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false);
                         break;
                 }
             }
         });
     }
 }
-
 
 function cambiar_prestamo_a_antiguo(id_prestamo){
     var valor = true;
@@ -494,43 +513,52 @@ function obtenerDiasDelMes() {
 }
 
 // Función principal que controla todo al cambiar de tipo de pago
+// Función principal que controla todo al cambiar de tipo de pago
+// Función principal que controla todo al cambiar de tipo de pago
+// Función principal que controla todo al cambiar de tipo de pago
 function ajustar_interfaz_tipo_pago() {
     let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
-    let nuevasCuotas = $('#prestamo_num_cuotas').val(); // Empezamos con el valor actual
+
+    // Mostramos la caja de cuota siempre
+    $('#div_cuota_diaria').show();
+
+    let nuevasCuotas = 1; // Variable temporal para guardar el nuevo número
 
     if (tipoPago === 'diario') {
         $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
-        $('#div_cuota_diaria').show();
         $('#div_diario_domingos').show();
 
         let incluirDom = $('#select_domingos').val();
         if (incluirDom === 'si') {
-            nuevasCuotas = obtenerDiasDelMes(); // Asigna 28, 29, 30 o 31
+            nuevasCuotas = obtenerDiasDelMes();
         } else {
-            nuevasCuotas = 26; // Asigna 26 fijo si no hay domingos
+            nuevasCuotas = 26;
         }
     } else {
         $('#label_cuotas_dias').html('Número de Cuotas <span class="text-danger">*</span>');
-        $('#div_cuota_diaria').hide();
-        $('#div_diario_domingos').hide();
+        $('#div_diario_domingos').hide(); // Ocultamos selector de domingos
 
-        if (tipoPago === 'semanal') nuevasCuotas = 4;
-        if (tipoPago === 'mensual') nuevasCuotas = 1;
+        // Asignación estricta para semanal y mensual
+        if (tipoPago === 'semanal') {
+            nuevasCuotas = 4;
+        } else if (tipoPago === 'mensual') {
+            nuevasCuotas = 1;
+        }
     }
 
-    // 1. Asignamos el nuevo número de cuotas/días al input
+    // PASO 1: Inyectamos el nuevo número en el cajón de texto
     $('#prestamo_num_cuotas').val(nuevasCuotas);
 
-    // 2. Calculamos las fechas en base a lo nuevo
+    // PASO 2: Recalculamos la fecha de vencimiento
     cambiar_proximo_cobro();
 
-    // 3. Calculamos el dinero en base a los nuevos días
+    // PASO 3: Ahora sí, ejecutamos la matemática (que leerá el 4 o el 1 que acabamos de poner)
     calcular_cuota();
 }
 
-// Cálculo matemático: [Préstamo + (Préstamo * Porcentaje / 100)] / Cuotas(Días)
+// Función matemática de la cuota (Apta para Diario, Semanal y Mensual)
 function calcular_cuota() {
-    if (!$('#diario').is(':checked')) return;
+    // ¡NUEVO! Eliminamos el freno que evitaba que calcule en semanal/mensual
 
     let montoStr = $('#monto_prestamo').val();
     let interesStr = $('#interes').val();
@@ -540,51 +568,83 @@ function calcular_cuota() {
     let porcentajeInteres = parseFloat(interesStr) || 0;
     let cuotas = parseInt(cuotasStr) || 1;
 
-    let cuota_diaria = 0;
+    let cuota_estimada = 0;
 
     if (monto > 0 && cuotas > 0) {
         let monto_interes = monto * (porcentajeInteres / 100);
         let total_prestamo = monto + monto_interes;
-        cuota_diaria = total_prestamo / cuotas;
+        cuota_estimada = total_prestamo / cuotas;
     }
 
-    $('#cuota_diaria_visual').val(cuota_diaria.toFixed(2));
-    $('#cuota_calculada_hidden').val(cuota_diaria);
+    $('#cuota_diaria_visual').val(cuota_estimada.toFixed(2));
+    $('#cuota_calculada_hidden').val(cuota_estimada);
+}
+// Cálculo matemático: [Préstamo + (Préstamo * Porcentaje / 100)] / Cuotas(Días)
+function calcular_cuota() {
+    // 🚨 Eliminamos el condicional que lo frenaba
+    // if (!$('#diario').is(':checked')) return;
+
+    let montoStr = $('#monto_prestamo').val();
+    let interesStr = $('#interes').val();
+    let cuotasStr = $('#prestamo_num_cuotas').val();
+
+    let monto = parseFloat(montoStr) || 0;
+    let porcentajeInteres = parseFloat(interesStr) || 0;
+    let cuotas = parseInt(cuotasStr) || 1;
+
+    let cuota_estimada = 0; // Cambié el nombre de la variable para que tenga más sentido
+
+    if (monto > 0 && cuotas > 0) {
+        let monto_interes = monto * (porcentajeInteres / 100);
+        let total_prestamo = monto + monto_interes;
+        cuota_estimada = total_prestamo / cuotas;
+    }
+
+    // Actualizamos la vista sin importar el tipo de pago
+    $('#cuota_diaria_visual').val(cuota_estimada.toFixed(2));
+    $('#cuota_calculada_hidden').val(cuota_estimada);
 }
 function cambiar_proximo_cobro() {
-    // 1. Obtener la fecha de préstamo seleccionada
+    // 1. Obtener la fecha de préstamo seleccionada (Fecha de desembolso)
     let fechaBaseStr = $('#fecha_prestamo2').val();
     if (!fechaBaseStr) return;
 
-    // Creamos el objeto Date (añadimos T00:00:00 para evitar desfases por zona horaria)
+    // Creamos el objeto Date con T00:00:00 para evitar errores de zona horaria
     let fecha = new Date(fechaBaseStr + 'T00:00:00');
 
-    // 2. Obtener parámetros de tipo de pago e incluir domingos
-    let tipoPago = $('input[name="tipo_pago2"]:checked').val(); // 'Diario', 'Semanal' o 'Mensual'
-    let incluirDomingos = $('#select_domingos').val(); // 'si' o 'no'
+    // --- REQUERIMIENTO: EL PRÉSTAMO EMPIEZA AL DÍA SIGUIENTE ---
+    // Sumamos el día de gracia inicial
+    fecha.setDate(fecha.getDate() + 1);
+    // ---------------------------------------------------------
 
-    // 3. Sumar el intervalo correspondiente
-    if (tipoPago === 'Diario' || tipoPago === 'diario') {
+    // 2. Obtener parámetros (Tipo de pago y Domingos)
+    let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
+    let incluirDomingos = $('#select_domingos').val();
+
+    // 3. Sumar el intervalo correspondiente según el tipo seleccionado
+    if (tipoPago === 'diario') {
+        // Mañana empieza, mañana mismo es el primer cobro
         fecha.setDate(fecha.getDate() + 1);
-    } else if (tipoPago === 'Semanal' || tipoPago === 'semanal') {
+    } else if (tipoPago === 'semanal') {
+        // Mañana empieza, en 7 días es el primer cobro
         fecha.setDate(fecha.getDate() + 7);
-    } else if (tipoPago === 'Mensual' || tipoPago === 'mensual') {
+    } else if (tipoPago === 'mensual') {
+        // Mañana empieza, en 1 mes es el primer cobro
         fecha.setMonth(fecha.getMonth() + 1);
     }
 
-    // 4. Lógica de saltar Domingo:
-    // .getDay() devuelve 0 para Domingo, 1 para Lunes, etc.
+    // 4. Lógica de saltar Domingo (Si cae domingo y no se cobra, pasar a lunes)
     if (incluirDomingos === 'no' && fecha.getDay() === 0) {
-        fecha.setDate(fecha.getDate() + 1); // Si es domingo y no se incluye, pasar a lunes
+        fecha.setDate(fecha.getDate() + 1);
     }
 
-    // 5. Formatear la fecha resultante a YYYY-MM-DD para el input
+    // 5. Formatear la fecha resultante a YYYY-MM-DD
     let anio = fecha.getFullYear();
     let mes = String(fecha.getMonth() + 1).padStart(2, '0');
     let dia = String(fecha.getDate()).padStart(2, '0');
     let fechaFinal = `${anio}-${mes}-${dia}`;
 
-    // 6. Actualizar el campo de próximo cobro
+    // 6. Actualizar el campo de próximo cobro en la vista
     $('#fecha_prox_cobro2').val(fechaFinal);
 }
 
@@ -624,3 +684,20 @@ function preguntar_anular_prestamo(id_prestamo) {
         }
     });
 }
+
+$(document).ready(function() {
+    // Escucha cada vez que el usuario escribe en el input de descuento
+    $('#descontar_cantidad').on('input', function() {
+        let valor_ingresado = parseFloat($(this).val());
+        let monto_maximo = parseFloat($('#monto_cuota_actual').val());
+
+        // Si el valor ingresado es mayor a la cuota real
+        if (valor_ingresado > monto_maximo) {
+            // Le advertimos al usuario (asumiendo que usas SweetAlert en tu función respuesta)
+            respuesta('El descuento no puede ser mayor a la cuota (S/ ' + monto_maximo.toFixed(2) + ')', 'warning');
+
+            // Forzamos el input a que su valor sea el tope máximo permitido
+            $(this).val(monto_maximo.toFixed(2));
+        }
+    });
+});

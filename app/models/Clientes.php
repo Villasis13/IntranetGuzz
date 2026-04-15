@@ -138,4 +138,43 @@ class Clientes
             return [];
         }
     }
+
+    public function listar_primera_cuota($id){
+        try{
+            // Añadimos ORDER BY para asegurar que sea el primero y LIMIT 1
+            $sql = 'SELECT * FROM pagos_diarios 
+                WHERE id_prestamos = ? 
+                ORDER BY pago_diario_fecha ASC 
+                LIMIT 1';
+
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+
+            return $stm->fetch(); // fetch() ya devuelve una sola fila o 'false' si no hay nada
+
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return false; // Es mejor retornar false cuando fetch() falla o está vacío
+        }
+    }
+
+    public function listar_ultima_cuota($id){
+        try{
+            // Añadimos ORDER BY DESC para traer la fecha más lejana y LIMIT 1
+            $sql = 'SELECT * FROM pagos_diarios 
+                WHERE id_prestamos = ? 
+                ORDER BY pago_diario_fecha DESC 
+                LIMIT 1';
+
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+
+            return $stm->fetch();
+
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return false;
+        }
+    }
+
 }

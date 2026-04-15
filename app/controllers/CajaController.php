@@ -41,14 +41,30 @@ class CajaController
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
             $ultima_caja = $this->caja->listar_ultima_caja();
-            $movimientos_caja = [];
+
             $fecha_caja = null;
             $monto_caja_abierta = null;
+
+            // Nuevas variables para el Arqueo
+            $pagos_caja = [];
+            $prestamos_caja = [];
+            $ingresos_manuales = [];
+
+            // Asume el nombre del usuario logueado (Ajusta la variable de sesión según tu sistema)
+            $usuario_actual = $_SESSION['n_usuario'] ?? 'Administrador';
 
             if($ultima_caja->estado_caja == 1){
                 $fecha_caja = $this->caja->traer_fecha()->fecha_caja;
                 $monto_caja_abierta = $this->caja->traer_monto_caja()->monto_caja;
-                $movimientos_caja = $this->caja->listar_movimientos_caja($ultima_caja->id_caja);
+
+                // 1. Traer Pagos desde la fecha de apertura
+                $pagos_caja = $this->prestamos->listar_pagos_desde($fecha_caja);
+
+                // 2. Traer Préstamos desde la fecha de apertura
+                $prestamos_caja = $this->prestamos->listar_prestamos_desde($fecha_caja);
+
+                // 3. Traer Ingresos Manuales a caja desde la apertura (Tipo 1 = Ingreso manual, si aplica)
+                $ingresos_manuales = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
             }
 
             require _VIEW_PATH_ . 'header.php';

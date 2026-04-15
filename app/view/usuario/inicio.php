@@ -27,14 +27,14 @@
                                         <input class="form-control" type="text" id="persona_apellido_paterno" name="persona_apellido_paterno" maxlength="30" placeholder="Ingrese Información...">
                                     </div>
                                 </div>
-                                <div class="col-lg-6" style="display: none">
+                                <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="col-form-label">Apellido Materno</label>
                                         <input class="form-control" type="text" id="persona_apellido_materno" name="persona_apellido_materno" maxlength="30" placeholder="Ingrese Información...">
                                     </div>
                                 </div>
                             </div>
-                            <div class="row" style="display: none;">
+                            <div class="row" >
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="col-form-label">Fecha de Nacimiento</label>

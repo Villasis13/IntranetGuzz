@@ -122,9 +122,9 @@
                                 <div class="col mr-2">
                                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                         Ingresos Hoy</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">S/ 
-                                        
-										<?= !empty($ingresos_hoy) ? $ingresos_hoy : 0 ?>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">S/
+
+                                        <?= number_format($ingresos_hoy, 1) ?>
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -142,8 +142,8 @@
                                 <div class="col mr-2">
                                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
                                         Egresos Hoy</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">S/ 
-										<?= !empty($egresos_hoy) ? $egresos_hoy : 0 ?>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">S/
+                                        <?= number_format($egresos_hoy, 1) ?>
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -179,7 +179,7 @@
                                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                         Préstamos Hoy</div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        <?= is_array($prestamos_hoy) ? count($prestamos_hoy) : 0 ?>
+                                        <?= $cantidad_prestamos_hoy?>
                                     </div>
                                 </div>
                                 <div class="col-auto">

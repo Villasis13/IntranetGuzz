@@ -62,14 +62,42 @@ class CobrosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$id_prestamo = $_GET['id'];
-			$prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
-			$garante = $this->prestamos->listar_garante_prestamo($id_prestamo);
-			$cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
-			$resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
-			$descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
-            $cuotas=$this->cobros->listar_cuotas_x_prestamo($id_prestamo);
-            $total_pagos_cuenta=$this->prestamos->listar_total_pagos_contados($id_prestamo);
+
+            $id_prestamo = $_GET['id'];
+            $prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
+            $garante = $this->prestamos->listar_garante_prestamo($id_prestamo);
+            $cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
+            $resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
+            $descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
+
+            // Obtenemos TODAS las cuotas
+            $todas_las_cuotas = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
+
+            $total_pagos_cuenta = $this->prestamos->listar_total_pagos_contados($id_prestamo);
+
+            // --- LÓGICA DE CUOTAS SECUENCIALES ---
+
+            // 1. Filtrar solo las cuotas pendientes (Asumo que estado 1 es pendiente, cambialo si usas 0 u otro valor)
+            $cuotas_pendientes = array_filter($todas_las_cuotas, function($cuota) {
+                return $cuota->pago_diario_estado == 1;
+            });
+
+            // Reindexar el array para que empiece desde 0
+            $cuotas_pendientes = array_values($cuotas_pendientes);
+
+            $cuota_a_pagar = null;
+            $fecha_proximo_cobro = "Préstamo Finalizado"; // Mensaje por defecto
+
+            if (count($cuotas_pendientes) > 0) {
+                // La cuota a pagar es la primera pendiente (la más antigua)
+                $cuota_a_pagar = $cuotas_pendientes[0];
+
+                // Si hay una segunda cuota pendiente, esa es el próximo cobro
+                if (count($cuotas_pendientes) > 1) {
+                    $fecha_proximo_cobro = date('Y-m-d', strtotime($cuotas_pendientes[1]->pago_diario_fecha));
+                }
+            }
+            // -------------------------------------
 
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -82,6 +110,7 @@ class CobrosController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
+
     public function pagos(){
         try{
             $this->nav = new Navbar();
@@ -103,104 +132,127 @@ class CobrosController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
-	public function guardar_pago()
-	{
-		$result = 2;
-		$message = 'OK';
-		try {
-            $id_prestamo=$_POST['id_prestamo'];
-            $id_pago_cuota=$_POST['id_pago'];
-            $cuota_a_pagar=$this->cobros->listar_cuota_individual($id_pago_cuota);
-            $monto_caja_abierta = $this->caja->traer_datos_caja();
-			$prestamo=$this->prestamos->listar_x_id($id_prestamo);
-            $debe_pagar = $this->prestamos->listar_x_id($_POST['id_prestamo'])->prestamo_monto + $prestamo->prestamo_monto_interes; //500
-            $total_pagos=$this->prestamos->listar_total_pagos_x_prestamo($id_prestamo);
-            $total_pagos_cuenta=$this->prestamos->listar_total_pagos_contados($id_prestamo);
-            $cuenta_pago=$total_pagos_cuenta->cuenta ?? 0;
-            $ya_pago =$total_pagos->total ?? 0;//150
-            $interes=$this->prestamos->listar_x_id($_POST['id_prestamo'])->prestamo_monto_interes ?? 00;
-            $prestamo_total_mas_interes=$prestamo->prestamo_monto + $prestamo->prestamo_monto_interes;
-            $listar_ultima_caja=$this->caja->listar_ultima_caja();
-            $hoy=date("Y-m-d H:i:s");
+    public function guardar_pago()
+    {
+        $result = 2; // Estado de error por defecto
+        $message = 'Error al procesar el pago.';
+        $id_pago_generado = 0;
 
-            //$descuento = $this->cobros->listar_decuentos_x_prestamo($_POST['id_prestamo'])[0]->total ?? 0 ;//80
-            if (($total_pagos_cuenta->cuenta + 1) == $prestamo->prestamo_num_cuotas) {
-                $prestamo_total_mas_interes = round((float)$prestamo_total_mas_interes, 2);
-                $ya_pago = round((float)$ya_pago, 2);
-                $cuota = round((float)$cuota_a_pagar->pago_diario_monto, 2);
-                $diferencia = round($prestamo_total_mas_interes - ($ya_pago + $cuota), 2);
-                $ya_pago = round($ya_pago + $diferencia, 2);
+        try {
+            $id_prestamo = (int)$_POST['id_prestamo'];
+            $id_pago_cuota = (int)$_POST['id_pago'];
 
+            // RECIBIMOS EL DESCUENTO DESDE EL JS
+            $descuento_monto = isset($_POST['descuento']) && is_numeric($_POST['descuento']) ? (float)$_POST['descuento'] : 0;
 
+            // 1. OBTENER DATOS ACTUALES
+            $cuota_a_pagar = $this->cobros->listar_cuota_individual($id_pago_cuota);
+            $prestamo = $this->prestamos->listar_x_id($id_prestamo);
+            $caja_abierta = $this->caja->traer_datos_caja();
+
+            if ($cuota_a_pagar && $prestamo && $caja_abierta) {
+
+                // GUARDAMOS EL VALOR NOMINAL (ORIGINAL) PARA BAJAR LA DEUDA GLOBAL
+                $monto_cuota_original = (float)$cuota_a_pagar->pago_diario_monto;
+
+                // ESTA VARIABLE SERÁ EL DINERO REAL QUE INGRESA (Puede cambiar si hay descuento)
+                $monto_cobrado = $monto_cuota_original;
+
+                // ==========================================
+                // 2. VERIFICAR Y APLICAR DESCUENTO
+                // ==========================================
+                if ($descuento_monto > 0) {
+                    // Restamos el descuento para saber cuánto cobrar en físico
+                    $monto_cobrado = max(0, $monto_cuota_original - $descuento_monto);
+
+                    // Actualizamos la cuota en la base de datos (figurativo)
+                    $this->builder->update("pagos_diarios", array(
+                        'pago_diario_monto' => $monto_cobrado
+                    ), array(
+                        'id_pago_diario' => $id_pago_cuota
+                    ));
+                }
+
+                // ==========================================
+                // 3. ACTUALIZAR ESTADO DE LA CUOTA A "PAGADO"
+                // ==========================================
+                $this->cobros->cambiar_estado_cuota($id_pago_cuota);
+
+                // ==========================================
+                // 4. REGISTRAR EL TICKET DE PAGO (HISTORIAL)
+                // ==========================================
+                $mt = microtime(true);
+                $this->builder->save("pagos", array(
+                    'id_prestamo' => $id_prestamo,
+                    'pago_monto' => $monto_cobrado, // Ticket sale por lo que realmente pagó
+                    'pago_recepcion' => $_POST['pago_recepcion'] ?? '',
+                    'pago_metodo' => $_POST['pago_metodo'] ?? '',
+                    'pago_recepcion_yp' => $_POST['pago_recepcion_yp'] ?? '',
+                    'pago_fecha' => date('Y-m-d H:i:s'),
+                    'pago_estado' => 1,
+                    'pago_mt' => $mt,
+                ));
+
+                $pago_guardado = $this->cobros->listar_pago_guardado_x_mt($mt);
+                $id_pago_generado = $pago_guardado ? $pago_guardado->id_pago : 0;
+
+                // ==========================================
+                // 5. ACTUALIZAR DINERO EN CAJA
+                // ==========================================
+                $this->builder->update("caja", array(
+                    'monto_caja' => $caja_abierta->monto_caja + $monto_cobrado, // A la caja solo entra el efectivo real
+                ), array(
+                    'id_caja' => $caja_abierta->id_caja,
+                ));
+
+                // ==========================================
+                // 6. EVALUAR EL ESTADO GLOBAL DEL PRÉSTAMO
+                // ==========================================
+                // AQUI ESTÁ LA MAGIA: Descontamos la cuota ORIGINAL de la deuda global
+                $nuevo_saldo = max(0, $prestamo->prestamo_saldo_pagar - $monto_cuota_original);
+
+                $todas_las_cuotas = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
+                $cuotas_pendientes = array_filter($todas_las_cuotas, function($c) {
+                    return $c->pago_diario_estado == 1;
+                });
+                $cuotas_pendientes = array_values($cuotas_pendientes);
+
+                $datos_actualizar_prestamo = array(
+                    'prestamo_saldo_pagar' => $nuevo_saldo
+                );
+
+                if (count($cuotas_pendientes) > 0) {
+                    $datos_actualizar_prestamo['prestamo_prox_cobro'] = $cuotas_pendientes[0]->pago_diario_fecha;
+                } else {
+                    $datos_actualizar_prestamo['prestamo_estado'] = 2; // 2 = Pagado
+                    $datos_actualizar_prestamo['prestamo_saldo_pagar'] = 0;
+                }
+
+                $this->builder->update("prestamos", $datos_actualizar_prestamo, array(
+                    'id_prestamos' => $id_prestamo
+                ));
+
+                $result = 1;
+                $message = 'OK';
+            } else {
+                $message = 'No se encontraron los datos del préstamo o la caja está cerrada.';
             }
 
-            $total_cancelado=$ya_pago+$cuota;
-			if($total_cancelado /*+floatval($descuento)*/ <= floatval($debe_pagar) ){
-				if($total_cancelado/* +floatval($descuento)*/ == floatval($debe_pagar)){
-					$entrada="Si";
-                    $result = $this->builder->update("prestamos",array(
-						'prestamo_estado' => 2, //Pagado
-					),array(
-						'id_prestamos' => $_POST['id_prestamo'],
-					));
-				}
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+            $message = $e->getMessage();
+        }
 
-				$mt = microtime(true);
-				$result = $this->builder->save("pagos",array(
-					'id_prestamo' => $_POST['id_prestamo'],
-					'pago_monto' =>$cuota_a_pagar->pago_diario_monto,
-					'pago_recepcion' => $_POST['pago_recepcion'],
-					'pago_metodo' => $_POST['pago_metodo'],
-					'pago_recepcion_yp' => $_POST['pago_recepcion_yp'],
-					'pago_fecha' => date('Y-m-d H:i:s'),
-					'pago_estado' => 1,
-					'pago_mt' => $mt,
-				));
-                $result = $this->builder->save("caja_movimientos",array(
-                    'id_caja' => $listar_ultima_caja->id_caja,
-                    'caja_movimiento_tipo' =>1,
-                    'caja_movimiento_monto' => $cuota_a_pagar->pago_diario_monto,
-                    'caja_movimiento_fecha' => $hoy,
+        echo json_encode(array(
+            "result" => array(
+                "code" => $result,
+                "message" => $message,
+                "id_pago" => $id_pago_generado
+            )
+        ));
+    }
 
-                ));
-                $result=$this->cobros->cambiar_estado_cuota($id_pago_cuota);
-                $listar_cuota_proxima=$this->cobros->listar_cuota_proxima($id_prestamo);
-
-                $result = $this->builder->update("prestamos", array(
-                    'prestamo_prox_cobro' => $listar_cuota_proxima->pago_diario_fecha,
-
-                ), array(
-                    'id_prestamos' => $id_prestamo // <-- el id del registro a actualizar
-                ));
-
-                if($result == 1){
-                    $prestamo_saldo= $prestamo->prestamo_saldo_pagar - ($cuota_a_pagar->pago_diario_monto+ $diferencia);
-					$id_pago = $this->cobros->listar_pago_guardado_x_mt($mt)->id_pago;
-					$result = $this->builder->update("prestamos",array(
-                        'prestamo_saldo_pagar' =>$prestamo_saldo, //Pagado
-
-                    ),array(
-						'id_prestamos' => $_POST['id_prestamo'],
-					));
-					if($result == 1){
-						//Actualizar caja
-						$result = $this->builder->update("caja",array(
-							'monto_caja' => $monto_caja_abierta->monto_caja + $cuota_a_pagar->pago_diario_monto,
-						),array(
-							'id_caja' => $monto_caja_abierta->id_caja,
-						));
-					}
-				}
-			}else{
-				$result = 3;
-			}
-		} catch (Exception $e) {
-			$this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
-			$message = $e->getMessage();
-		}
-		echo json_encode(array("result" => array("code" => $result, "message" => $message,"id_pago" => $id_pago)));
-	}
-	public function aplicar_descuento()
+    public function aplicar_descuento()
 	{
 		$result = 2;
 		$message = 'OK';
