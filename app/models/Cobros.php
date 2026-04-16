@@ -351,4 +351,31 @@ class Cobros
         }
     }
 
+    public function listar_descuentos_x_prestamo($id_prestamo) {
+        try {
+            $sql = "SELECT * FROM pagos_diarios 
+                WHERE id_prestamos = ? AND pago_diario_descuento_estado = 1 
+                ORDER BY pago_diario_fecha ASC";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    public function listar_usuario($id_prestamo) {
+        try {
+            $sql = "SELECT * FROM usuarios 
+                WHERE id_usuario = ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetch();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
 }
