@@ -117,7 +117,7 @@
                         <label class="form-label"><b>Fecha de Emisión</b></label>
                         <input type="date" class="form-control" id="fecha_prestamo2" name="fecha_prestamo2"
                                value="<?= date('Y-m-d') ?>"
-                               onchange="ajustar_interfaz_tipo_pago(); actualizar_mensaje_inicio();">
+                               onchange="actualizar_mensaje_inicio(); ajustar_interfaz_tipo_pago(true);">
 
                         <input type="hidden" id="prestamo_fecha_inicio" name="prestamo_fecha_inicio" value="<?= date('Y-m-d', strtotime('+1 day')) ?>">
 

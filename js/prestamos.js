@@ -511,43 +511,39 @@ function obtenerDiasDelMes() {
 // Función principal que controla todo al cambiar de tipo de pago
 // Función principal que controla todo al cambiar de tipo de pago
 // Función principal que controla todo al cambiar de tipo de pago
-function ajustar_interfaz_tipo_pago() {
+// Le añadimos "conservar_cuotas = false" por defecto
+function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
     let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
 
-    // Mostramos la caja de cuota siempre
+    // 1. SIEMPRE mostramos/ocultamos la interfaz visual correcta
     $('#div_cuota_diaria').show();
-
-    let nuevasCuotas = 1; // Variable temporal para guardar el nuevo número
-
     if (tipoPago === 'diario') {
         $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
         $('#div_diario_domingos').show();
-
-        let incluirDom = $('#select_domingos').val();
-        if (incluirDom === 'si') {
-            nuevasCuotas = obtenerDiasDelMes();
-        } else {
-            nuevasCuotas = 26;
-        }
     } else {
         $('#label_cuotas_dias').html('Número de Cuotas <span class="text-danger">*</span>');
-        $('#div_diario_domingos').hide(); // Ocultamos selector de domingos
+        $('#div_diario_domingos').hide();
+    }
 
-        // Asignación estricta para semanal y mensual
-        if (tipoPago === 'semanal') {
+    // 2. SOLO reseteamos el número si NO nos piden conservarlo (ej: al cambiar de Diario a Mensual)
+    if (!conservar_cuotas) {
+        let nuevasCuotas = 1;
+
+        if (tipoPago === 'diario') {
+            let incluirDom = $('#select_domingos').val();
+            nuevasCuotas = (incluirDom === 'si') ? obtenerDiasDelMes() : 26;
+        } else if (tipoPago === 'semanal') {
             nuevasCuotas = 4;
         } else if (tipoPago === 'mensual') {
             nuevasCuotas = 1;
         }
+
+        // Inyectamos el nuevo número
+        $('#prestamo_num_cuotas').val(nuevasCuotas);
     }
 
-    // PASO 1: Inyectamos el nuevo número en el cajón de texto
-    $('#prestamo_num_cuotas').val(nuevasCuotas);
-
-    // PASO 2: Recalculamos la fecha de vencimiento
+    // 3. Recalculamos fechas de vencimiento y dinero con el número que esté en la caja
     cambiar_proximo_cobro();
-
-    // PASO 3: Ahora sí, ejecutamos la matemática (que leerá el 4 o el 1 que acabamos de poner)
     calcular_cuota();
 }
 
