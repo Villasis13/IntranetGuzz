@@ -546,4 +546,58 @@ class CajaController
         }
     }
 
+    public function editar_apertura_caja()
+    {
+        $result = 2;
+        $message = 'Error al actualizar el monto.';
+
+        try {
+            // Recibimos los datos desde el frontend (JS)
+            $id_caja = (int)$_POST['id_caja'];
+            $nuevo_monto_apertura = (float)$_POST['nuevo_monto'];
+
+            // 1. OBTENER LOS DATOS ACTUALES DE LA CAJA
+            // Asumo que tienes una función para traer los datos de una caja específica
+            $caja_actual = $this->caja->listar_caja($id_caja);
+
+            if ($caja_actual) {
+
+                // Paso 1 de tu lógica: Guardar variables originales
+                // OJO: Cambia 'caja_monto_inicial' por el nombre real de tu columna de apertura
+                $monto_apertura_original = (float)$caja_actual->monto_apertura_caja;
+                $monto_caja_actual = (float)$caja_actual->monto_caja;
+
+                // Paso 2 y 3: La matemática
+                // Le restamos el error inicial al total actual (esto nos da el dinero que realmente ingresó/salió hoy)
+                $movimiento_neto_del_dia = $monto_caja_actual - $monto_apertura_original;
+
+                // Le sumamos el monto correcto de apertura para obtener el total final real
+                $nuevo_monto_total_caja = $movimiento_neto_del_dia + $nuevo_monto_apertura;
+
+                // Paso 4: Actualizar la base de datos
+                $update = $this->builder->update("caja", array(
+                    'monto_apertura_caja' => $nuevo_monto_apertura, // Actualiza el registro de apertura
+                    'monto_caja' => $nuevo_monto_total_caja        // Actualiza el dinero total actual
+                ), array(
+                    'id_caja' => $id_caja
+                ));
+
+                if ($update) {
+                    $result = 1;
+                    $message = 'Monto de apertura actualizado y caja re-cuadrada correctamente.';
+                } else {
+                    $message = 'No se pudo actualizar la base de datos.';
+                }
+            } else {
+                $message = 'No se encontró la caja especificada o está cerrada.';
+            }
+
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+            $message = $e->getMessage();
+        }
+
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
+
 }

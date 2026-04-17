@@ -325,3 +325,55 @@ function preguntar_apertura_caja(ultimo_monto) {
     });
 }
 
+
+function editar_monto_apertura() {
+    var valor = true;
+
+    // ====== CAMPOS DEL MODAL ======
+    var id_caja = $('#edit_id_caja').val();
+    var nuevo_monto = $('#nuevo_monto_apertura').val();
+
+    // ====== VALIDACIONES ======
+    if (nuevo_monto === "" || isNaN(nuevo_monto) || parseFloat(nuevo_monto) < 0) {
+        respuesta('Por favor ingrese un monto válido mayor o igual a cero.', 'warning');
+        return false;
+    }
+
+    // ====== AJAX ======
+    if (valor) {
+        var boton = "btn-editar-apertura";
+
+        $.ajax({
+            type: "POST",
+            url: urlweb + "api/Caja/editar_apertura_caja", // El controlador PHP que armamos antes
+            data: {
+                id_caja: id_caja,
+                nuevo_monto: nuevo_monto
+            },
+            dataType: 'json',
+            beforeSend: function () {
+                cambiar_estado_boton(boton, "Guardando...", true);
+            },
+            success: function (r) {
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save\"></i> Guardar Corrección", false);
+
+                switch (r.result.code) {
+                    case 1:
+                        respuesta(r.result.message, 'success');
+                        setTimeout(function () {
+                            location.reload(); // Recarga para que la vista actualice los cuadros de mando
+                        }, 1000);
+                        break;
+                    default:
+                        respuesta(r.result.message, 'error');
+                        break;
+                }
+            },
+            error: function () {
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save\"></i> Guardar Corrección", false);
+                respuesta('Error de conexión o servidor', 'error');
+            }
+        });
+    }
+}
+
