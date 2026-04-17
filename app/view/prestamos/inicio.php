@@ -119,9 +119,14 @@
                                value="<?= date('Y-m-d') ?>"
                                onchange="ajustar_interfaz_tipo_pago(); actualizar_mensaje_inicio();">
 
+                        <input type="hidden" id="prestamo_fecha_inicio" name="prestamo_fecha_inicio" value="<?= date('Y-m-d', strtotime('+1 day')) ?>">
+
                         <div style="position: absolute; width: 100%; margin-top: 2px;">
                             <small style="font-size: 0.75rem; color: #566a7f;">
-                                El préstamo inicia el: <span id="fecha_inicio_prestamo" class="fw-bold" style="color: #566a7f;"><?= date('d-m-Y', strtotime('+1 day')) ?></span>
+                                El préstamo inicia el:
+                                <span id="texto_fecha_inicio" class="fw-bold" style="color: #566a7f;">
+                <?= date('d-m-Y', strtotime('+1 day')) ?>
+            </span>
                             </small>
                         </div>
                     </div>
@@ -234,6 +239,23 @@
     .animacion-cambio {
         animation: efectoActualizacion 0.5s ease-out !important;
     }
+
+    <style>
+     .input-texto-plano {
+         border: none !important;
+         background: transparent !important;
+         outline: none !important;
+         box-shadow: none !important;
+         width: 100px; /* Ajusta el ancho para que quepa la fecha */
+         color: #566a7f !important; /* Mismo color que el texto del <small> */
+         font-size: 0.75rem;
+         padding: 0 !important;
+         margin: 0 !important;
+         display: inline-block;
+         vertical-align: baseline;
+         cursor: default;
+     }
+</style>
 
 </style>
 

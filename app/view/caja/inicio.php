@@ -149,10 +149,19 @@
     <div class="row">
         <div class="col-lg-12 mt-3">
             <div class="card shadow mb-4">
+
+
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Detalle de Arqueo de Caja</h6>
                     <?php if($ultima_caja->estado_caja == 1): ?>
-                        <span class="badge bg-success text-white px-3 py-2">Caja Activa</span>
+                        <div class="d-flex align-items-center" style="gap: 10px;">
+                            <a href="<?= _SERVER_ ?>caja/exportar_pdf_arqueo/<?= $ultima_caja->id_caja ?>"
+                               target="_blank"
+                               class="btn btn-sm btn-danger text-white">
+                                <i class="fa fa-file-pdf mr-1"></i> Exportar PDF
+                            </a>
+                            <span class="badge bg-success text-white px-3 py-2">Caja Activa</span>
+                        </div>
                     <?php endif; ?>
                 </div>
 
@@ -186,7 +195,7 @@
                                     <td><?= date('H:i:s', strtotime($fecha_caja)) ?></td>
                                     <td><?= $usuario_actual ?></td>
                                     <td>Saldo del día Anterior / Monto inicial</td>
-                                    <td class="text-success font-weight-bold">S/ <?= number_format($ultima_caja->monto_caja, 2) ?></td>
+                                    <td class="text-success font-weight-bold">S/ <?= number_format($ultima_caja->monto_apertura_caja, 2) ?></td>
                                     <td></td>
                                 </tr>
 
