@@ -210,6 +210,7 @@ class PrestamosController
                             'prestamo_interes' => $_POST['prestamo_interes'],
                             'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'],
                             'prestamo_num_cuotas' => $_POST['prestamo_num_cuotas'],
+                            'prestamo_fecha_inicio' => $_POST['prestamo_fecha_inicio'],
                             'prestamo_fecha' => $fecha,
                             'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'],
                             'prestamo_monto_interes' =>ceil( $_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
@@ -360,15 +361,26 @@ class PrestamosController
             $cuotas_reales = $this->prestamos->listar_cuotas_x_id_prestamo($id_prestamo);
             $monto_total = round($data_prestamo->prestamo_monto + $data_prestamo->prestamo_monto_interes, 1);
 
-            // CORRECCIÓN 1: Llamar al modelo correcto (prestamos, no clientes)
             $primera_cuota = $this->clientes->listar_primera_cuota($id_prestamo);
             $ultima_cuota = $this->clientes->listar_ultima_cuota($id_prestamo);
 
-            // CORRECCIÓN 2: Formateo seguro para evitar Fatal Errors si la cuota no existe
-            $fecha_primer_pago = $primera_cuota ? date('d-m-Y', strtotime($primera_cuota->pago_diario_fecha)) : 'No registrada';
-            $fecha_ultimo_pago = $ultima_cuota ? date('d-m-Y', strtotime($ultima_cuota->pago_diario_fecha)) : 'No registrada';
+            // 1. EXTRAER Y FORMATEAR LAS 4 FECHAS CLAVE (Formato DD/MM/YYYY)
 
-            // 1. CORRECCIÓN DEL FORMATO DE FECHAS
+            // A) Fecha de Emisión (La original del préstamo)
+            $fecha_emision = date('d/m/Y', strtotime($data_prestamo->prestamo_fecha));
+
+            // B) Fecha de Inicio (Leída directamente de tu nuevo campo en la BD)
+            // Asegúrate de que el campo en tu BD se llame exactamente 'prestamo_fecha_inicio'
+            $fecha_inicio = date('d/m/Y', strtotime($data_prestamo->prestamo_fecha_inicio));
+
+            // C) Primer Pago (Sacado de las cuotas generadas)
+            $fecha_primer_pago = $primera_cuota ? date('d/m/Y', strtotime($primera_cuota->pago_diario_fecha)) : 'No registrada';
+
+            // D) Último Pago (Sacado de las cuotas generadas)
+            $fecha_ultimo_pago = $ultima_cuota ? date('d/m/Y', strtotime($ultima_cuota->pago_diario_fecha)) : 'No registrada';
+
+
+            // Textos para los párrafos legales
             $timestamp_prestamo = strtotime($data_prestamo->prestamo_fecha);
             $dia_fecha = date('d', $timestamp_prestamo);
             $mes_fecha = date('m', $timestamp_prestamo);
@@ -381,13 +393,8 @@ class PrestamosController
             ];
             $mes = $meses[$mes_fecha];
 
-            // 2. NUEVAS FECHAS SOLICITADAS
-            // A) Fecha de Emisión (Hoy)
             $mes_actual = $meses[date('m')];
             $texto_emision = "Iquitos, " . date('d') . " de " . $mes_actual . " de " . date('Y') . " a las " . date('H:i:s');
-
-            // B) Fecha Inicio de Préstamo (Al día siguiente)
-            $fecha_inicio = date('d-m-Y', strtotime($data_prestamo->prestamo_fecha . ' +1 day'));
 
             $pdf = new Fpdf();
             $pdf->AliasNbPages();
@@ -421,7 +428,6 @@ class PrestamosController
             $pdf->MultiCell(180,6,'4. Cuarto: en caso de que el deudor incumpla con la cancelación de la prestación, la empresa acreedora podrá disponer de su derecho de exigir el pago mediante la ley que contempla el código civil.',0,'J',0);
             $pdf->Ln();
 
-            // Imprimir el nuevo formato de fecha de emisión solicitado
             $pdf->Cell(180,6,$texto_emision,0,1,'R',0);
             $pdf->Ln(); $pdf->Ln(); $pdf->Ln();
 
@@ -457,42 +463,9 @@ class PrestamosController
             }
 
             // --- PÁGINA 3: CRONOGRAMA ---
-            // ¡CAMBIO AQUÍ! Redondeo del Total General a 1 decimal
-            $monto_total = round($data_prestamo->prestamo_monto + $data_prestamo->prestamo_monto_interes, 1);
-
-            // MODIFICACIÓN: Redondeo unificado a 1 decimal
-            $monto_cuota_redondeado = round($monto_total / $data_prestamo->prestamo_num_cuotas, 1);
-
-            // GENERACIÓN VISUAL DE FECHAS PARA LA TABLA
-            $fechas_pagos = [];
-            $fecha_iterador = new DateTime($data_prestamo->prestamo_fecha);
-            $fecha_iterador->modify('+1 day'); // <-- NUEVO: El préstamo empieza a correr al día siguiente
-            $diarl = date("N", strtotime($data_prestamo->prestamo_fecha));
-
-            for ($i = 1; $i <= $data_prestamo->prestamo_num_cuotas; $i++) {
-                if ($data_prestamo->prestamo_tipo_pago == 'Diario') {
-                    if ($i == 1 && $diarl == 6) { $fecha_iterador->add(new DateInterval('P2D')); }
-                    else { $fecha_iterador->add(new DateInterval('P1D')); }
-                } else if ($data_prestamo->prestamo_tipo_pago == 'Semanal') {
-                    if ($i == 1 && $diarl == 6) { $fecha_iterador->add(new DateInterval('P14D')); }
-                    else { $fecha_iterador->add(new DateInterval('P7D')); }
-                } else if ($data_prestamo->prestamo_tipo_pago == 'Mensual') {
-                    if ($i == 1 && $diarl == 6) { $fecha_iterador->add(new DateInterval('P2M')); }
-                    else { $fecha_iterador->add(new DateInterval('P1M')); }
-                }
-
-                if ($fecha_iterador->format('w') == 0) {
-                    $fecha_iterador->add(new DateInterval('P1D'));
-                }
-
-                $fechas_pagos[] = $fecha_iterador->format('Y-m-d');
-            }
-
             $pdf->AddPage();
             $pdf->SetFillColor(232,232,232);
             $pdf->Cell(180,6,'CRONOGRAMA DE PAGOS - ' . strtoupper($data_prestamo->prestamo_tipo_pago),0,1,'C',0);
-
-            // ¡CAMBIO AQUÍ! number_format a 1 decimal
             $pdf->Cell(25,6,'Monto sin redondear: S/. ' . number_format($monto_total, 1),0,1,'L',0);
 
             $pdf->SetFont('Arial','',10);
@@ -506,26 +479,18 @@ class PrestamosController
             $pdf->Cell(15,6,'N',1,0,'C',1);
             $pdf->Cell(30,6,'Fecha',1,0,'C',1);
             $pdf->Cell(25,6,'Monto',1,0,'C',1);
-            $pdf->Cell(20,6,'Estado',1,1,'C',1); // Opcional: Para saber si ya pagó
+            $pdf->Cell(20,6,'Estado',1,1,'C',1);
             $pdf->SetFont('Arial','',10);
 
-            // Contadores y acumuladores para el PDF
             $item = 1;
 
             foreach ($cuotas_reales as $cuota) {
                 $pdf->SetX(10);
                 $pdf->Cell(15, 6, $item, 1, 0, 'C');
-
-                // Usamos la fecha que viene de la base de datos (pago_diario_fecha)
-                $fecha_pago_db = date('d-m-Y', strtotime($cuota->pago_diario_fecha));
+                $fecha_pago_db = date('d/m/Y', strtotime($cuota->pago_diario_fecha));
                 $pdf->Cell(30, 6, $fecha_pago_db, 1, 0, 'C');
-
-                // Usamos el monto que viene de la base de datos (pago_diario_monto)
                 $pdf->Cell(25, 6, 'S/. ' . number_format($cuota->pago_diario_monto, 1), 1, 0, 'R');
-
-                // Espacio para firma o estado
                 $pdf->Cell(20, 6, '', 1, 1, 'C');
-
                 $item++;
             }
 
@@ -540,24 +505,21 @@ class PrestamosController
             $pdf->SetFont('Arial','B',10);
             $pdf->MultiCell(80,6,'DATOS DEL CLIENTE',0,'J',0);
             $pdf->SetFont('Arial','',10);
+
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'DNI: '.$data_cliente->cliente_dni,0,'L');
-
-            // ¡CAMBIO AQUÍ! Monto prestado general con 1 decimal
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Monto Prestado: S/. ' . number_format($data_prestamo->prestamo_monto, 1),0,'L');
-
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Interés Aplicado: '.$data_prestamo->prestamo_interes.'%',0,'L');
 
-            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Emisión de prestamo: ' . date('d-m-Y H:i:s'),0,'L');
-            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Inicio Préstamo: ' . $fecha_inicio,0,'L');
-
-            // USO SEGURO DE LAS VARIABLES FORMATEADAS
+            // IMPRESIÓN DE LAS 4 FECHAS (Modificado según lo que pediste)
+            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Fecha de Emisión: ' . $fecha_emision,0,'L');
+            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Inicio de Préstamo: ' . $fecha_inicio,0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Primer Pago: ' . $fecha_primer_pago,0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Último Pago: ' . $fecha_ultimo_pago,0,'L');
 
             // CLÁUSULAS DERECHAS
             $pdf->Ln();
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Cláusulas:',0,'L');
-            $pdf->SetX($posX); $pdf->MultiCell(80,4,'1. El cliente tiene un plazo de 30 días para pagar las cuotas.',0,'J');
+            $pdf->SetX($posX); $pdf->MultiCell(80,4,'1. El cliente tiene un plazo de 30 dias para pagar las cuotas.',0,'J');
             $pdf->SetX($posX); $pdf->MultiCell(80,4,'2. Si al final del periodo de pago...',0,'J');
             $pdf->SetX($posX); $pdf->MultiCell(80,4,'3. Si el cliente quiere cancelar...',0,'J');
             $pdf->SetX($posX); $pdf->MultiCell(80,4,'4. Info llamar al 969553545.',0,'J');
@@ -578,6 +540,8 @@ class PrestamosController
             $message = $e->getMessage();
         }
     }
+
+
     public function reporte_prestamos_antiguos(){
 		try{
 			$pdf = new Fpdf();
@@ -687,4 +651,6 @@ class PrestamosController
 			$message = $e->getMessage();
 		}
 	}
+
+
 }

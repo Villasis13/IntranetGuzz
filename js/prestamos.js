@@ -169,7 +169,7 @@ function validar_monto_linea(){
         $('#monto_prestamo').val(0);
     }
 }
-function guardar_prestamo(){
+function guardar_prestamo() {
     var valor = true;
     var id_cliente = $('#id_cliente').val();
     var prestamo_monto = $('#monto_prestamo').val();
@@ -178,25 +178,31 @@ function guardar_prestamo(){
     var prestamo_num_cuotas = $('#prestamo_num_cuotas').val();
     var prestamo_fecha = $('#fecha_prestamo2').val();
     var prestamo_prox_cobro = $('#fecha_prox_cobro2').val();
-    var prestamo_garantia = $('#prestamo_garantia').val(); // ----
+
+    // AQUÍ EL CAMBIO: Lo recibimos directo y limpio
+    var prestamo_fecha_inicio = $('#prestamo_fecha_inicio').val();
+
+    var prestamo_garantia = $('#prestamo_garantia').val();
     var prestamo_garante = $('#prestamo_garante').val();
     var prestamo_motivo = $('#prestamo_motivo').val();
     var prestamo_comentario = $('#prestamo_comentario').val();
     var select_domingos = $('#select_domingos').val();
     var forzar = $('#forzar_garante').val();
-    // var prestamo_monto_interes = $('#prestamo_monto_interes').val();
 
+    // Validaciones
     valor = validar_campo_vacio('id_cliente', id_cliente, valor);
     valor = validar_campo_vacio('monto_prestamo', prestamo_monto, valor);
     valor = validar_campo_vacio('interes', prestamo_interes, valor);
-  //  valor = validar_campo_vacio('prestamo_garante', prestamo_garante, valor);
     valor = validar_campo_vacio('prestamo_num_cuotas', prestamo_num_cuotas, valor);
     valor = validar_campo_vacio('fecha_prestamo2', prestamo_fecha, valor);
     valor = validar_campo_vacio('fecha_prox_cobro2', prestamo_prox_cobro, valor);
     valor = validar_campo_vacio('prestamo_garantia', prestamo_garantia, valor);
-    // valor = validar_campo_vacio('prestamo_garante', prestamo_garante, valor);
     valor = validar_campo_vacio('prestamo_motivo', prestamo_motivo, valor);
     valor = validar_campo_vacio('prestamo_comentario', prestamo_comentario, valor);
+
+    // Añadimos validación por seguridad para la fecha de inicio
+    valor = validar_campo_vacio('prestamo_fecha_inicio', prestamo_fecha_inicio, valor);
+
     //Si var valor no ha cambiado de valor, procedemos a hacer la llamada de ajax
     if(valor){
         $.ajax({
@@ -210,20 +216,16 @@ function guardar_prestamo(){
                 prestamo_num_cuotas: prestamo_num_cuotas,
                 prestamo_fecha: prestamo_fecha,
                 prestamo_prox_cobro: prestamo_prox_cobro,
+                prestamo_fecha_inicio: prestamo_fecha_inicio, // El dato ya va listo para la BD
                 prestamo_garantia: prestamo_garantia,
                 prestamo_garante: prestamo_garante,
                 prestamo_motivo: prestamo_motivo,
                 prestamo_comentario: prestamo_comentario,
                 select_domingos: select_domingos,
                 forzar_garante: forzar
-                // prestamo_monto_interes: prestamo_monto_interes
             },
             dataType: 'json',
-            // beforeSend: function () {
-            //     cambiar_estado_boton(boton, 'Guardando...', true);
-            // },
             success:function (r) {
-                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
                 switch (r.result.code) {
                     case 1:
                         respuesta('¡Préstamo Guardado!', 'success');
@@ -231,15 +233,7 @@ function guardar_prestamo(){
                         setTimeout(function () {
                             window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_blank');
                             window.location.href = urlweb + 'Clientes/inicio';
-                            // location.reload();
                         }, 1000);
-                        /*setTimeout(function () {
-                            // Abre nueva pestaña con el comprobante
-                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
-
-                            // Redirige la ventana actual
-                            window.location.href = urlweb + 'Clientes/inicio';
-                        }, 1000);*/
                         break;
                     case 2:
                         respuesta('Error al guardar', 'error');
@@ -276,6 +270,7 @@ function guardar_prestamo(){
         });
     }
 }
+
 function transferir_prestamo(id_prestamos){
     $.ajax({
         type: "POST",
@@ -516,43 +511,39 @@ function obtenerDiasDelMes() {
 // Función principal que controla todo al cambiar de tipo de pago
 // Función principal que controla todo al cambiar de tipo de pago
 // Función principal que controla todo al cambiar de tipo de pago
-function ajustar_interfaz_tipo_pago() {
+// Le añadimos "conservar_cuotas = false" por defecto
+function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
     let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
 
-    // Mostramos la caja de cuota siempre
+    // 1. SIEMPRE mostramos/ocultamos la interfaz visual correcta
     $('#div_cuota_diaria').show();
-
-    let nuevasCuotas = 1; // Variable temporal para guardar el nuevo número
-
     if (tipoPago === 'diario') {
         $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
         $('#div_diario_domingos').show();
-
-        let incluirDom = $('#select_domingos').val();
-        if (incluirDom === 'si') {
-            nuevasCuotas = obtenerDiasDelMes();
-        } else {
-            nuevasCuotas = 26;
-        }
     } else {
         $('#label_cuotas_dias').html('Número de Cuotas <span class="text-danger">*</span>');
-        $('#div_diario_domingos').hide(); // Ocultamos selector de domingos
+        $('#div_diario_domingos').hide();
+    }
 
-        // Asignación estricta para semanal y mensual
-        if (tipoPago === 'semanal') {
+    // 2. SOLO reseteamos el número si NO nos piden conservarlo (ej: al cambiar de Diario a Mensual)
+    if (!conservar_cuotas) {
+        let nuevasCuotas = 1;
+
+        if (tipoPago === 'diario') {
+            let incluirDom = $('#select_domingos').val();
+            nuevasCuotas = (incluirDom === 'si') ? obtenerDiasDelMes() : 26;
+        } else if (tipoPago === 'semanal') {
             nuevasCuotas = 4;
         } else if (tipoPago === 'mensual') {
             nuevasCuotas = 1;
         }
+
+        // Inyectamos el nuevo número
+        $('#prestamo_num_cuotas').val(nuevasCuotas);
     }
 
-    // PASO 1: Inyectamos el nuevo número en el cajón de texto
-    $('#prestamo_num_cuotas').val(nuevasCuotas);
-
-    // PASO 2: Recalculamos la fecha de vencimiento
+    // 3. Recalculamos fechas de vencimiento y dinero con el número que esté en la caja
     cambiar_proximo_cobro();
-
-    // PASO 3: Ahora sí, ejecutamos la matemática (que leerá el 4 o el 1 que acabamos de poner)
     calcular_cuota();
 }
 
@@ -701,3 +692,29 @@ $(document).ready(function() {
         }
     });
 });
+
+
+function actualizar_mensaje_inicio() {
+    const fechaEmision = $('#fecha_prestamo2').val();
+    if (!fechaEmision) return;
+
+    // Desglosamos la fecha para evitar problemas de zona horaria
+    const partes = fechaEmision.split('-');
+    const anio = parseInt(partes[0], 10);
+    const mes  = parseInt(partes[1], 10) - 1;
+    const dia  = parseInt(partes[2], 10);
+
+    // Creamos la fecha y sumamos 1 día
+    const fecha = new Date(anio, mes, dia);
+    fecha.setDate(fecha.getDate() + 1);
+
+    const d = String(fecha.getDate()).padStart(2, '0');
+    const m = String(fecha.getMonth() + 1).padStart(2, '0');
+    const y = fecha.getFullYear();
+
+    // 1. Pintamos el texto para que el usuario lo vea bonito
+    $('#texto_fecha_inicio').text(`${d}-${m}-${y}`);
+
+    // 2. Guardamos el valor en el input oculto para mandarlo por AJAX
+    $('#prestamo_fecha_inicio').val(`${y}-${m}-${d}`);
+}

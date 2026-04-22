@@ -171,8 +171,10 @@ class Builder
 
     }
     /*  Revisar funcion   */
-    function joinTables($table1, $table2, $joinColumn, $select = [], $where = [], $pdo) {
-        /*$results = joinTables('users', 'orders', 'user_id', ['users.name', 'orders.order_id', 'orders.order_total'], ['users.status' => 'active'], $pdo);*/
+    public function joinTables($table1, $table2, $joinColumn, $pdo, $select = [], $where = []) {
+        /* Ejemplo de uso actualizado:
+           $results = $this->joinTables('users', 'orders', 'user_id', $this->pdo, ['users.name', 'orders.order_id'], ['users.status' => 'active']);
+        */
         $selectColumns = empty($select) ? '*' : implode(',', $select);
 
         $query = "SELECT {$selectColumns} FROM {$table1} INNER JOIN {$table2} ON {$table1}.{$joinColumn} = {$table2}.{$joinColumn}";
@@ -180,6 +182,7 @@ class Builder
         if (!empty($where)) {
             $query .= ' WHERE ';
             $i = 0;
+            $params = []; // Es buena práctica inicializar el array antes del foreach
 
             foreach ($where as $key => $value) {
                 if ($i > 0) {
@@ -196,11 +199,10 @@ class Builder
         $stmt = $pdo->prepare($query);
         $stmt->execute(isset($params) ? $params : []);
 
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll();
 
         return $results;
     }
-
 
 
 

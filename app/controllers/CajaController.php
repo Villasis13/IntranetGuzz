@@ -6,6 +6,9 @@ require 'app/models/Archivo.php';
 require 'app/models/Cobros.php';
 require 'app/models/Prestamos.php';
 require 'app/models/Builder.php';
+
+require 'app/view/pdf/fpdf/fpdf.php';
+
 class CajaController
 {
     private $usuario;
@@ -357,4 +360,244 @@ class CajaController
         //Retornamos el json
         echo json_encode(array("result" => array("code" => $result,"dato_m" => $dato_monto, "message" => $message)));
     }
+
+
+    public function exportar_pdf_arqueo(){
+        try {
+            date_default_timezone_set('America/Lima');
+
+            // 🚨 IMPORTANTE: Asegúrate de que esta ruta apunte correctamente a tu archivo FPDF
+            // Si tu framework ya lo carga automáticamente (autoload), puedes comentar esta línea.
+            // require_once _CORE_ . 'fpdf/fpdf.php';
+
+            $ultima_caja = $this->caja->listar_ultima_caja();
+            $usuario_actual = $_SESSION['n_usuario'] ?? 'Administrador';
+
+            $fecha_caja        = null;
+            $pagos_caja        = [];
+            $prestamos_caja    = [];
+            $ingresos_manuales = [];
+
+            if($ultima_caja->estado_caja == 1){
+                $fecha_caja        = $this->caja->traer_fecha()->fecha_caja;
+                $pagos_caja        = $this->prestamos->listar_pagos_desde($fecha_caja);
+                $prestamos_caja    = $this->prestamos->listar_prestamos_desde($fecha_caja);
+                $ingresos_manuales = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
+            }
+
+            // Cálculos (idénticos a la vista)
+            $suma_pagos = 0;
+            foreach ((array)$pagos_caja as $p) $suma_pagos += $p->pago_monto;
+
+            $suma_prestamos = 0;
+            foreach ((array)$prestamos_caja as $pr) $suma_prestamos += $pr->prestamo_monto;
+
+            $suma_ingresos_manuales = 0;
+            foreach ((array)$ingresos_manuales as $m) $suma_ingresos_manuales += $m->caja_movimiento_monto;
+
+            $total_ingresos = $suma_pagos + $suma_ingresos_manuales;
+            $total_egresos  = $suma_prestamos;
+            $saldo_final    = $ultima_caja->monto_apertura_caja + $total_ingresos - $total_egresos;
+
+            $texto_emision = "Iquitos, " . date('d/m/Y') . " a las " . date('H:i:s');
+
+            // ── FPDF ─────────────────────────────────────────────────────────────
+            $pdf = new Fpdf();
+            $pdf->AliasNbPages();
+            $pdf->AddPage();
+            $pdf->SetMargins(10, 10, 10);
+
+            // Encabezado
+            $pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png', 5, 5, 18);
+            $pdf->SetFont('Arial', 'B', 13);
+            $pdf->Cell(180, 7, 'ARQUEO DE CAJA', 0, 1, 'C');
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(180, 5, 'Inversiones y Multiservicios GUZZ E.I.R.L  -  RUC N 20600864255', 0, 1, 'C');
+            $pdf->Cell(180, 5, 'Calle Jose Olaya #324 - Tupac Amaru - Iquitos', 0, 1, 'C');
+            $pdf->Ln(3);
+
+            // Info general de la caja
+            $pdf->SetFillColor(232, 232, 232);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(90, 6, 'Usuario: ' . $usuario_actual, 1, 0, 'L', true);
+            $pdf->Cell(90, 6, 'Fecha Apertura: ' . date('d/m/Y H:i:s', strtotime($fecha_caja)), 1, 1, 'L', true);
+            $pdf->Cell(90, 6, 'Monto Apertura: S/ ' . number_format($ultima_caja->monto_apertura_caja, 2), 1, 0, 'L', true);
+            $pdf->Cell(90, 6, 'ID Caja: #' . $ultima_caja->id_caja, 1, 1, 'L', true);
+            $pdf->Ln(4);
+
+            // ── SECCIÓN 1: Apertura ───────────────────────────────────────────────
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(180, 6, 'Apertura de Caja', 1, 1, 'L', true);
+
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(30, 5, 'Fecha',     1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Hora',      1, 0, 'C', true);
+            $pdf->Cell(80, 5, 'Usuario',   1, 0, 'C', true);
+            $pdf->Cell(48, 5, 'Concepto',  1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell(30, 5, date('d/m/Y', strtotime($fecha_caja)), 1, 0, 'C');
+            $pdf->Cell(22, 5, date('H:i:s', strtotime($fecha_caja)), 1, 0, 'C');
+            $pdf->Cell(80, 5, $usuario_actual, 1, 0, 'L');
+            $pdf->Cell(48, 5, 'Saldo anterior / Monto inicial', 1, 1, 'L');
+            $pdf->Ln(3);
+
+            // ── SECCIÓN 2: Pago de Cuotas ─────────────────────────────────────────
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(180, 6, 'Pago de Cuotas', 1, 1, 'L', true);
+
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(30, 5, 'Fecha',   1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Hora',    1, 0, 'C', true);
+            $pdf->Cell(80, 5, 'Cliente', 1, 0, 'C', true);
+            $pdf->Cell(28, 5, 'Metodo',  1, 0, 'C', true);
+            $pdf->Cell(20, 5, 'Ingreso', 1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 8);
+            if (!empty($pagos_caja)) {
+                foreach ($pagos_caja as $pago) {
+                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($pago->pago_fecha)), 1, 0, 'C');
+                    $pdf->Cell(22, 5, date('H:i:s', strtotime($pago->pago_fecha)), 1, 0, 'C');
+                    $pdf->Cell(80, 5, $pago->cliente_nombre . ' ' . $pago->cliente_apellido_paterno, 1, 0, 'L');
+                    $pdf->Cell(28, 5, ucfirst($pago->pago_metodo), 1, 0, 'C');
+                    $pdf->Cell(20, 5, 'S/ ' . number_format($pago->pago_monto, 2), 1, 1, 'R');
+                }
+            } else {
+                $pdf->Cell(180, 5, 'No se han registrado pagos en este turno.', 1, 1, 'C');
+            }
+            $pdf->Ln(3);
+
+            // ── SECCIÓN 3: Préstamos ──────────────────────────────────────────────
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(180, 6, 'Prestamos Otorgados', 1, 1, 'L', true);
+
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(30, 5, 'Fecha',   1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Hora',    1, 0, 'C', true);
+            $pdf->Cell(80, 5, 'Cliente', 1, 0, 'C', true);
+            $pdf->Cell(28, 5, 'Tipo',    1, 0, 'C', true);
+            $pdf->Cell(20, 5, 'Egreso',  1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 8);
+            if (!empty($prestamos_caja)) {
+                foreach ($prestamos_caja as $prestamo) {
+                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($prestamo->prestamo_fecha)), 1, 0, 'C');
+                    $pdf->Cell(22, 5, date('H:i:s', strtotime($prestamo->prestamo_fecha)), 1, 0, 'C');
+                    $pdf->Cell(80, 5, $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno, 1, 0, 'L');
+                    $pdf->Cell(28, 5, 'Prestamo ' . ucfirst($prestamo->prestamo_tipo_pago), 1, 0, 'C');
+                    $pdf->Cell(20, 5, 'S/ ' . number_format($prestamo->prestamo_monto, 2), 1, 1, 'R');
+                }
+            } else {
+                $pdf->Cell(180, 5, 'No se han otorgado prestamos en este turno.', 1, 1, 'C');
+            }
+            $pdf->Ln(3);
+
+            // ── SECCIÓN 4: Ingresos Manuales ──────────────────────────────────────
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(180, 6, 'Ingreso de Monto Manual', 1, 1, 'L', true);
+
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(30, 5, 'Fecha',       1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Hora',        1, 0, 'C', true);
+            $pdf->Cell(60, 5, 'Usuario',     1, 0, 'C', true);
+            $pdf->Cell(48, 5, 'Descripcion', 1, 0, 'C', true);
+            $pdf->Cell(20, 5, 'Ingreso',     1, 1, 'C', true); // Columna restaurada
+
+            $pdf->SetFont('Arial', '', 8);
+            if (!empty($ingresos_manuales)) {
+                foreach ($ingresos_manuales as $mov) {
+                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($mov->caja_movimiento_fecha)), 1, 0, 'C');
+                    $pdf->Cell(22, 5, date('H:i:s', strtotime($mov->caja_movimiento_fecha)), 1, 0, 'C');
+                    $pdf->Cell(60, 5, $usuario_actual, 1, 0, 'L');
+                    $pdf->Cell(48, 5, 'Anadido Manualmente', 1, 0, 'L');
+                    $pdf->Cell(20, 5, 'S/ ' . number_format($mov->caja_movimiento_monto, 2), 1, 1, 'R'); // Monto impreso
+                }
+            } else {
+                $pdf->Cell(180, 5, 'No hay ingresos manuales registrados.', 1, 1, 'C');
+            }
+            $pdf->Ln(5);
+
+            // ── RESUMEN FINAL ─────────────────────────────────────────────────────
+            $pdf->SetFillColor(232, 232, 232);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(130, 6, 'Total Ingresos del Turno:', 1, 0, 'R', true);
+            $pdf->Cell(50,  6, 'S/ ' . number_format($total_ingresos, 2), 1, 1, 'R', true);
+
+            $pdf->Cell(130, 6, 'Total Egresos del Turno:', 1, 0, 'R', true);
+            $pdf->Cell(50,  6, 'S/ ' . number_format($total_egresos, 2), 1, 1, 'R', true);
+
+            $pdf->SetFillColor(197, 224, 180);
+            $pdf->SetFont('Arial', 'B', 11);
+            $pdf->Cell(130, 8, 'SALDO ACTUAL EN CAJA:', 1, 0, 'R', true);
+            $pdf->Cell(50,  8, 'S/ ' . number_format($saldo_final, 2), 1, 1, 'R', true);
+
+            $pdf->Ln(4);
+            $pdf->SetFont('Arial', 'I', 8);
+            $pdf->Cell(180, 5, $texto_emision, 0, 1, 'R');
+
+            $pdf->Output('I', 'Arqueo_Caja_' . date('Ymd_His') . '.pdf');
+
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+        }
+    }
+
+    public function editar_apertura_caja()
+    {
+        $result = 2;
+        $message = 'Error al actualizar el monto.';
+
+        try {
+            // Recibimos los datos desde el frontend (JS)
+            $id_caja = (int)$_POST['id_caja'];
+            $nuevo_monto_apertura = (float)$_POST['nuevo_monto'];
+
+            // 1. OBTENER LOS DATOS ACTUALES DE LA CAJA
+            // Asumo que tienes una función para traer los datos de una caja específica
+            $caja_actual = $this->caja->listar_caja($id_caja);
+
+            if ($caja_actual) {
+
+                // Paso 1 de tu lógica: Guardar variables originales
+                // OJO: Cambia 'caja_monto_inicial' por el nombre real de tu columna de apertura
+                $monto_apertura_original = (float)$caja_actual->monto_apertura_caja;
+                $monto_caja_actual = (float)$caja_actual->monto_caja;
+
+                // Paso 2 y 3: La matemática
+                // Le restamos el error inicial al total actual (esto nos da el dinero que realmente ingresó/salió hoy)
+                $movimiento_neto_del_dia = $monto_caja_actual - $monto_apertura_original;
+
+                // Le sumamos el monto correcto de apertura para obtener el total final real
+                $nuevo_monto_total_caja = $movimiento_neto_del_dia + $nuevo_monto_apertura;
+
+                // Paso 4: Actualizar la base de datos
+                $update = $this->builder->update("caja", array(
+                    'monto_apertura_caja' => $nuevo_monto_apertura, // Actualiza el registro de apertura
+                    'monto_caja' => $nuevo_monto_total_caja        // Actualiza el dinero total actual
+                ), array(
+                    'id_caja' => $id_caja
+                ));
+
+                if ($update) {
+                    $result = 1;
+                    $message = 'Monto de apertura actualizado y caja re-cuadrada correctamente.';
+                } else {
+                    $message = 'No se pudo actualizar la base de datos.';
+                }
+            } else {
+                $message = 'No se encontró la caja especificada o está cerrada.';
+            }
+
+        } catch (Exception $e) {
+            $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
+            $message = $e->getMessage();
+        }
+
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
+
 }

@@ -244,4 +244,18 @@ class Caja
             return [];
         }
     }
+
+
+    public function listar_caja($id_caja){
+        try{
+            $sql = 'select * from caja where id_caja=?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_caja]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
 }
