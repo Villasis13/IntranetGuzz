@@ -547,10 +547,10 @@ function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
     calcular_cuota();
 }
 
+
+
 // Función matemática de la cuota (Apta para Diario, Semanal y Mensual)
 function calcular_cuota() {
-    // ¡NUEVO! Eliminamos el freno que evitaba que calcule en semanal/mensual
-
     let montoStr = $('#monto_prestamo').val();
     let interesStr = $('#interes').val();
     let cuotasStr = $('#prestamo_num_cuotas').val();
@@ -559,42 +559,28 @@ function calcular_cuota() {
     let porcentajeInteres = parseFloat(interesStr) || 0;
     let cuotas = parseInt(cuotasStr) || 1;
 
-    let cuota_estimada = 0;
+    let cuota_redondeada = 0;
+    let cuota_real_sin_redondear = 0;
 
     if (monto > 0 && cuotas > 0) {
         let monto_interes = monto * (porcentajeInteres / 100);
         let total_prestamo = monto + monto_interes;
-        cuota_estimada = total_prestamo / cuotas;
+
+        // 1. Calculamos la cuota con todos sus decimales (Ej: 19.16666...)
+        cuota_real_sin_redondear = total_prestamo / cuotas;
+
+        // 2. APLICAMOS EL REDONDEO DEL CLIENTE (Hacia arriba al 0.10)
+        // Ej: 19.1666 -> 191.666 -> ceil(192) -> 19.2
+        cuota_redondeada = Math.ceil(cuota_real_sin_redondear * 10) / 10;
     }
 
-    $('#cuota_diaria_visual').val(cuota_estimada.toFixed(2));
-    $('#cuota_calculada_hidden').val(cuota_estimada);
+    // Actualizamos la vista visual (cajón verde) asegurando el .0 al final (Ej: 19.20)
+    $('#cuota_diaria_visual').val(cuota_redondeada.toFixed(2));
+
+    // OJO: Si usas este hidden para guardar en la BD, es importante guardar la cuota redondeada
+    $('#cuota_calculada_hidden').val(cuota_redondeada.toFixed(2));
 }
-// Cálculo matemático: [Préstamo + (Préstamo * Porcentaje / 100)] / Cuotas(Días)
-function calcular_cuota() {
-    // 🚨 Eliminamos el condicional que lo frenaba
-    // if (!$('#diario').is(':checked')) return;
 
-    let montoStr = $('#monto_prestamo').val();
-    let interesStr = $('#interes').val();
-    let cuotasStr = $('#prestamo_num_cuotas').val();
-
-    let monto = parseFloat(montoStr) || 0;
-    let porcentajeInteres = parseFloat(interesStr) || 0;
-    let cuotas = parseInt(cuotasStr) || 1;
-
-    let cuota_estimada = 0; // Cambié el nombre de la variable para que tenga más sentido
-
-    if (monto > 0 && cuotas > 0) {
-        let monto_interes = monto * (porcentajeInteres / 100);
-        let total_prestamo = monto + monto_interes;
-        cuota_estimada = total_prestamo / cuotas;
-    }
-
-    // Actualizamos la vista sin importar el tipo de pago
-    $('#cuota_diaria_visual').val(cuota_estimada.toFixed(2));
-    $('#cuota_calculada_hidden').val(cuota_estimada);
-}
 function cambiar_proximo_cobro() {
     // 1. Obtener la fecha de préstamo seleccionada (Fecha de desembolso)
     let fechaBaseStr = $('#fecha_prestamo2').val();
