@@ -13,6 +13,9 @@ class Reporte
             $sql = 'select * from pagos p 
          inner join prestamos pr on p.id_prestamo=pr.id_prestamos
          inner join clientes cl on pr.id_cliente=cl.id_cliente
+         inner join usuarios u on p.id_usuario=u.id_usuario
+         inner join pagos_diarios pg on p.id_pago_diario=pg.id_pago_diario
+        inner join metodos_pago mp on mp.id_metodo_pago=p.pago_metodo
         where date(p.pago_fecha)=? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$dia]);
@@ -26,6 +29,7 @@ class Reporte
         try{
             $sql = 'select * from prestamos pr 
          inner join clientes cl on pr.id_cliente=cl.id_cliente
+         inner join usuarios u  on u.id_usuario=pr.id_usuario
          where date(pr.prestamo_fecha)=? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$dia]);
@@ -39,8 +43,12 @@ class Reporte
     public function reporte_mes($mes){
         try{
             $sql = 'select * from pagos p 
-         inner join prestamos pr on p.id_prestamo=pr.id_prestamos
-         inner join clientes cl on pr.id_cliente=cl.id_cliente where month(p.pago_fecha)= ? ';
+                    inner join prestamos pr on p.id_prestamo=pr.id_prestamos
+                    inner join clientes cl on pr.id_cliente=cl.id_cliente 
+                    inner join usuarios u on p.id_usuario=u.id_usuario
+                    inner join pagos_diarios pg on p.id_pago_diario=pg.id_pago_diario
+                    inner join metodos_pago mp on mp.id_metodo_pago=p.pago_metodo
+                    where month(p.pago_fecha)= ?';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$mes]);
             return $stm->fetchAll();
@@ -54,6 +62,7 @@ class Reporte
         try{
             $sql = 'select * from prestamos pr 
          inner join clientes cl on pr.id_cliente=cl.id_cliente
+         inner join usuarios u on pr.id_usuario=u.id_usuario
          where month(pr.prestamo_fecha)= ? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$mes]);
@@ -69,6 +78,9 @@ class Reporte
             $sql = 'select * from pagos p 
          inner join prestamos pr on p.id_prestamo=pr.id_prestamos
          inner join clientes cl on pr.id_cliente=cl.id_cliente
+          inner join usuarios u on p.id_usuario=u.id_usuario
+         inner join pagos_diarios pg on p.id_pago_diario=pg.id_pago_diario
+         inner join metodos_pago mp on mp.id_metodo_pago=p.pago_metodo
          where date(p.pago_fecha) between ? and ? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$inicio,$fin]);
@@ -83,6 +95,7 @@ class Reporte
         try{
             $sql = 'select * from prestamos pr 
          inner join clientes cl on pr.id_cliente=cl.id_cliente
+         inner join usuarios u on pr.id_usuario=u.id_usuario
          where date(pr.prestamo_fecha) between ? and ? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$inicio,$fin]);

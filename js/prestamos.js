@@ -1,61 +1,3 @@
-/*function cambiar_proximo_cobro(tipo){
-    var fecha_prestamo = $('#fecha_prestamo2').val();
-    var domingo = $('#select_domingos').val();
-    var fecha_nueva = '';
-    var num_cuotas = 0;
-
-    if(tipo != 'diario'){
-        $('#div_diario_domingos').hide(200);
-        var fecha = new Date(fecha_prestamo);
-
-        if(tipo == 'semanal'){
-            fecha.setDate(fecha.getDate() + 7);
-            num_cuotas = 7;
-        } else {
-            var mesActual = fecha.getMonth();
-            fecha.setMonth(mesActual + 1);
-            if (fecha.getDate() !== new Date(fecha.getFullYear(), mesActual + 1, 0).getDate()) {
-                fecha.setDate(Math.min(fecha.getDate(), new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate()));
-            }
-            num_cuotas = 1;
-        }
-
-        // Validar si cae en domingo y si "domingo" es 'no'
-        if(domingo == 'no' && fecha.getDay() == 0){
-            fecha.setDate(fecha.getDate() + 1); // Sumar un día si es domingo
-        }
-
-        fecha_nueva = fecha.toISOString().split('T')[0];
-
-    } else {
-        /!*$('#div_diario_domingos').show(200);
-        if(domingo == 'no'){
-            var fecha = new Date(fecha_prestamo);
-            fecha.setDate(fecha.getDate() + 1);
-            if(fecha.getDay() == 0){
-                fecha.setDate(fecha.getDate() + 1);
-            }
-            fecha_nueva = fecha.toISOString().split('T')[0];
-        } else {
-            var fecha = new Date(fecha_prestamo);
-            fecha.setDate(fecha.getDate() + 1);
-            fecha_nueva = fecha.toISOString().split('T')[0];
-        }*!/
-        $('#div_diario_domingos').show(200);
-        var fecha = new Date(fecha_prestamo);
-        fecha.setDate(fecha.getDate() + 1);
-
-        if(domingo == 'no' && fecha.getDay() == 0){
-            fecha.setDate(fecha.getDate() + 1);
-        }
-
-        fecha_nueva = fecha.toISOString().split('T')[0];
-        num_cuotas = 1;
-    }
-
-    $('#fecha_prox_cobro2').val(fecha_nueva);
-    $('#prestamo_num_cuotas').val(num_cuotas);
-}*/
 function cambiar_proximo_cobro(tipo){
     var fecha_prestamo = $('#fecha_prestamo2').val();
     var domingo = $('#select_domingos').val();
@@ -113,12 +55,12 @@ function guardar_nuevo_linea_credito(){
     var incremento = $('#incremento').val();
     var clave_validacion = $('#clave_validacion').val();
     var motivo_aumento = $('#motivo_aumento').val();
-    
+
     valor = validar_campo_vacio('id_cliente', id_cliente, valor);
     valor = validar_campo_vacio('incremento', incremento, valor);
     valor = validar_campo_vacio('clave_validacion', clave_validacion, valor);
     valor = validar_campo_vacio('motivo_aumento', motivo_aumento, valor);
-    
+
     if(valor){
         $.ajax({
             type: "POST",
@@ -139,7 +81,6 @@ function guardar_nuevo_linea_credito(){
                     case 1:
                         respuesta('¡Línea de crédito Guardada!', 'success');
                         setTimeout(function () {
-                            // location.reload();
                             window.location.href = urlweb + 'Prestamos/inicio';
                         }, 1000);
                         break;
@@ -160,6 +101,7 @@ function guardar_nuevo_linea_credito(){
         });
     }
 }
+
 function validar_monto_linea(){
     var monto_prestamo = parseFloat($('#monto_prestamo').val()) || 0;
     var linea_actual = parseFloat($('#linea_actual').val()) || 0;
@@ -169,6 +111,7 @@ function validar_monto_linea(){
         $('#monto_prestamo').val(0);
     }
 }
+
 function guardar_prestamo() {
     var valor = true;
     var id_cliente = $('#id_cliente').val();
@@ -178,10 +121,7 @@ function guardar_prestamo() {
     var prestamo_num_cuotas = $('#prestamo_num_cuotas').val();
     var prestamo_fecha = $('#fecha_prestamo2').val();
     var prestamo_prox_cobro = $('#fecha_prox_cobro2').val();
-
-    // AQUÍ EL CAMBIO: Lo recibimos directo y limpio
     var prestamo_fecha_inicio = $('#prestamo_fecha_inicio').val();
-
     var prestamo_garantia = $('#prestamo_garantia').val();
     var prestamo_garante = $('#prestamo_garante').val();
     var prestamo_motivo = $('#prestamo_motivo').val();
@@ -199,11 +139,8 @@ function guardar_prestamo() {
     valor = validar_campo_vacio('prestamo_garantia', prestamo_garantia, valor);
     valor = validar_campo_vacio('prestamo_motivo', prestamo_motivo, valor);
     valor = validar_campo_vacio('prestamo_comentario', prestamo_comentario, valor);
-
-    // Añadimos validación por seguridad para la fecha de inicio
     valor = validar_campo_vacio('prestamo_fecha_inicio', prestamo_fecha_inicio, valor);
 
-    //Si var valor no ha cambiado de valor, procedemos a hacer la llamada de ajax
     if(valor){
         $.ajax({
             type: "POST",
@@ -216,7 +153,7 @@ function guardar_prestamo() {
                 prestamo_num_cuotas: prestamo_num_cuotas,
                 prestamo_fecha: prestamo_fecha,
                 prestamo_prox_cobro: prestamo_prox_cobro,
-                prestamo_fecha_inicio: prestamo_fecha_inicio, // El dato ya va listo para la BD
+                prestamo_fecha_inicio: prestamo_fecha_inicio,
                 prestamo_garantia: prestamo_garantia,
                 prestamo_garante: prestamo_garante,
                 prestamo_motivo: prestamo_motivo,
@@ -229,7 +166,6 @@ function guardar_prestamo() {
                 switch (r.result.code) {
                     case 1:
                         respuesta('¡Préstamo Guardado!', 'success');
-                        console.log(r.result.id_p)
                         setTimeout(function () {
                             window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_blank');
                             window.location.href = urlweb + 'Clientes/inicio';
@@ -253,9 +189,8 @@ function guardar_prestamo() {
                             cancelButtonText: 'Cancelar'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Agrega el flag y reenvía
                                 $('#forzar_garante').val('1');
-                                guardar_prestamo(); // <-- la función que hace el AJAX
+                                guardar_prestamo();
                             }
                         });
                         break;
@@ -279,17 +214,12 @@ function transferir_prestamo(id_prestamos){
             id_prestamos : id_prestamos
         },
         dataType: 'json',
-        // beforeSend: function () {
-        //     cambiar_estado_boton(boton, 'Guardando...', true);
-        // },
         success:function (r) {
-            // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
             switch (r.result.code) {
                 case 1:
                     respuesta('¡Préstamo Transferido a Antiguo!', 'success');
                     setTimeout(function () {
                         location.reload();
-                        // window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_self');
                     }, 1000);
                     break;
                 case 2:
@@ -302,20 +232,29 @@ function transferir_prestamo(id_prestamos){
         }
     });
 }
+
 function guardar_pago_prestamo(){
     var valor = true;
     var boton = "btn-guardar-pago";
 
     var id_prestamo = $('#id_prestamo').val();
     var id_pago = $('#id_pago').val();
-    var pago_recepcion = $('#pago_recepcion').val();
-    var pago_metodo = $('#pago_metodo').val();
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
-    var pago_recepcion_yp = $('#pago_recepcion_yp').val();
+    var pago_metodo = $('#pago_metodo').val();
+
+    // NUEVOS CAMPOS DINÁMICOS
+    var monto_pagar = $('#monto_pagar').val();
+    var monto_recibido = $('#monto_recibido').val();
+    var monto_vuelto = $('#monto_vuelto').val();
+    var num_operacion = $('#num_operacion').val();
+    var nombre_titular = $('#nombre_titular').val();
+    var banco_entidad = $('#banco_entidad').val();
+    var fecha_transferencia = $('#fecha_transferencia').val();
+    var pago_observacion = $('#pago_observacion').val();
 
     // CAPTURAMOS EL DESCUENTO DINÁMICAMENTE
     var descuento = $('#descontar_cantidad').val();
-    var tope_cuota = $('#monto_cuota_actual').val(); // Leemos el input oculto
+    var tope_cuota = $('#monto_cuota_actual').val();
 
     if(descuento === "" || isNaN(descuento)) {
         descuento = 0;
@@ -323,12 +262,13 @@ function guardar_pago_prestamo(){
 
     if(parseFloat(descuento) > parseFloat(tope_cuota)) {
         respuesta('Error: El descuento supera el monto de la cuota actual.', 'error');
-        return false; // Cortamos la función para que no guarde
+        return false;
     }
 
+    // Validaciones obligatorias
     valor = validar_campo_vacio('id_prestamo', id_prestamo, valor);
-    valor = validar_campo_vacio('pago_recepcion', pago_recepcion, valor);
     valor = validar_campo_vacio('pago_metodo', pago_metodo, valor);
+    valor = validar_campo_vacio('monto_pagar', monto_pagar, valor);
 
     if(valor){
         $.ajax({
@@ -337,11 +277,17 @@ function guardar_pago_prestamo(){
             data: {
                 id_prestamo : id_prestamo,
                 id_pago: id_pago,
-                pago_recepcion: pago_recepcion,
-                pago_metodo: pago_metodo,
                 prestamo_prox_cobro: prestamo_prox_cobro,
-                pago_recepcion_yp: pago_recepcion_yp,
-                descuento: descuento // ENVIAMOS EL DESCUENTO AL PHP
+                pago_metodo: pago_metodo,
+                monto_pagar: monto_pagar,
+                monto_recibido: monto_recibido,
+                monto_vuelto: monto_vuelto,
+                num_operacion: num_operacion,
+                nombre_titular: nombre_titular,
+                banco_entidad: banco_entidad,
+                fecha_transferencia: fecha_transferencia,
+                pago_observacion: pago_observacion,
+                descuento: descuento
             },
             dataType: 'json',
             beforeSend: function () {
@@ -358,7 +304,7 @@ function guardar_pago_prestamo(){
                         break;
                     case 2:
                         respuesta('Error al guardar', 'error');
-                        cambiar_estado_boton(boton, 'Confirmar Pago', false); // Reactiva el botón
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false);
                         break;
                     case 3:
                         respuesta('El monto supera a lo que falta pagar', 'error');
@@ -384,23 +330,11 @@ function cambiar_prestamo_a_antiguo(id_prestamo){
                 id_prestamo : id_prestamo,
             },
             dataType: 'json',
-            // beforeSend: function () {
-            //     cambiar_estado_boton(boton, 'Guardando...', true);
-            // },
             success:function (r) {
-                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
                 switch (r.result.code) {
                     case 1:
-                        /*respuesta('¡Pago Guardado!', 'success');
-                        setTimeout(function () {
-                            // location.reload();
-                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
-                        }, 1000);
-                        break;*/
-
                         respuesta('¡Prestamo actualizado!', 'success');
                         setTimeout(function () {
-                            // Abre nueva pestaña con el comprobante
                             window.location.href = (urlweb + 'Admin/inicio/');
                         }, 1000);
                         break;
@@ -420,15 +354,15 @@ function guardar_aplicar_descuento(id_prestamo){
     var valor = true;
     var input_resta_por_pagar = $('#input_resta_por_pagar').val();
     var descontar_cantidad = $('#descontar_cantidad').val();
-    
+
     valor = validar_campo_vacio('input_resta_por_pagar', input_resta_por_pagar, valor);
     valor = validar_campo_vacio('descontar_cantidad', descontar_cantidad, valor);
-    
+
     if(parseFloat(input_resta_por_pagar) < parseFloat(descontar_cantidad)){
         respuesta('La cantidad a descontar no puede ser mayor al monto restante por pagar', 'error');
         valor = false;
     }
-    
+
     if(valor){
         $.ajax({
             type: "POST",
@@ -439,17 +373,12 @@ function guardar_aplicar_descuento(id_prestamo){
                 descontar_cantidad: descontar_cantidad
             },
             dataType: 'json',
-            // beforeSend: function () {
-            //     cambiar_estado_boton(boton, 'Guardando...', true);
-            // },
             success:function (r) {
-                // cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
                 switch (r.result.code) {
                     case 1:
                         respuesta('¡Descuento Aplicado!', 'success');
                         setTimeout(function () {
                             location.reload();
-                            // window.open(urlweb + 'Prestamos/generar_documento/' + r.result.id_p, '_self');
                         }, 1000);
                         break;
                     case 2:
@@ -463,59 +392,17 @@ function guardar_aplicar_descuento(id_prestamo){
         });
     }
 }
-function aplicar_descuento(){
-    var opcionSeleccionada = $('input[name="desc"]:checked').attr('id');
-    if (opcionSeleccionada === 'descSi') {
-        $('#div_descontar').show(200);
-    }else{
-        $('#div_descontar').hide(200);
-        $('#descontar_cantidad').val('');
-    }
-}
 
-
-
-$(function () {
-    // Select2 configurado al 100% de ancho
-    $("#prestamo_garante").select2({
-        width: '100%',
-        placeholder: "Seleccionar Garante",
-        allowClear: true
-    });
-
-    $('#formBuscar').on('submit', function (e) {
-        let dni = $('#dni_post').val()?.trim();
-        if (!dni) {
-            e.preventDefault();
-            respuesta('Ingrese DNI para buscar', 'error');
-            return;
-        }
-        respuesta('Buscando cliente...', 'success');
-    });
-
-    // Inicializar interfaz al cargar
-    ajustar_interfaz_tipo_pago();
-    calcular_cuota();
-});
-
-// Función que ajusta textos y muestra/oculta campos según el tipo de pago
-// Función para obtener los días del mes de la fecha seleccionada
 function obtenerDiasDelMes() {
     let fechaSeleccionada = $('#fecha_prestamo2').val();
     let fecha = fechaSeleccionada ? new Date(fechaSeleccionada + 'T00:00:00') : new Date();
-    // El día 0 del mes siguiente es el último día del mes actual
     return new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
 }
 
-// Función principal que controla todo al cambiar de tipo de pago
-// Función principal que controla todo al cambiar de tipo de pago
-// Función principal que controla todo al cambiar de tipo de pago
-// Función principal que controla todo al cambiar de tipo de pago
-// Le añadimos "conservar_cuotas = false" por defecto
 function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
-    let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
+    let tipoPago = $('input[name="tipo_pago2"]:checked').val()?.toLowerCase();
+    if(!tipoPago) return;
 
-    // 1. SIEMPRE mostramos/ocultamos la interfaz visual correcta
     $('#div_cuota_diaria').show();
     if (tipoPago === 'diario') {
         $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
@@ -525,10 +412,8 @@ function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
         $('#div_diario_domingos').hide();
     }
 
-    // 2. SOLO reseteamos el número si NO nos piden conservarlo (ej: al cambiar de Diario a Mensual)
     if (!conservar_cuotas) {
         let nuevasCuotas = 1;
-
         if (tipoPago === 'diario') {
             let incluirDom = $('#select_domingos').val();
             nuevasCuotas = (incluirDom === 'si') ? obtenerDiasDelMes() : 26;
@@ -537,19 +422,12 @@ function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
         } else if (tipoPago === 'mensual') {
             nuevasCuotas = 1;
         }
-
-        // Inyectamos el nuevo número
         $('#prestamo_num_cuotas').val(nuevasCuotas);
     }
-
-    // 3. Recalculamos fechas de vencimiento y dinero con el número que esté en la caja
     cambiar_proximo_cobro();
     calcular_cuota();
 }
 
-
-
-// Función matemática de la cuota (Apta para Diario, Semanal y Mensual)
 function calcular_cuota() {
     let montoStr = $('#monto_prestamo').val();
     let interesStr = $('#interes').val();
@@ -565,63 +443,41 @@ function calcular_cuota() {
     if (monto > 0 && cuotas > 0) {
         let monto_interes = monto * (porcentajeInteres / 100);
         let total_prestamo = monto + monto_interes;
-
-        // 1. Calculamos la cuota con todos sus decimales (Ej: 19.16666...)
         cuota_real_sin_redondear = total_prestamo / cuotas;
-
-        // 2. APLICAMOS EL REDONDEO DEL CLIENTE (Hacia arriba al 0.10)
-        // Ej: 19.1666 -> 191.666 -> ceil(192) -> 19.2
         cuota_redondeada = Math.ceil(cuota_real_sin_redondear * 10) / 10;
     }
 
-    // Actualizamos la vista visual (cajón verde) asegurando el .0 al final (Ej: 19.20)
     $('#cuota_diaria_visual').val(cuota_redondeada.toFixed(2));
-
-    // OJO: Si usas este hidden para guardar en la BD, es importante guardar la cuota redondeada
     $('#cuota_calculada_hidden').val(cuota_redondeada.toFixed(2));
 }
 
 function cambiar_proximo_cobro() {
-    // 1. Obtener la fecha de préstamo seleccionada (Fecha de desembolso)
     let fechaBaseStr = $('#fecha_prestamo2').val();
     if (!fechaBaseStr) return;
 
-    // Creamos el objeto Date con T00:00:00 para evitar errores de zona horaria
     let fecha = new Date(fechaBaseStr + 'T00:00:00');
-
-    // --- REQUERIMIENTO: EL PRÉSTAMO EMPIEZA AL DÍA SIGUIENTE ---
-    // Sumamos el día de gracia inicial
     fecha.setDate(fecha.getDate() + 1);
-    // ---------------------------------------------------------
 
-    // 2. Obtener parámetros (Tipo de pago y Domingos)
-    let tipoPago = $('input[name="tipo_pago2"]:checked').val().toLowerCase();
+    let tipoPago = $('input[name="tipo_pago2"]:checked').val()?.toLowerCase();
     let incluirDomingos = $('#select_domingos').val();
 
-    // 3. Sumar el intervalo correspondiente según el tipo seleccionado
     if (tipoPago === 'diario') {
-        // Mañana empieza, mañana mismo es el primer cobro
         fecha.setDate(fecha.getDate() + 1);
     } else if (tipoPago === 'semanal') {
-        // Mañana empieza, en 7 días es el primer cobro
         fecha.setDate(fecha.getDate() + 7);
     } else if (tipoPago === 'mensual') {
-        // Mañana empieza, en 1 mes es el primer cobro
         fecha.setMonth(fecha.getMonth() + 1);
     }
 
-    // 4. Lógica de saltar Domingo (Si cae domingo y no se cobra, pasar a lunes)
     if (incluirDomingos === 'no' && fecha.getDay() === 0) {
         fecha.setDate(fecha.getDate() + 1);
     }
 
-    // 5. Formatear la fecha resultante a YYYY-MM-DD
     let anio = fecha.getFullYear();
     let mes = String(fecha.getMonth() + 1).padStart(2, '0');
     let dia = String(fecha.getDate()).padStart(2, '0');
     let fechaFinal = `${anio}-${mes}-${dia}`;
 
-    // 6. Actualizar el campo de próximo cobro en la vista
     $('#fecha_prox_cobro2').val(fechaFinal);
 }
 
@@ -637,8 +493,6 @@ function preguntar_anular_prestamo(id_prestamo) {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-
-            // Petición AJAX al controlador
             $.ajax({
                 type: "POST",
                 url: urlweb + "api/cobros/anular",
@@ -648,7 +502,7 @@ function preguntar_anular_prestamo(id_prestamo) {
                     if (res.codigo === 1) {
                         respuesta('Crédito anulado y dinero devuelto a caja', 'success');
                         setTimeout(function () {
-                            location.href = urlweb + 'Prestamos/inicio'; // <-- Redirige a Prestamos/inicio
+                            location.href = urlweb + 'Prestamos/inicio';
                         }, 1500);
                     } else {
                         respuesta(res.mensaje, 'error');
@@ -662,35 +516,15 @@ function preguntar_anular_prestamo(id_prestamo) {
     });
 }
 
-$(document).ready(function() {
-    // Escucha cada vez que el usuario escribe en el input de descuento
-    $('#descontar_cantidad').on('input', function() {
-        let valor_ingresado = parseFloat($(this).val());
-        let monto_maximo = parseFloat($('#monto_cuota_actual').val());
-
-        // Si el valor ingresado es mayor a la cuota real
-        if (valor_ingresado > monto_maximo) {
-            // Le advertimos al usuario (asumiendo que usas SweetAlert en tu función respuesta)
-            respuesta('El descuento no puede ser mayor a la cuota (S/ ' + monto_maximo.toFixed(2) + ')', 'warning');
-
-            // Forzamos el input a que su valor sea el tope máximo permitido
-            $(this).val(monto_maximo.toFixed(2));
-        }
-    });
-});
-
-
 function actualizar_mensaje_inicio() {
     const fechaEmision = $('#fecha_prestamo2').val();
     if (!fechaEmision) return;
 
-    // Desglosamos la fecha para evitar problemas de zona horaria
     const partes = fechaEmision.split('-');
     const anio = parseInt(partes[0], 10);
     const mes  = parseInt(partes[1], 10) - 1;
     const dia  = parseInt(partes[2], 10);
 
-    // Creamos la fecha y sumamos 1 día
     const fecha = new Date(anio, mes, dia);
     fecha.setDate(fecha.getDate() + 1);
 
@@ -698,9 +532,226 @@ function actualizar_mensaje_inicio() {
     const m = String(fecha.getMonth() + 1).padStart(2, '0');
     const y = fecha.getFullYear();
 
-    // 1. Pintamos el texto para que el usuario lo vea bonito
     $('#texto_fecha_inicio').text(`${d}-${m}-${y}`);
-
-    // 2. Guardamos el valor en el input oculto para mandarlo por AJAX
     $('#prestamo_fecha_inicio').val(`${y}-${m}-${d}`);
+}
+
+function cambiar_metodo_pago() {
+    // CAMBIO AQUÍ: Ahora leemos el 'data-tipo' (efectivo, yape, etc.)
+    let metodo = $('#pago_metodo').find(':selected').data('tipo');
+
+    // 1. Ocultamos todos los grupos
+    $('#grupo_efectivo').hide();
+    $('#grupo_transferencia').hide();
+    $('#grupo_operacion_titular').hide();
+
+    // 2. Limpiamos los valores por seguridad
+    $('#monto_recibido').val('');
+    $('#monto_vuelto').val('0.00');
+    $('#num_operacion').val('');
+    $('#nombre_titular').val('');
+    $('#banco_entidad').val('');
+
+    // 3. Mostramos lo que corresponde
+    if (metodo === 'efectivo') {
+        $('#grupo_efectivo').show(200);
+    } else if (metodo === 'transferencia') {
+        $('#grupo_transferencia').show(200);
+        $('#grupo_operacion_titular').show(200);
+    } else if (metodo === 'yape' || metodo === 'plin') {
+        $('#grupo_operacion_titular').show(200);
+    }
+
+    // 4. Forzamos el cálculo
+    calcular_vuelto();
+}
+
+function calcular_vuelto() {
+    let monto_pagar = parseFloat($('#monto_pagar').val()) || 0;
+    let metodo = $('#pago_metodo').find(':selected').data('tipo');
+
+    if (metodo === 'transferencia' || metodo === 'yape' || metodo === 'plin') {
+        $('#monto_recibido').val(monto_pagar.toFixed(2));
+        $('#monto_vuelto').val('0.00');
+    } else {
+        let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
+
+        if (monto_recibido >= monto_pagar && monto_pagar > 0) {
+            let vuelto = monto_recibido - monto_pagar;
+            $('#monto_vuelto').val(vuelto.toFixed(2));
+        } else {
+            $('#monto_vuelto').val('0.00');
+        }
+    }
+
+    // ==========================================
+    // LLAMAMOS AL RESUMEN PARA QUE SE ACTUALICE
+    // ==========================================
+    actualizar_resumen();
+}
+
+function aplicar_descuento() {
+    var opcionSeleccionada = $('input[name="desc"]:checked').attr('id');
+
+    if (opcionSeleccionada === 'descSi') {
+        $('#div_descontar').show(200);
+    } else {
+        // SI ELIGEN "NO"
+        $('#div_descontar').hide(200);
+        $('#descontar_cantidad').val(''); // Limpiamos el descuento
+
+        let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
+
+        if(cuota_original) {
+            $('#monto_pagar').val(cuota_original.toFixed(2));
+
+            // Restauramos la tarjeta azul a la normalidad
+            $('#texto_cuota_principal').html('S/ ' + cuota_original.toFixed(2));
+            $('#texto_cuota_principal').removeClass('text-success').addClass('text-gray-800');
+            $('#badge_descuento_visual').fadeOut(150);
+
+            // OCULTAMOS LA ETIQUETA DEL INPUT (Porque dijeron que NO)
+            $('#etiqueta_descuento').hide();
+        }
+
+        calcular_vuelto();
+    }
+}
+// ==========================================
+// UN SOLO BLOQUE DE INICIALIZACIÓN
+// ==========================================
+$(document).ready(function() {
+    // Select2
+    if ($("#prestamo_garante").length > 0) {
+        $("#prestamo_garante").select2({
+            width: '100%',
+            placeholder: "Seleccionar Garante",
+            allowClear: true
+        });
+    }
+
+    // Buscador
+    $('#formBuscar').on('submit', function (e) {
+        let dni = $('#dni_post').val()?.trim();
+        if (!dni) {
+            e.preventDefault();
+            respuesta('Ingrese DNI para buscar', 'error');
+            return;
+        }
+        respuesta('Buscando cliente...', 'success');
+    });
+
+    // Lógica para la vista de Préstamos
+    if ($('#monto_prestamo').length > 0) {
+        ajustar_interfaz_tipo_pago();
+        calcular_cuota();
+    }
+
+    // Lógica para la vista de Cobros (Descuentos y Pagos)
+    if ($('#pago_metodo').length > 0) {
+        cambiar_metodo_pago();
+        aplicar_descuento();
+
+        $('#descontar_cantidad').on('keyup', function() {
+            let descuento_ingresado = parseFloat($(this).val()) || 0;
+            let cuota_original = parseFloat($('#monto_cuota_actual').val());
+
+            if (descuento_ingresado > cuota_original) {
+                respuesta('El descuento no puede ser mayor a la cuota (S/ ' + cuota_original.toFixed(2) + ')', 'warning');
+                $(this).val(cuota_original.toFixed(2));
+                descuento_ingresado = cuota_original;
+            }
+
+            let nuevo_monto_a_pagar = cuota_original - descuento_ingresado;
+            $('#monto_pagar').val(nuevo_monto_a_pagar.toFixed(2));
+
+            calcular_vuelto();
+        });
+    }
+    if ($('#pago_metodo').length > 0) {
+        cambiar_metodo_pago();
+        aplicar_descuento();
+
+        // AQUÍ ES DONDE ESTÁ EL EVENTO QUE DEBES REEMPLAZAR:
+        $('#descontar_cantidad').on('keyup', function() {
+            let descuento_ingresado = parseFloat($(this).val()) || 0;
+            let cuota_original = parseFloat($('#monto_cuota_actual').val());
+
+            if (descuento_ingresado > cuota_original) {
+                respuesta('El descuento no puede ser mayor a la cuota (S/ ' + cuota_original.toFixed(2) + ')', 'warning');
+                $(this).val(cuota_original.toFixed(2));
+                descuento_ingresado = cuota_original;
+            }
+
+            let nuevo_monto_a_pagar = cuota_original - descuento_ingresado;
+            $('#monto_pagar').val(nuevo_monto_a_pagar.toFixed(2));
+
+            // ==========================================
+            // MAGIA VISUAL: TARJETA Y ETIQUETA DEL INPUT
+            // ==========================================
+            if (descuento_ingresado > 0) {
+                $('#texto_cuota_principal').html('S/ ' + nuevo_monto_a_pagar.toFixed(2));
+                $('#texto_cuota_principal').addClass('text-success').removeClass('text-gray-800');
+                $('#texto_descuento_aplicado').text('- S/ ' + descuento_ingresado.toFixed(2));
+                $('#badge_descuento_visual').fadeIn(150);
+
+                // MOSTRAMOS LA ETIQUETA "Con Descuento" EN EL INPUT
+                $('#etiqueta_descuento').fadeIn(150);
+            } else {
+                $('#texto_cuota_principal').html('S/ ' + cuota_original.toFixed(2));
+                $('#texto_cuota_principal').removeClass('text-success').addClass('text-gray-800');
+                $('#badge_descuento_visual').fadeOut(150);
+
+                // OCULTAMOS LA ETIQUETA SI EL DESCUENTO ES CERO
+                $('#etiqueta_descuento').fadeOut(150);
+            }
+
+            calcular_vuelto();
+        });
+    }
+});
+
+function actualizar_resumen() {
+    // 1. Capturamos todos los valores actuales
+    let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
+    let descuento = parseFloat($('#descontar_cantidad').val()) || 0;
+    let total_pagar = parseFloat($('#monto_pagar').val()) || 0;
+    let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
+    let monto_vuelto = parseFloat($('#monto_vuelto').val()) || 0; // CAPTURAMOS EL VUELTO
+    let metodo = $('#pago_metodo').find(':selected').data('tipo');
+
+    // 2. Si es pago digital, el recibido es igual al total a pagar
+    if (metodo === 'transferencia' || metodo === 'yape' || metodo === 'plin') {
+        monto_recibido = total_pagar;
+        $('#label_monto_recibido').text('Monto Recibido (' + (metodo.charAt(0).toUpperCase() + metodo.slice(1)) + ')');
+    } else {
+        $('#label_monto_recibido').text('Monto Recibido (Efectivo)');
+    }
+
+    // 3. Pintamos la Cuota Original
+    $('#resumen_cuota').text('S/ ' + cuota_original.toFixed(2));
+
+    // 4. Pintamos el Descuento (Si existe)
+    if (descuento > 0) {
+        $('#li_resumen_descuento').attr('style', 'display: flex !important;');
+        $('#resumen_descuento').text('- S/ ' + descuento.toFixed(2));
+    } else {
+        $('#li_resumen_descuento').attr('style', 'display: none !important;');
+    }
+
+    // 5. Pintamos el Total Final y lo Recibido
+    $('#resumen_total').text('S/ ' + total_pagar.toFixed(2));
+    $('#resumen_recibido').text('S/ ' + monto_recibido.toFixed(2));
+
+    // ==========================================
+    // 6. NUEVO: Lógica visual para el Vuelto
+    // ==========================================
+    if (metodo === 'efectivo' && monto_vuelto > 0) {
+        // Solo lo mostramos si pagaron en efectivo y de verdad sobra plata
+        $('#li_resumen_vuelto').attr('style', 'display: flex !important; background-color: #fff3cd;'); // Fondo un poco amarillo para resaltar
+        $('#resumen_vuelto').text('S/ ' + monto_vuelto.toFixed(2));
+    } else {
+        // Lo ocultamos si pagaron exacto o por medios digitales
+        $('#li_resumen_vuelto').attr('style', 'display: none !important;');
+    }
 }

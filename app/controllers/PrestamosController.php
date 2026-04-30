@@ -177,7 +177,7 @@ class PrestamosController
         $result = 2;
         $message = 'OK';
         $id_generado = 0;
-
+        $usuario= $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
         try {
             // Aseguramos que ambos valores sean enteros para una comparación exacta
             $id_cliente = !empty($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : 0;
@@ -206,6 +206,7 @@ class PrestamosController
                         // ==========================================
                         $result_prestamo = $this->builder->save("prestamos",array(
                             'id_cliente' => $_POST['id_cliente'],
+                            'id_usuario' =>$usuario,
                             'prestamo_monto' => $_POST['prestamo_monto'],
                             'prestamo_interes' => $_POST['prestamo_interes'],
                             'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'],

@@ -378,4 +378,28 @@ class Cobros
         }
     }
 
+    public function listar_bancos(){
+        try{
+            $sql = 'SELECT * FROM bancos';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([]);
+            return $stm->fetchall();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 0;
+        }
+    }
+
+    public function listar_metodos_de_pago(){
+        try{
+            $sql = 'SELECT * FROM metodos_pago';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([]);
+            return $stm->fetchall();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 0;
+        }
+    }
+
 }

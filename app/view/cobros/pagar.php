@@ -69,71 +69,164 @@
             </div>
 
             <?php if (!empty($cuota_a_pagar)) { ?>
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <div class="card shadow-sm h-100" style="border-left: 4px solid #4e73df;">
-                            <div class="card-body">
-                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                                    Cuota a Pagar
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="h4 mb-0 fw-bold text-gray-800">
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #4e73df;">
+                        <div class="card-body">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                Cuota a Pagar
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="h4 mb-0 fw-bold text-gray-800 transition-color" id="texto_cuota_principal">
                                         S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
                                     </div>
-                                    <div class="text-sm text-danger fw-bold">
-                                        <i class="fa fa-calendar-times me-1"></i> Vence: <?= date('d/m/Y', strtotime($cuota_a_pagar->pago_diario_fecha)) ?>
+
+                                    <div id="badge_descuento_visual" style="display: none;" class="mt-1">
+                            <span class="text-danger" style="text-decoration: line-through; font-size: 0.85em;">
+                                S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
+                            </span>
+                                        <span class="badge bg-warning text-dark ms-1" id="texto_descuento_aplicado"></span>
                                     </div>
                                 </div>
-                                <input type="hidden" id="id_pago" name="id_pago" value="<?= $cuota_a_pagar->id_pago_diario ?>">
-                                <input type="hidden" id="monto_cuota_actual" value="<?= $cuota_a_pagar->pago_diario_monto ?>">
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="col-md-6 mb-3">
-                        <div class="card shadow-sm h-100" style="border-left: 4px solid #36b9cc;">
-                            <div class="card-body">
-                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
-                                    Próximo Cobro (Automático)
+                                <div class="text-sm text-danger fw-bold text-end">
+                                    <i class="fa fa-calendar-times me-1"></i> Vence:<br>
+                                    <?= date('d/m/Y', strtotime($cuota_a_pagar->pago_diario_fecha)) ?>
                                 </div>
-                                <div class="h5 mb-0 fw-bold text-gray-800 mt-2">
-                                    <?php
-                                    if ($fecha_proximo_cobro == "Préstamo Finalizado") {
-                                        echo '<span class="text-success"><i class="fa fa-check-circle me-1"></i> Última Cuota</span>';
-                                    } else {
-                                        echo '<i class="fa fa-calendar-day me-1"></i> ' . date('d/m/Y', strtotime($fecha_proximo_cobro));
-                                    }
-                                    ?>
-                                </div>
-                                <input type="hidden" id="prestamo_prox_cobro" name="prestamo_prox_cobro" value="<?= $fecha_proximo_cobro ?>">
                             </div>
+                            <input type="hidden" id="id_pago" name="id_pago" value="<?= $cuota_a_pagar->id_pago_diario ?>">
+                            <input type="hidden" id="monto_cuota_actual" value="<?= $cuota_a_pagar->pago_diario_monto ?>">
                         </div>
                     </div>
                 </div>
 
-                <div class="row g-3 mb-4 align-items-end">
-                    <div class="col-md-4">
-                        <div class="form-floating">
-                            <input id="pago_recepcion" name="pago_recepcion" type="text" class="form-control" placeholder=" ">
-                            <label>Recepción</label>
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #36b9cc;">
+                        <div class="card-body">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                Próximo Cobro
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800 mt-2">
+                                <?php
+                                if ($fecha_proximo_cobro == "Préstamo Finalizado") {
+                                    echo '<span class="text-success"><i class="fa fa-check-circle me-1"></i> Última Cuota</span>';
+                                } else {
+                                    echo '<i class="fa fa-calendar-day me-1"></i> ' . date('d/m/Y', strtotime($fecha_proximo_cobro));
+                                }
+                                ?>
+                            </div>
+                            <input type="hidden" id="prestamo_prox_cobro" name="prestamo_prox_cobro" value="<?= $fecha_proximo_cobro ?>">
                         </div>
                     </div>
-                    <div class="col-md-4">
+                </div>
+            </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 mb-3">
                         <div class="form-floating">
-                            <select id="pago_metodo" name="pago_metodo" class="form-select" placeholder=" ">
+                            <select id="pago_metodo" name="pago_metodo" class="form-select" onchange="cambiar_metodo_pago()" required>
                                 <option value="">Seleccione</option>
-                                <option value="transferencia">Transferencia</option>
-                                <option value="efectivo">Efectivo</option>
-                                <option value="plin">Plin</option>
-                                <option value="yape">Yape</option>
+                                <?php
+                                if (!empty($metodos_pago)) {
+                                    foreach ($metodos_pago as $metodo):
+                                        ?>
+                                        <option value="<?= $metodo->id_metodo_pago ?>"
+                                                data-tipo="<?= strtolower($metodo->metodo_pago_nombre) ?>">
+                                            <?= $metodo->metodo_pago_nombre ?>
+                                        </option>
+                                    <?php
+                                    endforeach;
+                                }
+                                ?>
                             </select>
-                            <label>Método de Pago</label>
+                            <label>Método de Pago <span class="text-danger">*</span></label>
                         </div>
                     </div>
-                    <div class="col-md-4">
+
+                    <div class="col-md-6 mb-3">
                         <div class="form-floating">
-                            <input id="pago_recepcion_yp" name="pago_recepcion_yp" type="text" class="form-control" placeholder=" ">
-                            <label>Titular</label>
+                            <input type="number" step="0.01" id="monto_pagar" name="monto_pagar"
+                                   class="form-control text-success font-weight-bold bg-white"
+                                   value="<?= number_format($cuota_a_pagar->pago_diario_monto, 2, '.', '') ?>"
+                                   readonly placeholder=" ">
+                            <label>
+                                Monto a Pagar (S/)
+                                <span id="etiqueta_descuento" class="text-danger ms-1" style="display: none; font-size: 0.9em; font-weight: bold;">
+                <i class="fa fa-tags me-1"></i>Con Descuento
+            </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="grupo_efectivo" style="display: none;">
+                        <div class="row g-3 border p-3 rounded bg-light mx-0">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" step="0.01" id="monto_recibido" name="monto_recibido" class="form-control" onkeyup="calcular_vuelto()" placeholder=" ">
+                                    <label>Monto Recibido (S/)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" id="monto_vuelto" name="monto_vuelto" class="form-control text-danger font-weight-bold" readonly value="0.00" placeholder=" ">
+                                    <label>Vuelto (S/)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="grupo_operacion_titular" style="display: none;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" id="num_operacion" name="num_operacion" class="form-control" placeholder=" ">
+                                    <label>Número de Operación</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" id="nombre_titular" name="nombre_titular" class="form-control" placeholder=" ">
+                                    <label>Nombre del Titular</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="grupo_transferencia" style="display: none;">
+                        <div class="row"> <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <select id="banco_entidad" name="banco_entidad" class="form-select">
+                                        <option value="">Seleccione Banco...</option>
+                                        <?php
+                                        if (!empty($bancos)) {
+                                            foreach ($bancos as $banco):
+                                                ?>
+                                                <option value="<?= $banco->id_banco ?>"><?= $banco->banco_nombre ?> (<?= $banco->banco_abreviado ?>)</option>
+                                            <?php
+                                            endforeach;
+                                        }
+                                        ?>
+                                    </select>
+                                    <label>Banco o Entidad</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input type="date" id="fecha_transferencia" name="fecha_transferencia" class="form-control" value="<?= date('Y-m-d') ?>">
+                                    <label>Fecha de Transferencia</label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                    <div class="col-md-12">
+                        <div class="form-floating">
+                            <input type="text" id="pago_observacion" name="pago_observacion" class="form-control" placeholder=" ">
+                            <label>Observación / Detalles</label>
                         </div>
                     </div>
                 </div>
@@ -156,6 +249,46 @@
                         </div>
                     </div>
                 </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow-sm border-bottom-success">
+                    <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fa fa-receipt me-2"></i>Resumen de la Operación
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Monto de Cuota Original</span>
+                                <span class="font-weight-bold text-dark" id="resumen_cuota">S/ 0.00</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center text-danger" id="li_resumen_descuento" style="display: none !important;">
+                                <span><i class="fa fa-arrow-down me-1"></i> Descuento Aplicado</span>
+                                <span class="font-weight-bold" id="resumen_descuento">- S/ 0.00</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                                <strong class="text-dark">Total a Pagar</strong>
+                                <strong class="text-primary h5 mb-0" id="resumen_total">S/ 0.00</strong>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-muted" id="label_monto_recibido">Monto Recibido (Efectivo)</span>
+                                <span class="font-weight-bold text-success" id="resumen_recibido">S/ 0.00</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center" id="li_resumen_vuelto" style="display: none !important;">
+                                <span class="text-muted"><i class="fa fa-reply me-1"></i> Vuelto a Entregar</span>
+                                <span class="font-weight-bold text-danger h6 mb-0" id="resumen_vuelto">S/ 0.00</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
 
                 <div class="text-center mt-4">
                     <button id="btn-guardar-pago" onclick="guardar_pago_prestamo()" type="button" class="btn btn-lg btn-primary px-5">
