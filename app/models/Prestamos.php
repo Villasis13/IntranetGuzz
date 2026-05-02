@@ -90,7 +90,7 @@ class Prestamos
                     COUNT(id_prestamos) as cantidad, 
                     COALESCE(SUM(prestamo_monto), 0) as total 
                 FROM prestamos 
-                WHERE DATE(prestamo_fecha) = ?';
+                WHERE DATE(prestamo_fecha) = ? and prestamo_estado= 1 ';
 
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$fecha]);

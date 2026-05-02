@@ -92,7 +92,9 @@
 											echo '<small>Préstamo Antiguo</small>'; // Amarillo (advertencia)
 										} else if ($c->prestamo_estado == 4) {
 											echo '<small>Préstamo Antiguo Cancelado</small>'; // Gris (secundario)
-										}
+										} else if($c->prestamo_estado == 5 ){
+                                            echo '<small>Anulado</small>';
+                                        }
 										?>
                                     </td>
                                     <td>

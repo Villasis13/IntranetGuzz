@@ -177,7 +177,7 @@ class PrestamosController
         $result = 2;
         $message = 'OK';
         $id_generado = 0;
-
+        $usuario= $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
         try {
             // Aseguramos que ambos valores sean enteros para una comparación exacta
             $id_cliente = !empty($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : 0;
@@ -206,6 +206,7 @@ class PrestamosController
                         // ==========================================
                         $result_prestamo = $this->builder->save("prestamos",array(
                             'id_cliente' => $_POST['id_cliente'],
+                            'id_usuario' =>$usuario,
                             'prestamo_monto' => $_POST['prestamo_monto'],
                             'prestamo_interes' => $_POST['prestamo_interes'],
                             'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'],
@@ -386,6 +387,9 @@ class PrestamosController
             $mes_fecha = date('m', $timestamp_prestamo);
             $anho_fecha = date('Y', $timestamp_prestamo);
 
+            // Obtenemos la hora de emisión de la base de datos
+            $hora_emision = date('H:i:s', $timestamp_prestamo);
+
             $meses = [
                 '01'=>'Enero', '02'=>'Febrero', '03'=>'Marzo', '04'=>'Abril',
                 '05'=>'Mayo', '06'=>'Junio', '07'=>'Julio', '08'=>'Agosto',
@@ -393,8 +397,9 @@ class PrestamosController
             ];
             $mes = $meses[$mes_fecha];
 
-            $mes_actual = $meses[date('m')];
-            $texto_emision = "Iquitos, " . date('d') . " de " . $mes_actual . " de " . date('Y') . " a las " . date('H:i:s');
+            // CORRECCIÓN AQUÍ: Usamos las variables de la base de datos ($dia_fecha, $mes, $anho_fecha, $hora_emision)
+            // en lugar de usar date() que traía la fecha actual.
+            $texto_emision = "Iquitos, " . $dia_fecha . " de " . $mes . " de " . $anho_fecha . " a las " . $hora_emision;
 
             $pdf = new Fpdf();
             $pdf->AliasNbPages();
@@ -450,8 +455,7 @@ class PrestamosController
                 $pdf->MultiCell(180,6,'3. Tercero. EL MUTUATARIO como garantía de la reposición dineraria entrega AL MUTUANTE el bien mueble siguiente:',0,'J',0);
                 $pdf->MultiCell(180,6,'- '.$data_prestamo->prestamo_garantia,0,'J',0);
                 $pdf->Ln();
-                $pdf->MultiCell(180,6,'El o las mismos que deberán ser recuperados a los 30 días de firmado el presente documento, vale decir el MUTUATARIO recuperara sus bienes, previo pago del capital más los intereses legales que debe pagar al "mutuante", al contrario, la garantía será retenida en forma definitiva según sea el monto adeudado.',0,'J',0);
-                $pdf->MultiCell(180,6,'4. Cuarto: Habiéndose vencido la garantía y superado el plazo legal acordado, será entregado y transferido en propiedad definitiva a favor de la empresa de la Inversiones y Multiservicios GUZZ E.I.R.L, Identificado con el N° RUC: 20600864255, dirección: calle. José Olaya #324 - Túpac Amaru, con el representante legal de nombre Karlo Abel Guzmán Arbirdo y con DNI 46119903, quien a partir de la fecha será, su real y legitimo poseedor y propietario, sin mediar cualquier comunicación antigua.',0,'J',0);
+                $pdf->MultiCell(180,6,'El o los mismos que deberán ser recuperados una vez cancelada la totalidad del préstamo; vale decir, el MUTUATARIO recuperará sus bienes previo pago del capital más los intereses acordados que debe pagar al "mutuante". En caso de incumplimiento del pago total al finalizar el cronograma acordado, la garantía será retenida en forma definitiva para cubrir el monto adeudado.',0,'J',0);                $pdf->MultiCell(180,6,'4. Cuarto: Habiéndose vencido la garantía y superado el plazo legal acordado, será entregado y transferido en propiedad definitiva a favor de la empresa de la Inversiones y Multiservicios GUZZ E.I.R.L, Identificado con el N° RUC: 20600864255, dirección: calle. José Olaya #324 - Túpac Amaru, con el representante legal de nombre Karlo Abel Guzmán Arbirdo y con DNI 46119903, quien a partir de la fecha será, su real y legitimo poseedor y propietario, sin mediar cualquier comunicación antigua.',0,'J',0);
                 $pdf->MultiCell(180,6,'5. Quinto: "EL MUTUARIO" y el "MUTUANTE" en común acuerdo valorizan la garantía según factura y tiempo de uso del bien, en la suma de .............. no pudiendo ser el préstamo superior a lo valorizado de la garantía por depreciación.',0,'J',0);
                 $pdf->MultiCell(180,6,'6. Sexto: "EL MUTUANTE" para estos efectos hace entrega en el acto "al mutuario" la suma de .......... en dinero en efectivo que "EL MUTUARIO" se compromete a devolver respetando la cláusula tercera del presente contrato.',0,'J',0);
                 $pdf->MultiCell(180,6,'7. Séptimo: EL MUTUARIO Y EL MUTUATARIO declaran conocer y aceptar los términos y condiciones de las cláusulas del presente contrato privado, suscribiéndose en la ciudad de Iquitos a los '.$dia_fecha.' días de '.$mes.' del '.$anho_fecha,0,'J',0);
@@ -466,7 +470,7 @@ class PrestamosController
             $pdf->AddPage();
             $pdf->SetFillColor(232,232,232);
             $pdf->Cell(180,6,'CRONOGRAMA DE PAGOS - ' . strtoupper($data_prestamo->prestamo_tipo_pago),0,1,'C',0);
-            $pdf->Cell(25,6,'Monto sin redondear: S/. ' . number_format($monto_total, 1),0,1,'L',0);
+            $pdf->Cell(25,6,'Monto sin redondear: S/. ' . number_format($monto_total, 2),0,1,'L',0);
 
             $pdf->SetFont('Arial','',10);
             $pdf->Ln();
@@ -489,7 +493,7 @@ class PrestamosController
                 $pdf->Cell(15, 6, $item, 1, 0, 'C');
                 $fecha_pago_db = date('d/m/Y', strtotime($cuota->pago_diario_fecha));
                 $pdf->Cell(30, 6, $fecha_pago_db, 1, 0, 'C');
-                $pdf->Cell(25, 6, 'S/. ' . number_format($cuota->pago_diario_monto, 1), 1, 0, 'R');
+                $pdf->Cell(25, 6, 'S/. ' . number_format($cuota->pago_diario_monto, 2), 1, 0, 'R');
                 $pdf->Cell(20, 6, '', 1, 1, 'C');
                 $item++;
             }
@@ -497,7 +501,7 @@ class PrestamosController
             $pdf->SetFont('Arial','B',10);
             $pdf->SetX(10);
             $pdf->Cell(45,6,'Total General',1,0,'L',1);
-            $pdf->Cell(25,6,'S/. '. number_format($monto_total, 1),1,1,'R',1);
+            $pdf->Cell(25,6,'S/. '. number_format($monto_total, 2),1,1,'R',1);
 
             // COLUMNA DERECHA: DATOS DEL CLIENTE
             $posX = 110;
@@ -507,7 +511,7 @@ class PrestamosController
             $pdf->SetFont('Arial','',10);
 
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'DNI: '.$data_cliente->cliente_dni,0,'L');
-            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Monto Prestado: S/. ' . number_format($data_prestamo->prestamo_monto, 1),0,'L');
+            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Monto Prestado: S/. ' . number_format($data_prestamo->prestamo_monto, 2),0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Interés Aplicado: '.$data_prestamo->prestamo_interes.'%',0,'L');
 
             // IMPRESIÓN DE LAS 4 FECHAS (Modificado según lo que pediste)
@@ -519,7 +523,7 @@ class PrestamosController
             // CLÁUSULAS DERECHAS
             $pdf->Ln();
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Cláusulas:',0,'L');
-            $pdf->SetX($posX); $pdf->MultiCell(80,4,'1. El cliente tiene un plazo de 30 dias para pagar las cuotas.',0,'J');
+            $pdf->SetX($posX); $pdf->MultiCell(80,4,'1. El cliente se compromete a pagar las cuotas segun el cronograma y plazo establecido.',0,'J');
             $pdf->SetX($posX); $pdf->MultiCell(80,4,'2. Si al final del periodo de pago...',0,'J');
             $pdf->SetX($posX); $pdf->MultiCell(80,4,'3. Si el cliente quiere cancelar...',0,'J');
             $pdf->SetX($posX); $pdf->MultiCell(80,4,'4. Info llamar al 969553545.',0,'J');
@@ -531,6 +535,7 @@ class PrestamosController
             $pdf->SetX($posX); $pdf->Cell(80,6,"DNI: " .$data_cliente->cliente_dni,0,1,'L');
 
             $pdf->Ln();
+            // Imprime la misma fecha y hora del sistema en la tercera página
             $pdf->Cell(180,6,$texto_emision,0,1,'R');
 
             $pdf->Output();

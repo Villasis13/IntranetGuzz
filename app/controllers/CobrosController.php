@@ -68,6 +68,8 @@ class CobrosController
             $garante = $this->prestamos->listar_garante_prestamo($id_prestamo);
             $cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
             $resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
+            $bancos = $this->cobros->listar_bancos();
+            $metodos_pago = $this->cobros->listar_metodos_de_pago();
             $descuentos_prestamos = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
 
             // Obtenemos TODAS las cuotas
@@ -144,10 +146,9 @@ class CobrosController
         try {
             $id_prestamo = (int)$_POST['id_prestamo'];
             $id_pago_cuota = (int)$_POST['id_pago'];
-            $id_usuario= $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
+            $id_usuario = $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
             $fecha_descuento = date('Y-m-d H:i:s');
             $usuario_nombre = $this->cobros->listar_usuario($id_usuario);
-
 
             // RECIBIMOS EL DESCUENTO DESDE EL JS
             $descuento_monto = isset($_POST['descuento']) && is_numeric($_POST['descuento']) ? (float)$_POST['descuento'] : 0;
@@ -156,6 +157,7 @@ class CobrosController
             $cuota_a_pagar = $this->cobros->listar_cuota_individual($id_pago_cuota);
             $prestamo = $this->prestamos->listar_x_id($id_prestamo);
             $caja_abierta = $this->caja->traer_datos_caja();
+            $usuario= $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
 
             if ($cuota_a_pagar && $prestamo && $caja_abierta) {
 
@@ -166,7 +168,7 @@ class CobrosController
                 $monto_cobrado = $monto_cuota_original;
 
                 // ==========================================
-                // 2. VERIFICAR Y APLICAR DESCUENTO (MODIFICADO AQUÍ)
+                // 2. VERIFICAR Y APLICAR DESCUENTO
                 // ==========================================
                 if ($descuento_monto > 0) {
                     // Restamos el descuento para saber cuánto cobrar en físico
@@ -174,10 +176,10 @@ class CobrosController
 
                     // Actualizamos la cuota añadiendo los dos nuevos campos solicitados
                     $this->builder->update("pagos_diarios", array(
-                        'pago_diario_descuento_estado' => 1,               // <-- NUEVO CAMPO AÑADIDO
-                        'pago_diario_descuento_monto'  => $descuento_monto, // <-- NUEVO CAMPO AÑADIDO
-                        'pago_diario_descuento_fecha'  => $fecha_descuento, // <-- NUEVO CAMPO AÑADIDO
-                        'pago_diario_descuento_usuario'  => $usuario_nombre->usuario_nickname // <-- NUEVO CAMPO AÑADIDO
+                        'pago_diario_descuento_estado' => 1,
+                        'pago_diario_descuento_monto'  => $descuento_monto,
+                        'pago_diario_descuento_fecha'  => $fecha_descuento,
+                        'pago_diario_descuento_usuario'=> $usuario_nombre->usuario_nickname
                     ), array(
                         'id_pago_diario' => $id_pago_cuota
                     ));
@@ -192,16 +194,35 @@ class CobrosController
                 // 4. REGISTRAR EL TICKET DE PAGO (HISTORIAL)
                 // ==========================================
                 $mt = microtime(true);
-                $this->builder->save("pagos", array(
-                    'id_prestamo' => $id_prestamo,
-                    'pago_monto' => $monto_cobrado, // Ticket sale por lo que realmente pagó
-                    'pago_recepcion' => $_POST['pago_recepcion'] ?? '',
-                    'pago_metodo' => $_POST['pago_metodo'] ?? '',
-                    'pago_recepcion_yp' => $_POST['pago_recepcion_yp'] ?? '',
-                    'pago_fecha' => date('Y-m-d H:i:s'),
-                    'pago_estado' => 1,
-                    'pago_mt' => $mt,
-                ));
+                $estado_descuento = ($descuento_monto > 0) ? 1 : 0;
+
+                // Armamos el arreglo de datos con los NUEVOS campos y validamos nulos
+                $datos_pago = array(
+                    'id_prestamo'              => $id_prestamo,
+                    'id_pago_diario'           => $id_pago_cuota, // <-- RELACIÓN DIRECTA CON LA CUOTA
+                    'pago_monto'               => $monto_cobrado, // Ticket sale por lo que realmente pagó
+                    'pago_metodo'              => $_POST['pago_metodo'] ?? '',
+                    'pago_fecha'               => date('Y-m-d H:i:s'),
+                    'pago_estado'              => 1,
+                    'pago_mt'                  => $mt,
+                    'id_cliente'                  => $prestamo->id_cliente,
+                    'id_usuario'                  => $usuario,
+                    // --- NUEVOS CAMPOS DE DESCUENTO ---
+                    'pago_descuento_estado'    => $estado_descuento,
+                    'pago_descuento_monto'           => $descuento_monto,
+
+                    // --- NUEVOS CAMPOS DINÁMICOS ---
+                    'pago_monto_recibido'      => !empty($_POST['monto_recibido']) ? (float)$_POST['monto_recibido'] : null,
+                    'pago_monto_vuelto'        => !empty($_POST['monto_vuelto']) ? (float)$_POST['monto_vuelto'] : null,
+                    'pago_operacion'       => !empty($_POST['num_operacion']) ? trim($_POST['num_operacion']) : null,
+                    'pago_oper_titular'      => !empty($_POST['nombre_titular']) ? trim($_POST['nombre_titular']) : null,
+                    'id_banco'                 => !empty($_POST['banco_entidad']) ? (int)$_POST['banco_entidad'] : null,
+                    'pago_fecha_operacion' => !empty($_POST['fecha_transferencia']) ? $_POST['fecha_transferencia'] : null,
+                    'pago_observacion'         => !empty($_POST['pago_observacion']) ? trim($_POST['pago_observacion']) : null
+                );
+
+                // Guardamos el historial del pago
+                $this->builder->save("pagos", $datos_pago);
 
                 $pago_guardado = $this->cobros->listar_pago_guardado_x_mt($mt);
                 $id_pago_generado = $pago_guardado ? $pago_guardado->id_pago : 0;
@@ -218,7 +239,7 @@ class CobrosController
                 // ==========================================
                 // 6. EVALUAR EL ESTADO GLOBAL DEL PRÉSTAMO
                 // ==========================================
-                // AQUI ESTÁ LA MAGIA: Descontamos la cuota ORIGINAL de la deuda global
+                // Descontamos la cuota ORIGINAL de la deuda global
                 $nuevo_saldo = max(0, $prestamo->prestamo_saldo_pagar - $monto_cuota_original);
 
                 $todas_las_cuotas = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
@@ -443,9 +464,9 @@ class CobrosController
             // Es vital usar transacciones: Si falla actualizar la caja, el préstamo no se anula.
             $this->cobros->iniciar_transaccion();
 
-            // PASO 1: Cambiar el estado del préstamo a 2 (Anulado)
+            // PASO 1: Cambiar el estado del préstamo a 5 (Anulado)
             // Necesitas tener esta función en tu modelo Prestamos
-            $estado_actualizado = $this->cobros->cambiar_estado($id_prestamo, 2);
+            $estado_actualizado = $this->cobros->cambiar_estado($id_prestamo, 5);
 
             if (!$estado_actualizado) {
                 throw new Exception("Error al cambiar el estado del préstamo en la base de datos.");

@@ -31,7 +31,7 @@
     $saldo_pendiente = $total_prestamo - $total_pagado - $total_descuento;
 
     // ==========================================
-    // 2. LÓGICA DE ANULACIÓN (REGLA 48 HORAS)
+    // 2. LÓGICA DE ANULACIÓN (REGLA 48 HORAS Y ESTADO ACTIVO)
     // ==========================================
     $tiene_pagos = ($total_pagado > 0) ? true : false;
 
@@ -42,8 +42,11 @@
     $diferencia_segundos = strtotime(date('Y-m-d H:i:s')) - strtotime($fecha_creacion);
     $horas_transcurridas = $diferencia_segundos / 3600;
 
-    // Condición estricta: No tiene pagos, han pasado menos de 48 hrs y asumiendo que el estado sigue activo
-    $se_puede_anular = (!$tiene_pagos && $horas_transcurridas <= 48);
+    // Verificamos si el estado del préstamo es 1 (Activo)
+    $estado_prestamo = isset($listar_cliente_x_prestamo->prestamo_estado) ? $listar_cliente_x_prestamo->prestamo_estado : 0;
+
+    // Condición estricta: No tiene pagos, han pasado menos de 48 hrs y el estado es exactamente 1
+    $se_puede_anular = (!$tiene_pagos && $horas_transcurridas <= 48 && $estado_prestamo == 1);
     ?>
 
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
