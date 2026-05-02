@@ -301,123 +301,168 @@ class CobrosController
 		}
 		echo json_encode(array("result" => array("code" => $result, "message" => $message)));
 	}
-	public function generar_documento(){
-		try{
-			$id_pago = $_GET['id'];
-			$data = $this->cobros->listar_x_id($id_pago);
-			$debe_pagar = $this->prestamos->listar_x_id($data->id_prestamos)->prestamo_monto + ($this->prestamos->listar_x_id($data->id_prestamos)->prestamo_monto * $this->prestamos->listar_x_id($data->id_prestamos)->prestamo_interes / 100);
-			$ya_pago = $this->prestamos->listar_total_pagos_x_prestamo($data->id_prestamos)->total;
-			$descuento = $this->cobros->listar_decuentos_x_prestamo($data->id_prestamos)[0]->total;
-			$garante = $this->cobros->listar_garante($data->id_prestamos);
-			$saldo_final = $debe_pagar - $ya_pago - $descuento;
+    public function generar_documento(){
+        try{
+            date_default_timezone_set('America/Lima');
+            $id_pago = $_GET['id'];
 
-			// Ticket de 80mm x 200mm
-			$pdf = new FPDF('P','mm',array(80,200));
-			$pdf->AddPage();
-			$pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png',5,5,15);
-			$pdf->Ln(10);
-			$pdf->SetFont('Arial','B',10);
-			$pdf->Cell(0,5,'INVERSIONES GUZZ E.I.R.L',0,1,'C');
-			$pdf->Ln(2);
-			
-			$pdf->SetFont('Arial','B',9);
-			$pdf->Cell(0,5,'RECIBO DE PAGO',0,1,'C');
-			$pdf->Ln(10);
-			
-			$pdf->SetFont('Arial','',8);
-			$pdf->Cell(0,5,'Nro Recibo: '.$id_pago,0,1,'L');
-			$pdf->Cell(0,5,'Cliente: '.$data->cliente_nombre.' '.$data->cliente_apellido_paterno.' '.$data->cliente_apellido_materno,0,1,'L');
-			$pdf->Cell(0,5,'DNI: '.$data->cliente_dni,0,1,'L');
-			$pdf->Cell(0,5,'Fecha: '.$data->pago_fecha,0,1,'L');
-			$pdf->Cell(0,5,'Tipo: '.$data->prestamo_tipo_pago,0,1,'L');
-			$pdf->Cell(0,5,'Resta por Pagar: S/. '.$saldo_final,0,1,'L');
-			$pdf->Ln(2);
-			
-			$pdf->Cell(0,5,'Garante: '.$garante->cliente_nombre . ' ' . $garante->cliente_apellido_paterno,0,1,'L');
-			$pdf->Ln(2);
-			
-			$pdf->Cell(0,5,'Monto Pagado: S/. '.$data->pago_monto,0,1,'L');
-			$pdf->Cell(0,5,'Recepcionado por: '.$data->pago_recepcion,0,1,'L');
-			
-			$pdf->Ln(20);
-			$pdf->Cell(0,5,'----------------------------',0,1,'C');
-			$pdf->Cell(0,5,'FIRMA',0,1,'C');
-			
-			$pdf->Output();
-			
-			/*$pdf = new Fpdf();
-			$pdf->AliasNbPages();
-			$pdf->AddPage();
-			$pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png',5,5,10);
-			$pdf->SetFont('Arial','B',10);
-			$pdf->Cell(30);
-			$pdf->Cell(30,10,'Inversiones y Multiservicios GUZZ E.I.R.L',0,0,'C');
-			$pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png',105,5,10);
-			$pdf->SetFont('Arial','B',10);
-			$pdf->Cell(30);
-			$pdf->Cell(110,10,'Inversiones y Multiservicios GUZZ E.I.R.L',0,0,'C');
-			$pdf->Ln(20);
-			$pdf->SetFont('Arial','B',10);
-			$pdf->CellFitSpace(50,6,'Recibo de Pago',0,0,'C',0);
-			$pdf->CellFitSpace(170,6,'Recibo de Pago',0,1,'C',0);
-			$pdf->SetFont('Arial','',10);
-			$pdf->CellFitSpace(100,6,'Nro Recibo: ' . $id_pago,0,0,'L',0);
-			$pdf->CellFitSpace(120,6,'Nro Recibo: ' . $id_pago,0,1,'L',0);
-//			if($producto != ""){
-//				$pdf->CellFitSpace(100,6,'Producto: ' . $producto,0,0,'L',0);
-//				$pdf->CellFitSpace(180,6,'Producto: ' . $producto,0,1,'L',0);
-//			}
-			$pdf->CellFitSpace(100,6,'Cliente: ' . $data->cliente_nombre . ' ' . $data->cliente_apellido_paterno. ' ' . $data->cliente_apellido_materno,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Cliente: ' . $data->cliente_nombre . ' ' . $data->cliente_apellido_paterno. ' ' . $data->cliente_apellido_materno,0,1,'L',0);
-			$pdf->CellFitSpace(100,6,'DNI: ' . $data->cliente_dni,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'DNI: ' . $data->cliente_dni,0,1,'L',0);
-			$pdf->CellFitSpace(100,6,'Fecha: ' . $data->pago_fecha,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Fecha: ' . $data->pago_fecha,0,1,'L',0);
-			$pdf->CellFitSpace(100,6,'Tipo: ' . $data->prestamo_tipo_pago,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Tipo: ' . $data->prestamo_tipo_pago,0,1,'L',0);
-			$pdf->CellFitSpace(100,6,'Resta por Pagar: S/. ' . $saldo_final,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Resta por Pagar: S/. ' . $saldo_final,0,1,'L',0);
-//			$pdf->Ln(2);
-//			$pdf->CellFitSpace(100,6,'Garantia:',0,0,'L',0);
-//			$pdf->CellFitSpace(180,6,'Garantia:',0,1,'L',0);
-//			$pdf->CellFitSpace(100,6,'' . $garantia,0,0,'L',0);
-//			$pdf->CellFitSpace(180,6,'' . $garantia,0,1,'L',0);
-			$pdf->Ln(2);
+            // ── DATOS ─────────────────────────────────────────────────────────
+            $data = $this->cobros->listar_x_id($id_pago);
+            if (empty($data)) throw new Exception("Pago no encontrado.");
 
-			$pdf->Ln(1);
-			$pdf->CellFitSpace(100,6,'Garante:',0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Garante:',0,1,'L',0);
-			$pdf->CellFitSpace(100,6,'' . $data->prestamo_garante,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'' . $data->prestamo_garante,0,1,'L',0);
-			$pdf->Ln(1);
-			
-			
-//			if($saldo_final>0 && $_POST['tipo']=="Mensual"){
-//				$pdf->CellFitSpace(100,6,'Si paga el próximo mes: S/. ' . $saldo_final_prox_mes,0,0,'L',0);
-//				$pdf->CellFitSpace(180,6,'Si paga el próximo mes: S/. ' . $saldo_final_prox_mes,0,1,'L',0);
-//			}
-			
-			$pdf->Ln();
-			$pdf->CellFitSpace(100,6,'Monto Pagado: S/. ' . $data->pago_monto,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Monto Pagado: S/. ' . $data->pago_monto,0,1,'L',0);
+            // Totales del prestamo
+            $debe_pagar      = floatval($data->prestamo_monto) + (floatval($data->prestamo_monto) * floatval($data->prestamo_interes) / 100);
+            $ya_pago_result  = $this->prestamos->listar_total_pagos_x_prestamo($data->id_prestamos);
+            $ya_pago         = floatval($ya_pago_result->total ?? 0);
+            $descuentos_raw  = $this->cobros->listar_decuentos_x_prestamo($data->id_prestamos);
+            $descuento       = (!empty($descuentos_raw) && !empty($descuentos_raw[0]->total)) ? floatval($descuentos_raw[0]->total) : 0;
+            $saldo_final     = max(0, $debe_pagar - $ya_pago - $descuento);
+            $saldo_anterior  = $saldo_final + floatval($data->pago_monto);
 
-			$pdf->Ln();
-			$pdf->CellFitSpace(100,6,'Recepcionado por: ' . $data->pago_recepcion,0,0,'L',0);
-			$pdf->CellFitSpace(180,6,'Recepcionado por: ' . $data->pago_recepcion,0,1,'L',0);
+            // Cuota original desde pagos_diarios
+            $cuota          = !empty($data->id_pago_diario) ? $this->cobros->listar_cuota_individual($data->id_pago_diario) : null;
+            $cuota_original = $cuota ? floatval($cuota->pago_diario_monto) : floatval($data->pago_monto);
 
-			$pdf->Ln();
-			$pdf->Ln();
-			$pdf->CellFitSpace(80,6,'................................',0,0,'L',0);
-			$pdf->CellFitSpace(100,6,'................................',0,1,'C',0);
-			$pdf->Cell(80,6,'       Firma',0,0,'L',0);
-			$pdf->Cell(90,6,'       Firma',0,0,'C',0);
-			$pdf->Ln();
-			$pdf->Output();*/
-		}catch (Exception $e){
-			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-			$message = $e->getMessage();
-		}
-	}
+            // Metodo de pago
+            $metodo         = $this->cobros->listar_metodo_pago($data->pago_metodo);
+            $metodo_nombre  = $metodo ? ucfirst($metodo->metodo_pago_nombre) : 'N/A';
+
+            // Usuario que registro
+            $usuario_reg    = !empty($data->id_usuario) ? $this->cobros->listar_usuario($data->id_usuario) : null;
+            $nombre_usuario = $usuario_reg ? ($usuario_reg->usuario_nickname ?? 'Admin') : 'Admin';
+
+            // Fecha de vencimiento del prestamo
+            $vencimiento       = $this->prestamos->listar_fecha_vencimiento_prestamo($data->id_prestamos);
+            $fecha_vencimiento = (!empty($vencimiento) && !empty($vencimiento->fecha_vencimiento)) ? $vencimiento->fecha_vencimiento : null;
+
+            // Nombre completo del cliente
+            $apellido_m      = !empty($data->cliente_apellido_materno) ? ' ' . $data->cliente_apellido_materno : '';
+            $nombre_cliente  = strtoupper($data->cliente_nombre . ' ' . $data->cliente_apellido_paterno . $apellido_m);
+
+            // ── FPDF ──────────────────────────────────────────────────────────
+            $W = 70; // Ancho util: 80mm - 5mm margen izq - 5mm margen der
+            $SEP = str_repeat('-', 38);
+            $SEP_INT = str_repeat('-', 28); // Separador interior (indentado)
+
+            $pdf = new FPDF('P', 'mm', array(80, 210));
+            $pdf->SetMargins(5, 5, 5);
+            $pdf->SetAutoPageBreak(true, 5);
+            $pdf->AddPage();
+
+            // ── ENCABEZADO ────────────────────────────────────────────────────
+            $pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png', 5, 5, 12);
+            $pdf->Ln(9);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell($W, 5, 'INVERSIONES GUZZ E.I.R.L', 0, 1, 'C');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 4, 'RUC: 20600864255', 0, 1, 'C');
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell($W, 5, 'RECIBO DE PAGO Nro. ' . str_pad($id_pago, 6, '0', STR_PAD_LEFT), 0, 1, 'C');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 4, 'Fecha: ' . date('d/m/Y H:i', strtotime($data->pago_fecha)), 0, 1, 'C');
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // ── DATOS DEL CLIENTE ─────────────────────────────────────────────
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell($W, 4, 'DATOS DEL CLIENTE', 0, 1, 'L');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 4, 'Cliente: ' . $nombre_cliente, 0, 1, 'L');
+            $pdf->Cell($W, 4, 'DNI: ' . $data->cliente_dni, 0, 1, 'L');
+            $pdf->Cell($W, 4, 'Tipo de credito: ' . ucfirst($data->prestamo_tipo_pago), 0, 1, 'L');
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // ── DETALLE DEL PAGO ──────────────────────────────────────────────
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell($W, 4, 'DETALLE DEL PAGO', 0, 1, 'L');
+            $pdf->SetFont('Arial', '', 8);
+
+            // Saldo Anterior
+            $pdf->Cell(40, 4, 'Saldo Anterior:', 0, 0, 'L');
+            $pdf->Cell(30, 4, 'S/ ' . number_format($saldo_anterior, 2), 0, 1, 'R');
+
+            // Cuota
+            $pdf->Cell($W, 4, 'Cuota:', 0, 1, 'L');
+            $pdf->Cell(5,  4, '', 0, 0);
+            $pdf->Cell(35, 4, 'Original:', 0, 0, 'L');
+            $pdf->Cell(30, 4, 'S/ ' . number_format($cuota_original, 2), 0, 1, 'R');
+
+            if ($data->pago_descuento_estado == 1 && floatval($data->pago_descuento_monto) > 0) {
+                $pdf->Cell(5,  4, '', 0, 0);
+                $pdf->Cell(35, 4, 'Descuento:', 0, 0, 'L');
+                $pdf->Cell(30, 4, '-S/ ' . number_format(floatval($data->pago_descuento_monto), 2), 0, 1, 'R');
+                $pdf->Cell(5,  3, '', 0, 0);
+                $pdf->Cell(65, 3, $SEP_INT, 0, 1, 'C');
+                $pdf->Cell(5,  4, '', 0, 0);
+                $pdf->Cell(35, 4, 'Cuota Final:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto), 2), 0, 1, 'R');
+            }
+
+            // Pago
+            $pdf->Cell($W, 4, 'Pago:', 0, 1, 'L');
+            $pdf->Cell(5,  4, '', 0, 0);
+            $pdf->Cell(35, 4, 'Monto Pagado:', 0, 0, 'L');
+            $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto), 2), 0, 1, 'R');
+            if (!empty($data->pago_monto_recibido)) {
+                $pdf->Cell(5,  4, '', 0, 0);
+                $pdf->Cell(35, 4, 'Monto Recibido:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto_recibido), 2), 0, 1, 'R');
+                $pdf->Cell(5,  4, '', 0, 0);
+                $pdf->Cell(35, 4, 'Vuelto:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto_vuelto ?? 0), 2), 0, 1, 'R');
+            }
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // Saldo Restante
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(40, 4, 'Saldo Restante:', 0, 0, 'L');
+            $pdf->Cell(30, 4, 'S/ ' . number_format($saldo_final, 2), 0, 1, 'R');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // ── METODO DE PAGO ────────────────────────────────────────────────
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell($W, 4, 'METODO DE PAGO', 0, 1, 'L');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 4, 'Metodo: ' . $metodo_nombre, 0, 1, 'L');
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // ── INFORMACION DEL CREDITO ───────────────────────────────────────
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell($W, 4, 'INFORMACION DEL CREDITO', 0, 1, 'L');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 4, 'Interes aplicado: ' . floatval($data->prestamo_interes) . '%', 0, 1, 'L');
+            if (!empty($fecha_vencimiento)) {
+                $pdf->Cell($W, 4, 'Fecha de vencimiento: ' . date('d/m/Y', strtotime($fecha_vencimiento)), 0, 1, 'L');
+            }
+            if (!empty($data->prestamo_prox_cobro)) {
+                $pdf->Cell($W, 4, 'Proximo pago: ' . date('d/m/Y', strtotime($data->prestamo_prox_cobro)), 0, 1, 'L');
+            }
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // ── CONTROL INTERNO ───────────────────────────────────────────────
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell($W, 4, 'CONTROL INTERNO', 0, 1, 'L');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell($W, 4, 'Registrado por: ' . $nombre_usuario, 0, 1, 'L');
+            if (!empty($data->pago_observacion)) {
+                $pdf->Cell($W, 4, 'Observacion: ' . $data->pago_observacion, 0, 1, 'L');
+            } elseif ($data->pago_descuento_estado == 1) {
+                $pdf->Cell($W, 4, 'Observacion: Descuento aplicado', 0, 1, 'L');
+            }
+            $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
+
+            // ── FIRMA ─────────────────────────────────────────────────────────
+            $pdf->Ln(10);
+            $pdf->Cell($W, 4, str_repeat('-', 25), 0, 1, 'C');
+            $pdf->Cell($W, 4, 'FIRMA CLIENTE', 0, 1, 'C');
+
+            $pdf->Output();
+
+        }catch (Exception $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+    }
 
     public function anular(){
         // Preparamos el array de respuesta para el AJAX
@@ -484,7 +529,7 @@ class CobrosController
             $concepto_movimiento = "DEVOLUCIÓN POR ANULACIÓN DE CRÉDITO #" . $id_prestamo;
             $movimiento_registrado = $this->cobros->registrar_movimiento_caja(
                 $caja_abierta->id_caja,
-                1, // O el ID del tipo de movimiento que uses
+                3, // Tipo 3 = Devolución por anulación de préstamo
                 $monto_capital,
                 $hoy
             );

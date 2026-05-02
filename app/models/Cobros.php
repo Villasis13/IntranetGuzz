@@ -402,4 +402,16 @@ class Cobros
         }
     }
 
+    public function listar_metodo_pago($id) {
+        try {
+            $sql = 'SELECT * FROM metodos_pago WHERE id_metodo_pago = ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetch();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
+
 }

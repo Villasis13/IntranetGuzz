@@ -306,7 +306,7 @@
                                             <td><?= date('d/m/Y', strtotime($pago->pago_fecha)) ?></td>
                                             <td><?= date('H:i:s', strtotime($pago->pago_fecha)) ?></td>
                                             <td><?= $pago->cliente_nombre . ' ' . $pago->cliente_apellido_paterno ?></td>
-                                            <td><?= ucfirst($pago->pago_metodo) ?></td>
+                                            <td><?= ucfirst($pago->metodo_pago_nombre ?? $pago->pago_metodo) ?></td>
                                             <td class="text-right m-ing">S/ <?= number_format($pago->pago_monto, 2) ?></td>
                                             <td></td>
                                         </tr>
@@ -329,20 +329,47 @@
                                     <th class="arqueo-col-header egr text-right" style="width:140px;">Egresos</th>
                                 </tr>
                                 <?php
-                                $suma_prestamos = 0;
-                                if(!empty($prestamos_caja)):
-                                    foreach($prestamos_caja as $prestamo):
-                                        $suma_prestamos += $prestamo->prestamo_monto;
+                                $suma_prestamos   = 0;
+                                $suma_anulaciones = 0;
+                                $hay_movimientos_prestamos = !empty($prestamos_caja) || !empty($anulaciones_prestamos);
+                                if($hay_movimientos_prestamos):
+                                    foreach((array)$prestamos_caja as $prestamo):
+                                        $es_anulado = (intval($prestamo->prestamo_estado) === 5);
+                                        if (!$es_anulado) $suma_prestamos += $prestamo->prestamo_monto;
                                         ?>
-                                        <tr class="data-row">
+                                        <tr class="data-row<?= $es_anulado ? ' table-secondary' : '' ?>">
                                             <td><?= date('d/m/Y', strtotime($prestamo->prestamo_fecha)) ?></td>
                                             <td><?= date('H:i:s', strtotime($prestamo->prestamo_fecha)) ?></td>
-                                            <td><?= $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno ?></td>
+                                            <td>
+                                                <?= $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno ?>
+                                                <?php if ($es_anulado): ?>
+                                                    <span class="badge badge-danger ml-1">ANULADO</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td>Préstamo <?= ucfirst($prestamo->prestamo_tipo_pago) ?></td>
                                             <td></td>
-                                            <td class="text-right m-egr">S/ <?= number_format($prestamo->prestamo_monto, 2) ?></td>
+                                            <td class="text-right <?= $es_anulado ? 'text-muted' : 'm-egr' ?>">
+                                                <?php if ($es_anulado): ?>
+                                                    <del>S/ <?= number_format($prestamo->prestamo_monto, 2) ?></del>
+                                                <?php else: ?>
+                                                    S/ <?= number_format($prestamo->prestamo_monto, 2) ?>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
-                                    <?php endforeach; else: ?>
+                                    <?php endforeach;
+                                    foreach((array)$anulaciones_prestamos as $an):
+                                        $suma_anulaciones += $an->caja_movimiento_monto;
+                                        ?>
+                                        <tr class="data-row table-secondary">
+                                            <td><?= date('d/m/Y', strtotime($an->caja_movimiento_fecha)) ?></td>
+                                            <td><?= date('H:i:s', strtotime($an->caja_movimiento_fecha)) ?></td>
+                                            <td class="text-muted"><em>Devolución por Anulación</em></td>
+                                            <td class="text-muted"><em>Anulación de Préstamo</em></td>
+                                            <td class="text-right text-muted"><em>S/ <?= number_format($an->caja_movimiento_monto, 2) ?></em></td>
+                                            <td></td>
+                                        </tr>
+                                    <?php endforeach;
+                                else: ?>
                                     <tr class="arqueo-empty"><td colspan="6">No se han otorgado préstamos en este turno.</td></tr>
                                 <?php endif; ?>
 

@@ -52,6 +52,7 @@ class CajaController
             $pagos_caja = [];
             $prestamos_caja = [];
             $ingresos_manuales = [];
+            $anulaciones_prestamos = [];
 
             // Asume el nombre del usuario logueado (Ajusta la variable de sesión según tu sistema)
             $usuario_actual = $_SESSION['n_usuario'] ?? 'Administrador';
@@ -66,8 +67,11 @@ class CajaController
                 // 2. Traer Préstamos desde la fecha de apertura
                 $prestamos_caja = $this->prestamos->listar_prestamos_desde($fecha_caja);
 
-                // 3. Traer Ingresos Manuales a caja desde la apertura (Tipo 1 = Ingreso manual, si aplica)
+                // 3. Traer Ingresos Manuales a caja desde la apertura (Tipo 1 = Ingreso manual)
                 $ingresos_manuales = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
+
+                // 4. Traer Anulaciones de préstamos (Tipo 3 = Devolución por anulación)
+                $anulaciones_prestamos = $this->prestamos->listar_anulaciones_prestamos_desde($ultima_caja->id_caja);
             }
 
             require _VIEW_PATH_ . 'header.php';
@@ -373,27 +377,36 @@ class CajaController
             $ultima_caja = $this->caja->listar_ultima_caja();
             $usuario_actual = $_SESSION['n_usuario'] ?? 'Administrador';
 
-            $fecha_caja        = null;
-            $pagos_caja        = [];
-            $prestamos_caja    = [];
-            $ingresos_manuales = [];
+            $fecha_caja            = null;
+            $pagos_caja            = [];
+            $prestamos_caja        = [];
+            $ingresos_manuales     = [];
+            $anulaciones_prestamos = [];
 
             if($ultima_caja->estado_caja == 1){
-                $fecha_caja        = $this->caja->traer_fecha()->fecha_caja;
-                $pagos_caja        = $this->prestamos->listar_pagos_desde($fecha_caja);
-                $prestamos_caja    = $this->prestamos->listar_prestamos_desde($fecha_caja);
-                $ingresos_manuales = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
+                $fecha_caja            = $this->caja->traer_fecha()->fecha_caja;
+                $pagos_caja            = $this->prestamos->listar_pagos_desde($fecha_caja);
+                $prestamos_caja        = $this->prestamos->listar_prestamos_desde($fecha_caja);
+                $ingresos_manuales     = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
+                $anulaciones_prestamos = $this->prestamos->listar_anulaciones_prestamos_desde($ultima_caja->id_caja);
             }
 
             // Cálculos (idénticos a la vista)
             $suma_pagos = 0;
             foreach ((array)$pagos_caja as $p) $suma_pagos += $p->pago_monto;
 
+            // Préstamos anulados (estado=5) se muestran pero NO cuentan en el total de egresos
             $suma_prestamos = 0;
-            foreach ((array)$prestamos_caja as $pr) $suma_prestamos += $pr->prestamo_monto;
+            foreach ((array)$prestamos_caja as $pr) {
+                if (intval($pr->prestamo_estado) !== 5) $suma_prestamos += $pr->prestamo_monto;
+            }
 
             $suma_ingresos_manuales = 0;
             foreach ((array)$ingresos_manuales as $m) $suma_ingresos_manuales += $m->caja_movimiento_monto;
+
+            // Las devoluciones por anulación se muestran pero NO cuentan en el total de ingresos
+            $suma_anulaciones = 0;
+            foreach ((array)$anulaciones_prestamos as $an) $suma_anulaciones += $an->caja_movimiento_monto;
 
             $total_ingresos = $suma_pagos + $suma_ingresos_manuales;
             $total_egresos  = $suma_prestamos;
@@ -461,7 +474,7 @@ class CajaController
                     $pdf->Cell(30, 5, date('d/m/Y', strtotime($pago->pago_fecha)), 1, 0, 'C');
                     $pdf->Cell(22, 5, date('H:i:s', strtotime($pago->pago_fecha)), 1, 0, 'C');
                     $pdf->Cell(80, 5, $pago->cliente_nombre . ' ' . $pago->cliente_apellido_paterno, 1, 0, 'L');
-                    $pdf->Cell(28, 5, ucfirst($pago->pago_metodo), 1, 0, 'C');
+                    $pdf->Cell(28, 5, ucfirst($pago->metodo_pago_nombre ?? $pago->pago_metodo), 1, 0, 'C');
                     $pdf->Cell(20, 5, 'S/ ' . number_format($pago->pago_monto, 2), 1, 1, 'R');
                 }
             } else {
@@ -475,20 +488,33 @@ class CajaController
             $pdf->Cell(180, 6, 'Prestamos Otorgados', 1, 1, 'L', true);
 
             $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(30, 5, 'Fecha',   1, 0, 'C', true);
-            $pdf->Cell(22, 5, 'Hora',    1, 0, 'C', true);
-            $pdf->Cell(80, 5, 'Cliente', 1, 0, 'C', true);
-            $pdf->Cell(28, 5, 'Tipo',    1, 0, 'C', true);
-            $pdf->Cell(20, 5, 'Egreso',  1, 1, 'C', true);
+            $pdf->Cell(30, 5, 'Fecha',    1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Hora',     1, 0, 'C', true);
+            $pdf->Cell(68, 5, 'Cliente',  1, 0, 'C', true);
+            $pdf->Cell(30, 5, 'Tipo',     1, 0, 'C', true);
+            $pdf->Cell(15, 5, 'Ingreso',  1, 0, 'C', true);
+            $pdf->Cell(15, 5, 'Egreso',   1, 1, 'C', true);
 
             $pdf->SetFont('Arial', '', 8);
-            if (!empty($prestamos_caja)) {
-                foreach ($prestamos_caja as $prestamo) {
+            if (!empty($prestamos_caja) || !empty($anulaciones_prestamos)) {
+                foreach ((array)$prestamos_caja as $prestamo) {
+                    $es_anulado = (intval($prestamo->prestamo_estado) === 5);
+                    $tipo_txt   = ($es_anulado ? '[ANULADO] ' : '') . 'Prestamo ' . ucfirst($prestamo->prestamo_tipo_pago);
+                    $monto_txt  = $es_anulado ? '(Anulado)' : 'S/ ' . number_format($prestamo->prestamo_monto, 2);
                     $pdf->Cell(30, 5, date('d/m/Y', strtotime($prestamo->prestamo_fecha)), 1, 0, 'C');
                     $pdf->Cell(22, 5, date('H:i:s', strtotime($prestamo->prestamo_fecha)), 1, 0, 'C');
-                    $pdf->Cell(80, 5, $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno, 1, 0, 'L');
-                    $pdf->Cell(28, 5, 'Prestamo ' . ucfirst($prestamo->prestamo_tipo_pago), 1, 0, 'C');
-                    $pdf->Cell(20, 5, 'S/ ' . number_format($prestamo->prestamo_monto, 2), 1, 1, 'R');
+                    $pdf->Cell(68, 5, $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno, 1, 0, 'L');
+                    $pdf->Cell(30, 5, $tipo_txt, 1, 0, 'C');
+                    $pdf->Cell(15, 5, '', 1, 0, 'R');
+                    $pdf->Cell(15, 5, $monto_txt, 1, 1, 'R');
+                }
+                foreach ((array)$anulaciones_prestamos as $an) {
+                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($an->caja_movimiento_fecha)), 1, 0, 'C');
+                    $pdf->Cell(22, 5, date('H:i:s', strtotime($an->caja_movimiento_fecha)), 1, 0, 'C');
+                    $pdf->Cell(68, 5, 'Devolucion por Anulacion (*)', 1, 0, 'L');
+                    $pdf->Cell(30, 5, 'Anulacion', 1, 0, 'C');
+                    $pdf->Cell(15, 5, 'S/ ' . number_format($an->caja_movimiento_monto, 2), 1, 0, 'R');
+                    $pdf->Cell(15, 5, '', 1, 1, 'R');
                 }
             } else {
                 $pdf->Cell(180, 5, 'No se han otorgado prestamos en este turno.', 1, 1, 'C');
@@ -534,6 +560,11 @@ class CajaController
             $pdf->SetFont('Arial', 'B', 11);
             $pdf->Cell(130, 8, 'SALDO ACTUAL EN CAJA:', 1, 0, 'R', true);
             $pdf->Cell(50,  8, 'S/ ' . number_format($saldo_final, 2), 1, 1, 'R', true);
+
+            if ($suma_anulaciones > 0) {
+                $pdf->SetFont('Arial', 'I', 7);
+                $pdf->Cell(180, 4, '(*) Prestamos anulados y sus devoluciones se muestran como referencia y no afectan los totales.', 0, 1, 'R');
+            }
 
             $pdf->Ln(4);
             $pdf->SetFont('Arial', 'I', 8);

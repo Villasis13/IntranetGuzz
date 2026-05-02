@@ -210,11 +210,11 @@ class Prestamos
 
     public function listar_pagos_desde($fecha_apertura) {
         try {
-            // Hacemos INNER JOIN para traer el nombre del cliente
-            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno 
+            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno, mp.metodo_pago_nombre
                 FROM pagos p
                 INNER JOIN prestamos pr ON p.id_prestamo = pr.id_prestamos
                 INNER JOIN clientes c ON pr.id_cliente = c.id_cliente
+                LEFT JOIN metodos_pago mp ON mp.id_metodo_pago = p.pago_metodo
                 WHERE p.pago_fecha >= ?";
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$fecha_apertura]);
@@ -242,9 +242,7 @@ class Prestamos
 
     public function listar_ingresos_manuales_desde($id_caja) {
         try {
-            // Traemos movimientos vinculados a este ID de caja que sean ingresos (tipo 1)
-            // Y descartamos los que son pagos de cuotas para no duplicar (asumiendo que los manuales tienen descripción)
-            $sql = "SELECT * FROM caja_movimientos 
+            $sql = "SELECT * FROM caja_movimientos
                 WHERE id_caja = ? AND caja_movimiento_tipo = 1";
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$id_caja]);
@@ -255,6 +253,31 @@ class Prestamos
         }
     }
 
+    public function listar_anulaciones_prestamos_desde($id_caja) {
+        try {
+            $sql = "SELECT * FROM caja_movimientos
+                WHERE id_caja = ? AND caja_movimiento_tipo = 3";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_caja]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+
+    public function listar_fecha_vencimiento_prestamo($id_prestamo) {
+        try {
+            $sql = "SELECT MAX(pago_diario_fecha) AS fecha_vencimiento FROM pagos_diarios WHERE id_prestamos = ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetch();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
 
     public function listar_cuotas_x_id_prestamo($id_prestamo) {
         try {

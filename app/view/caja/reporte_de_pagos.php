@@ -62,22 +62,37 @@
                                 <th>Prestamo Monto Interes</th>
                                 <th>Prestamo Garantía</th>
                                 <th>Prestamo Fecha de Pago</th>
+                                <th>Estado</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php
                             $con = 1;
                             foreach ($reporte_prestamos as $cg){
+                                $anulado = (intval($cg->prestamo_estado) === 5);
                                 ?>
-                                <tr class="text-center">
+                                <tr class="text-center <?= $anulado ? 'table-secondary' : '' ?>">
                                     <td><?= $con?></td>
-                                    <td><?= $cg->prestamo_monto?></td>
+                                    <td>
+                                        <?php if ($anulado): ?>
+                                            <del class="text-muted"><?= $cg->prestamo_monto ?></del>
+                                        <?php else: ?>
+                                            <?= $cg->prestamo_monto ?>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= date('Y-m-d',strtotime($cg->prestamo_fecha)) ?>
                                         <small><?= date('H:i',strtotime($cg->prestamo_fecha)) ?></small>
                                     </td>
                                     <td><?= $cg->prestamo_monto_interes ?> </td>
                                     <td><?= $cg->prestamo_garantia ?> </td>
-                                    <td><?= date('Y-m-d',strtotime($cg->prestamo_prox_cobro)) ?>
+                                    <td><?= date('Y-m-d',strtotime($cg->prestamo_prox_cobro)) ?></td>
+                                    <td>
+                                        <?php if ($anulado): ?>
+                                            <span class="badge badge-danger">ANULADO</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-success">Activo</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                                 <?php
                                 $con++;
