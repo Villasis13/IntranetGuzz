@@ -241,12 +241,25 @@ class PrestamosController
                                 $monto_total_deuda = $_POST['prestamo_monto'] + ceil($_POST['prestamo_monto'] * $_POST['prestamo_interes'] / 100);
                                 $monto_cuota = round($monto_total_deuda / $num_cuotas, 1);
 
-                                $fecha_iterador = new DateTime($_POST['prestamo_fecha']);
-                                $fecha_iterador->modify('+1 day');
+                                $fecha_iterador = new DateTime($_POST['prestamo_prox_cobro']);
 
                                 $suma_cuotas_acumuladas = 0;
 
                                 for ($i = 1; $i <= $num_cuotas; $i++) {
+                                    if ($i == $num_cuotas) {
+                                        $monto_esta_cuota = $monto_total_deuda - $suma_cuotas_acumuladas;
+                                    } else {
+                                        $monto_esta_cuota = $monto_cuota;
+                                        $suma_cuotas_acumuladas += $monto_esta_cuota;
+                                    }
+
+                                    $this->builder->save("pagos_diarios", array(
+                                        'id_prestamos' => $id_generado,
+                                        'pago_diario_monto' => round($monto_esta_cuota, 1),
+                                        'pago_diario_fecha' => $fecha_iterador->format('Y-m-d'),
+                                        'pago_diario_estado' => 1
+                                    ));
+
                                     if ($tipo_pago == 'diario') {
                                         $fecha_iterador->add(new DateInterval('P1D'));
                                         if ($incluir_domingos == 'no' && $fecha_iterador->format('w') == 0) {
@@ -263,20 +276,6 @@ class PrestamosController
                                             $fecha_iterador->add(new DateInterval('P1D'));
                                         }
                                     }
-
-                                    if ($i == $num_cuotas) {
-                                        $monto_esta_cuota = $monto_total_deuda - $suma_cuotas_acumuladas;
-                                    } else {
-                                        $monto_esta_cuota = $monto_cuota;
-                                        $suma_cuotas_acumuladas += $monto_esta_cuota;
-                                    }
-
-                                    $this->builder->save("pagos_diarios", array(
-                                        'id_prestamos' => $id_generado,
-                                        'pago_diario_monto' => round($monto_esta_cuota, 1),
-                                        'pago_diario_fecha' => $fecha_iterador->format('Y-m-d'),
-                                        'pago_diario_estado' => 1
-                                    ));
                                 }
 
                                 // ==========================================
