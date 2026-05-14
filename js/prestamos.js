@@ -483,13 +483,17 @@ function cambiar_proximo_cobro() {
 
 function preguntar_anular_prestamo(id_prestamo) {
     Swal.fire({
-        title: '¿Anular este crédito?',
-        text: "El préstamo se cancelará y el dinero prestado retornará automáticamente a la caja actual. Esta acción no se puede deshacer.",
+        title: '¿Anular este Préstamo?',
+        html: 'Esta acción es irreversible.<br><br>' +
+            '<ul style="text-align: left; font-size: 0.9em;">' +
+            '<li>El <b>dinero del capital</b> regresará a la caja actual.</li>' +
+            '<li>La <b>línea de crédito</b> será restaurada al cliente.</li>' +
+            '</ul>',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, anular crédito',
+        confirmButtonText: 'Sí, anular préstamo',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {

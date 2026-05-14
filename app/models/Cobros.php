@@ -414,4 +414,15 @@ class Cobros
         }
     }
 
+    public function restaurar_linea_credito($id_cliente, $monto_capital) {
+        // Sumamos el capital directamente al saldo actual de su línea
+        $sql = "UPDATE clientes 
+            SET cliente_credito = cliente_credito + ? 
+            WHERE id_cliente = ?";
+
+        $stm = $this->pdo->prepare($sql);
+        return $stm->execute([$monto_capital, $id_cliente]);
+    }
+
+
 }

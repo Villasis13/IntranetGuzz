@@ -117,11 +117,25 @@ class CobrosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$id_prestamo = $_GET['id'];
-			$pagos_p = $this->cobros->listar_pagos_x_prestamo($id_prestamo);
-			$descuentos_prestamos = $this->cobros->listar_datos_decuentos_x_prestamo($id_prestamo);
-			$descuentos_monto = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
-			$listar_cliente_x_prestamo = $this->clientes->listar_x_id_presrtamo($id_prestamo);
+            $id_prestamo = $_GET['id'];
+
+            $pagos_p = $this->cobros->listar_pagos_x_prestamo($id_prestamo);
+            $descuentos_prestamos = $this->cobros->listar_datos_decuentos_x_prestamo($id_prestamo);
+            $descuentos_monto = $this->cobros->listar_decuentos_x_prestamo($id_prestamo);
+
+            // Cliente principal
+            $listar_cliente_x_prestamo = $this->clientes->listar_x_id_presrtamo($id_prestamo);
+
+            // ==========================================
+            // NUEVO: BUSCAR DATOS DEL GARANTE
+            // ==========================================
+            $info_garante = null;
+            if (!empty($listar_cliente_x_prestamo->prestamo_garante)) {
+                // Nota: Aquí usa la función de tu modelo que lista un solo cliente por su ID.
+                // Si tu función se llama diferente (ej: listar_cliente o listar_x_id), cámbiala aquí:
+                $info_garante = $this->clientes->listar_cliente_x_id($listar_cliente_x_prestamo->prestamo_garante);
+            }
+
             $descuentos_aplicados = $this->cobros->listar_descuentos_x_prestamo($id_prestamo);
             $usuario=$this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
             $usuario_nombre = $this->cobros->listar_usuario($usuario);
@@ -137,6 +151,9 @@ class CobrosController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
+
+
+
     public function guardar_pago()
     {
         $result = 2; // Estado de error por defecto
@@ -465,7 +482,6 @@ class CobrosController
     }
 
     public function anular(){
-        // Preparamos el array de respuesta para el AJAX
         $res = array('codigo' => 0, 'mensaje' => 'Error desconocido');
         $hoy=date("Y-m-d H:i:s");
 
@@ -484,7 +500,6 @@ class CobrosController
             }
 
             // 2. Obtener la última caja abierta
-            // (Asumiendo que tienes un modelo/función que trae la caja activa del día)
             $caja_abierta = $this->cobros->obtener_caja_abierta();
 
             if (empty($caja_abierta)) {
@@ -495,32 +510,26 @@ class CobrosController
             $monto_capital = floatval($prestamo->prestamo_monto);
             $monto_interes = floatval($prestamo->prestamo_monto_interes);
 
-            // ADVERTENCIA: Aquí se suman ambos según tu requerimiento.
-            // Contablemente se recomienda que sea solo $monto_capital.
-            $monto_a_devolver = $monto_capital ;
+            // Extraemos el ID del cliente para devolverle su crédito
+            $id_cliente = $prestamo->id_cliente;
 
+            $monto_a_devolver = $monto_capital ;
             $saldo_caja_actual = floatval($caja_abierta->monto_caja);
             $nuevo_saldo_caja = $saldo_caja_actual + $monto_a_devolver;
-
 
             // ==========================================
             // INICIO DE LA TRANSACCIÓN SQL
             // ==========================================
-            // Es vital usar transacciones: Si falla actualizar la caja, el préstamo no se anula.
             $this->cobros->iniciar_transaccion();
 
             // PASO 1: Cambiar el estado del préstamo a 5 (Anulado)
-            // Necesitas tener esta función en tu modelo Prestamos
             $estado_actualizado = $this->cobros->cambiar_estado($id_prestamo, 5);
-
             if (!$estado_actualizado) {
                 throw new Exception("Error al cambiar el estado del préstamo en la base de datos.");
             }
 
             // PASO 2: Actualizar el monto total de la caja
-            // Necesitas tener esta función en tu modelo Cajas
             $caja_actualizada = $this->cobros->actualizar_monto_caja($caja_abierta->id_caja, $nuevo_saldo_caja);
-
             if (!$caja_actualizada) {
                 throw new Exception("Error al actualizar el saldo de la caja.");
             }
@@ -529,13 +538,20 @@ class CobrosController
             $concepto_movimiento = "DEVOLUCIÓN POR ANULACIÓN DE CRÉDITO #" . $id_prestamo;
             $movimiento_registrado = $this->cobros->registrar_movimiento_caja(
                 $caja_abierta->id_caja,
-                3, // Tipo 3 = Devolución por anulación de préstamo
+                3,
                 $monto_capital,
                 $hoy
             );
-
             if (!$movimiento_registrado) {
                 throw new Exception("Error al registrar el movimiento en el historial de caja.");
+            }
+
+            // ==========================================
+            // PASO 4: RESTAURAR LA LÍNEA DE CRÉDITO
+            // ==========================================
+            $credito_restaurado = $this->cobros->restaurar_linea_credito($id_cliente, $monto_capital);
+            if (!$credito_restaurado) {
+                throw new Exception("Error al restaurar la línea de crédito del cliente.");
             }
 
             // ==========================================
@@ -544,20 +560,13 @@ class CobrosController
             $this->cobros->confirmar_transaccion(); // COMMIT
 
             $res['codigo'] = 1;
-            $res['mensaje'] = 'Crédito anulado exitosamente y dinero retornado a caja.';
+            $res['mensaje'] = 'Crédito anulado exitosamente. Dinero retornado a caja y línea de crédito restaurada.';
 
         } catch (Throwable $e) {
-            // Si CUALQUIER cosa falla arriba, deshacemos todo
             $this->cobros->revertir_transaccion(); // ROLLBACK
-
-            // Opcional: Registrar el error en tu log
-            // $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-
             $res['mensaje'] = $e->getMessage();
         }
 
-        // Devolver la respuesta en JSON para el archivo JS
         echo json_encode($res);
     }
-
 }

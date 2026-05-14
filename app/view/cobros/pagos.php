@@ -110,13 +110,55 @@
                         </div>
 
                         <div class="col-md-7">
-                            <h6 class="font-weight-bold text-secondary">Comentario / Detalles del Préstamo:</h6>
+                            <h6 class="font-weight-bold text-secondary mb-3">
+                                <i class="fa fa-info-circle me-1"></i> Detalles Adicionales del Préstamo
+                            </h6>
                             <div class="p-3 bg-light border rounded" style="min-height: 100px;">
-                                <?php
-                                echo isset($listar_cliente_x_prestamo->prestamo_comentario) && trim($listar_cliente_x_prestamo->prestamo_comentario) !== ''
-                                        ? nl2br(htmlspecialchars($listar_cliente_x_prestamo->prestamo_comentario))
-                                        : '<span class="text-muted">No hay comentarios registrados para este préstamo.</span>';
-                                ?>
+
+                                <!-- SECCIÓN GARANTÍA -->
+                                <div class="mb-3 border-bottom pb-2">
+            <span class="font-weight-bold text-dark">
+                <i class="fa fa-shield-alt me-1 text-primary"></i> Garantía:
+            </span>
+                                    <span class="d-block mt-1 text-muted">
+                <?= !empty($listar_cliente_x_prestamo->prestamo_garantia) ? htmlspecialchars($listar_cliente_x_prestamo->prestamo_garantia) : 'Ninguna registrada' ?>
+            </span>
+                                </div>
+
+                                <!-- SECCIÓN GARANTE -->
+                                <div class="mb-3 border-bottom pb-2">
+            <span class="font-weight-bold text-dark">
+                <i class="fa fa-user-shield me-1 text-info"></i> Garante:
+            </span>
+                                    <span class="d-block mt-1 text-muted">
+                <?php
+                if (!empty($info_garante)) {
+                    // Si encontramos al garante, imprimimos su nombre
+                    echo htmlspecialchars($info_garante->cliente_nombre . ' ' . $info_garante->cliente_apellido_paterno. ' '.$info_garante->cliente_apellido_materno );
+                } else if (!empty($listar_cliente_x_prestamo->prestamo_garante)) {
+                    // Si hay dato pero no lo encontró en la BD (Fallback)
+                    echo "ID Registrado: " . htmlspecialchars($listar_cliente_x_prestamo->prestamo_garante);
+                } else {
+                    echo 'Ninguno registrado';
+                }
+                ?>
+            </span>
+                                </div>
+
+                                <!-- SECCIÓN COMENTARIO -->
+                                <div class="mb-0">
+            <span class="font-weight-bold text-dark">
+                <i class="fa fa-comment-dots me-1 text-secondary"></i> Comentario:
+            </span>
+                                    <span class="d-block mt-1 text-muted">
+                <?php
+                echo isset($listar_cliente_x_prestamo->prestamo_comentario) && trim($listar_cliente_x_prestamo->prestamo_comentario) !== ''
+                        ? nl2br(htmlspecialchars($listar_cliente_x_prestamo->prestamo_comentario))
+                        : 'No hay comentarios registrados para este préstamo.';
+                ?>
+            </span>
+                                </div>
+
                             </div>
                         </div>
                     </div>

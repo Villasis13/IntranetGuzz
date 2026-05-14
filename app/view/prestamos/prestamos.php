@@ -83,19 +83,34 @@
                                     <td><?= $c->prestamo_motivo ?></td>
                                     <td><?= $c->prestamo_comentario ?></td>
                                     <td>
-										<?php
-										if ($c->prestamo_estado == 1) {
-											echo '<small>Activo</small>';
-										} else if ($c->prestamo_estado == 2) {
-											echo '<small>Cancelado</small>'; // Rojo para cancelado
-										} else if ($c->prestamo_estado == 3) {
-											echo '<small>Préstamo Antiguo</small>'; // Amarillo (advertencia)
-										} else if ($c->prestamo_estado == 4) {
-											echo '<small>Préstamo Antiguo Cancelado</small>'; // Gris (secundario)
-										} else if($c->prestamo_estado == 5 ){
-                                            echo '<small>Anulado</small>';
-                                        }
-										?>
+                                        <?php
+                                            if ($c->prestamo_estado == 1) {
+                                                // ACTIVO: Verde brillante con icono de check
+                                                echo '<span class="badge bg-success text-white" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
+                    <i class="fa fa-check-circle me-1"></i> Activo
+                  </span>';
+                                            } else if ($c->prestamo_estado == 2) {
+                                                // CANCELADO (Pagado): Azul con icono de doble check
+                                                echo '<span class="badge bg-primary text-white" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
+                    <i class="fa fa-check-square me-1"></i> Cancelado
+                  </span>';
+                                            } else if ($c->prestamo_estado == 3) {
+                                                // ANTIGUO: Amarillo con icono de reloj/historial
+                                                echo '<span class="badge bg-warning text-dark" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
+                    <i class="fa fa-history me-1"></i> P. Antiguo
+                  </span>';
+                                            } else if ($c->prestamo_estado == 4) {
+                                                // ANTIGUO CANCELADO: Gris con icono de archivo
+                                                echo '<span class="badge bg-secondary text-white" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
+                    <i class="fa fa-archive me-1"></i> P. Antiguo Cancelado
+                  </span>';
+                                            } else if($c->prestamo_estado == 5) {
+                                                // ANULADO: Rojo con icono de prohibición
+                                                echo '<span class="badge bg-danger text-white" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
+                    <i class="fa fa-ban me-1"></i> Anulado
+                  </span>';
+                                            }
+                                            ?>
                                     </td>
                                     <td>
                                         <!--<a href="<?php /*= _SERVER_ */?>prestamos/detalles/<?php /*= $c->id_prestamos */?>" class="btn-sm btn-warning text-white">

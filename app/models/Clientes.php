@@ -89,6 +89,20 @@ class Clientes
             return [];
         }
     }
+
+    public function listar_cliente_x_id($id){
+        try{
+            $sql = 'select * from clientes 
+					where id_cliente = ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
     public function motivos_morosos($id){
         try{
             $sql = 'select * from clientes_historial_moroso where id_cliente = ?' ;
