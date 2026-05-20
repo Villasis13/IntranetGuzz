@@ -19,17 +19,24 @@ class Prestamos
 			return [];
 		}
 	}
-	public function listar_x_id($id){
-		try{
-			$sql = 'select * from prestamos where id_prestamos = ?' ;
-			$stm = $this->pdo->prepare($sql);
-			$stm->execute([$id]);
-			return $stm->fetch();
-		} catch (Throwable $e){
-			$this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
-			return [];
-		}
-	}
+    public function listar_x_id($id_prestamo) {
+        try {
+            // Hacemos el LEFT JOIN apuntando a la tabla clientes como "g" (garante)
+            $sql = "SELECT p.*, 
+                       g.cliente_nombre AS garante_nombre, 
+                       g.cliente_apellido_paterno AS garante_paterno, 
+                       g.cliente_apellido_materno AS garante_materno
+                FROM prestamos p
+                LEFT JOIN clientes g ON p.prestamo_garante = g.id_cliente
+                WHERE p.id_prestamos = ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetch();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
 	public function listar_garante_prestamo($id){
 		try{
 			$sql = 'select * from prestamos as p 
@@ -227,10 +234,12 @@ class Prestamos
 
     public function listar_prestamos_desde($fecha_apertura) {
         try {
+            // CORRECCIÓN: Ahora filtramos estrictamente por prestamo_fecha_sistema
             $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno 
-                FROM prestamos p
-                INNER JOIN clientes c ON p.id_cliente = c.id_cliente
-                WHERE p.prestamo_fecha >= ?";
+            FROM prestamos p
+            INNER JOIN clientes c ON p.id_cliente = c.id_cliente
+            WHERE p.prestamo_fecha_sistema >= ?";
+
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$fecha_apertura]);
             return $stm->fetchAll();

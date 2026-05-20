@@ -129,13 +129,22 @@
                         <tbody>
                         <?php
                         $c = 1;
-                        $total_egresos = 0;
 
-                        // Añadimos una validación por si en algún momento no hay registros
+                        // Separamos las variables para sumar cada columna de forma independiente
+                        $total_capital = 0;
+                        $total_interes = 0;
+                        $total_deuda   = 0;
+
                         if (!empty($egresos)):
                             foreach ($egresos as $eg):
-                                $total_prestamo = $eg->prestamo_monto + $eg->prestamo_monto_interes;
-                                $total_egresos += $total_prestamo;
+                                $monto_capital = $eg->prestamo_monto;
+                                $monto_interes = $eg->prestamo_monto_interes;
+                                $total_prestamo = $monto_capital + $monto_interes;
+
+                                // Sumamos a los totales generales
+                                $total_capital += $monto_capital;
+                                $total_interes += $monto_interes;
+                                $total_deuda   += $total_prestamo;
                                 ?>
                                 <tr class="text-center">
                                     <td><?= $c++ ?></td>
@@ -144,8 +153,9 @@
                                     <td class="text-capitalize"><small><?= htmlspecialchars($eg->prestamo_tipo_pago) ?></small></td>
                                     <td><small><?= htmlspecialchars($eg->usuario_nickname) ?></small></td>
                                     <td><small><?= htmlspecialchars($eg->cliente_nombre. " ". $eg->cliente_apellido_paterno) ?></small></td>
-                                    <td><small>S/ <?= number_format($eg->prestamo_monto, 2) ?></small></td>
-                                    <td><small>S/ <?= number_format($eg->prestamo_monto_interes, 2) ?></small></td>
+
+                                    <td><small>S/ <?= number_format($monto_capital, 2) ?></small></td>
+                                    <td><small>S/ <?= number_format($monto_interes, 2) ?></small></td>
                                     <td class="fw-bold text-danger"><small>S/ <?= number_format($total_prestamo, 2) ?></small></td>
                                 </tr>
                             <?php
@@ -155,9 +165,9 @@
                         </tbody>
                         <tfoot>
                         <tr class="text-end table-danger fw-bold">
-                            <!-- El colspan ahora es 8 para alinear perfectamente con las 9 columnas -->
-                            <td colspan="8">Total Egresos:</td>
-                            <td class="text-center">S/ <?= number_format($total_egresos, 2) ?></td>
+                            <td colspan="8" class="text-end">Total Egresos (Solo Capital):</td>
+                            <td class="text-center" style="font-size: 1.1em;">S/ <?= number_format($total_capital, 2) ?></td>
+
                         </tr>
                         </tfoot>
                     </table>

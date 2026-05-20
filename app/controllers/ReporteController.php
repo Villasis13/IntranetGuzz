@@ -142,12 +142,17 @@ class ReporteController
                 if ($con_egresos)  $egresos = $this->reporte->reporte_fechas_egresos($fecha_inicio, $fecha_fin);
             }
 
+            // ==========================================
             // Cálculos
+            // ==========================================
             $total_ingresos = 0;
             foreach ((array)$reporte as $rp) $total_ingresos += $rp->pago_monto;
 
             $total_egresos = 0;
-            foreach ((array)$egresos as $eg) $total_egresos += ($eg->prestamo_monto + $eg->prestamo_monto_interes);
+            foreach ((array)$egresos as $eg) {
+                // CORRECCIÓN: Ahora suma estrictamente solo el capital
+                $total_egresos += $eg->prestamo_monto;
+            }
 
             $balance        = $total_ingresos - $total_egresos;
             $usuario_actual = $_SESSION['n_usuario'] ?? 'Administrador';
@@ -198,7 +203,6 @@ class ReporteController
             if (!empty($reporte)) {
                 $c = 1;
                 foreach ($reporte as $rp) {
-                    // Si tienes problemas con cortes de tildes aquí, cambia 'substr' por 'mb_substr'
                     $nombre_cliente = substr($rp->cliente_nombre . ' ' . $rp->cliente_apellido_paterno, 0, 25);
                     $usuario = substr($rp->usuario_nickname, 0, 12);
                     $metodo = substr($rp->metodo_pago_nombre, 0, 12);
@@ -258,11 +262,13 @@ class ReporteController
                     $tipo_pago = substr(ucfirst($eg->prestamo_tipo_pago), 0, 15);
 
                     $pdf->Cell(8,  5, $c++, 1, 0, 'C');
+                    // Al igual que en la vista, se usa prestamo_fecha que ahora trae la fecha de emisión
                     $pdf->Cell(18, 5, date('d/m/Y', strtotime($eg->prestamo_fecha)), 1, 0, 'C');
                     $pdf->Cell(18, 5, date('d/m/Y', strtotime($eg->prestamo_fecha_inicio)), 1, 0, 'C');
                     $pdf->Cell(22, 5, $tipo_pago, 1, 0, 'C');
                     $pdf->Cell(18, 5, $usuario, 1, 0, 'C');
                     $pdf->Cell(44, 5, $nombre_cliente, 1, 0, 'L');
+
                     $pdf->Cell(20, 5, 'S/ ' . number_format($eg->prestamo_monto, 2), 1, 0, 'R');
                     $pdf->Cell(20, 5, 'S/ ' . number_format($eg->prestamo_monto_interes, 2), 1, 0, 'R');
 
@@ -270,11 +276,15 @@ class ReporteController
                     $pdf->Cell(22, 5, 'S/ ' . number_format($monto_total, 2), 1, 1, 'R');
                     $pdf->SetFont('Arial', '', 7);
                 }
-                // Fila de Total
+
+                // CORRECCIÓN Fila de Total: Se calculan las posiciones para que caiga debajo de "Capital"
                 $pdf->SetFillColor(255, 199, 206);
                 $pdf->SetFont('Arial', 'B', 8);
-                $pdf->Cell(168, 5, 'Total Egresos', 1, 0, 'R', true);
-                $pdf->Cell(22,  5, 'S/ ' . number_format($total_egresos, 2), 1, 1, 'R', true);
+
+                // 8+18+18+22+18+44 = 128mm (Todo hasta Cliente)
+                $pdf->Cell(168, 5, 'Total Egresos (Solo Capital):', 1, 0, 'R', true);                // 20mm (Columna de Capital)
+                $pdf->Cell(22,  5, 'S/ ' . number_format($total_egresos, 2), 1, 1, 'R', true);                // Celdas vacías para "Interés" (20mm) y "Total Deuda" (22mm)
+
             } else {
                 $pdf->Cell(190, 5, 'Egresos no registrados en este periodo.', 1, 1, 'C');
             }
@@ -307,4 +317,7 @@ class ReporteController
             $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
         }
     }
+
+
+
 }

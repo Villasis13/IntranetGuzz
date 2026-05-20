@@ -338,8 +338,8 @@
                                         if (!$es_anulado) $suma_prestamos += $prestamo->prestamo_monto;
                                         ?>
                                         <tr class="data-row<?= $es_anulado ? ' table-secondary' : '' ?>">
-                                            <td><?= date('d/m/Y', strtotime($prestamo->prestamo_fecha)) ?></td>
-                                            <td><?= date('H:i:s', strtotime($prestamo->prestamo_fecha)) ?></td>
+                                            <td><?= date('d/m/Y', strtotime($prestamo->prestamo_fecha_sistema)) ?></td>
+                                            <td><?= date('H:i:s', strtotime($prestamo->prestamo_fecha_sistema)) ?></td>
                                             <td>
                                                 <?= $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno ?>
                                                 <?php if ($es_anulado): ?>

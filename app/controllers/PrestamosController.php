@@ -204,25 +204,31 @@ class PrestamosController
                         // ==========================================
                         // 1. GUARDAR EL PRÉSTAMO
                         // ==========================================
-                        $result_prestamo = $this->builder->save("prestamos",array(
-                            'id_cliente' => $_POST['id_cliente'],
-                            'id_usuario' =>$usuario,
-                            'prestamo_monto' => $_POST['prestamo_monto'],
-                            'prestamo_interes' => $_POST['prestamo_interes'],
-                            'prestamo_tipo_pago' => $_POST['prestamo_tipo_pago'],
-                            'prestamo_num_cuotas' => $_POST['prestamo_num_cuotas'],
-                            'prestamo_fecha_inicio' => $_POST['prestamo_fecha_inicio'],
-                            'prestamo_fecha' => $fecha,
-                            'prestamo_prox_cobro' => $_POST['prestamo_prox_cobro'],
-                            'prestamo_monto_interes' =>ceil( $_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
-                            'prestamo_saldo_pagar' => $_POST['prestamo_monto'] + ($_POST['prestamo_monto']*$_POST['prestamo_interes']/100),
-                            'prestamo_garantia' => $_POST['prestamo_garantia'],
-                            'prestamo_garante' => $_POST['prestamo_garante'],
-                            'prestamo_motivo' => $_POST['prestamo_motivo'],
-                            'prestamo_comentario' => $_POST['prestamo_comentario'],
-                            'prestamo_domingo' => $_POST['select_domingos'],
-                            'prestamo_mt' => $mt,
-                            'prestamo_estado' => 1,
+                        $result_prestamo = $this->builder->save("prestamos", array(
+                            'id_cliente'             => $_POST['id_cliente'],
+                            'id_usuario'             => $usuario,
+                            'prestamo_monto'         => $_POST['prestamo_monto'],
+                            'prestamo_interes'       => $_POST['prestamo_interes'],
+                            'prestamo_tipo_pago'     => $_POST['prestamo_tipo_pago'],
+                            'prestamo_num_cuotas'    => $_POST['prestamo_num_cuotas'],
+                            'prestamo_fecha_inicio'  => $_POST['prestamo_fecha_inicio'],
+
+                            // ==========================================
+                            // NUEVAS FECHAS
+                            // ==========================================
+                            'prestamo_fecha_emision' => $fecha, // <-- Cambiado: Fecha "legal" o elegida en el formulario
+                            'prestamo_fecha_sistema' => date('Y-m-d H:i:s'), // <-- Se mantiene: Fecha intocable para la caja
+
+                            'prestamo_prox_cobro'    => $_POST['prestamo_prox_cobro'],
+                            'prestamo_monto_interes' => ceil($_POST['prestamo_monto'] * $_POST['prestamo_interes'] / 100),
+                            'prestamo_saldo_pagar'   => $_POST['prestamo_monto'] + ($_POST['prestamo_monto'] * $_POST['prestamo_interes'] / 100),
+                            'prestamo_garantia'      => $_POST['prestamo_garantia'],
+                            'prestamo_garante'       => $_POST['prestamo_garante'],
+                            'prestamo_motivo'        => $_POST['prestamo_motivo'],
+                            'prestamo_comentario'    => $_POST['prestamo_comentario'],
+                            'prestamo_domingo'       => $_POST['select_domingos'],
+                            'prestamo_mt'            => $mt,
+                            'prestamo_estado'        => 1
                         ));
 
                         if($result_prestamo == 1){
@@ -509,7 +515,15 @@ class PrestamosController
             $pdf->MultiCell(80,6,'DATOS DEL CLIENTE',0,'J',0);
             $pdf->SetFont('Arial','',10);
 
+            // Validamos si hay garante, si no, ponemos el guion
+            $texto_garante = '-';
+            if (!empty($data_prestamo->prestamo_garante) && !empty($data_prestamo->garante_nombre)) {
+                $texto_garante = $data_prestamo->garante_nombre . ' ' . $data_prestamo->garante_paterno . ' ' . $data_prestamo->garante_materno;
+            }
+
+
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'DNI: '.$data_cliente->cliente_dni,0,'L');
+            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Garante: ' . $texto_garante,0,'L'); // <-- NUEVO DATO AÑADIDO
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Monto Prestado: S/. ' . number_format($data_prestamo->prestamo_monto, 2),0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Interés Aplicado: '.$data_prestamo->prestamo_interes.'%',0,'L');
 

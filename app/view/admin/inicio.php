@@ -212,38 +212,94 @@
                                         <?php
                                         $style = "";
                                         $hoy = date('Y-m-d');
+                                        $hoy_time = strtotime($hoy); // Convertimos hoy a tiempo numérico para operar
+
                                         foreach ($proximos_cobros as $pc){
                                             $fecha_cobro = date('Y-m-d', strtotime($pc->prestamo_prox_cobro));
-                                            if ($fecha_cobro < $hoy) {
-                                                $style = 'red';
-                                            } elseif ($fecha_cobro == $hoy) {
-                                                $style = '#C9A227';
+                                            $cobro_time = strtotime($fecha_cobro); // Convertimos el cobro a tiempo numérico
+
+                                            // Calculamos la diferencia exacta en días (86400 segundos tiene un día)
+                                            $diferencia_dias = ($cobro_time - $hoy_time) / 86400;
+
+                                            // Contamos cuántas cuotas le faltan a este préstamo
+                                            $cuotas_restantes = $this->cobros->contar_cuotas_pendientes($pc->id_prestamos);
+
+                                            // ── 1. DEFINIR COLOR DEL TEXTO DE LA FILA ──
+                                            if ($diferencia_dias < 0) {
+                                                $style = 'red'; // Ya pasó la fecha
+                                            } elseif ($diferencia_dias == 0) {
+                                                $style = '#C9A227'; // Vence hoy (Dorado)
                                             } else {
-                                                $style = 'green';
+                                                $style = 'green'; // Aún hay tiempo
                                             }
                                             ?>
                                             <tr class="text-center">
                                                 <td style="color: <?= $style ?>">
-                                                    <?= $pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno ?>
+                                                    <?= htmlspecialchars($pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno) ?>
                                                 </td>
+
                                                 <?php $cuota_cercana = $this->cobros->listar_proximo_pago_diario($pc->id_prestamos); ?>
-                                                <td style="color: <?= $style ?>">
-                                                    <?= $cuota_cercana ? 'S/ ' . number_format($cuota_cercana->pago_diario_monto, 2) : 'Deuda no acordada en cuotas' ?>
+
+                                                <td style="color: <?= $style ?>; font-weight: bold;">
+                                                    <?= $cuota_cercana ? 'S/ ' . number_format($cuota_cercana->pago_diario_monto, 2) : 'Deuda no acordada' ?>
                                                 </td>
                                                 <td style="color: <?= $style ?>">
-                                                    <?= $fecha_cobro ?>
+                                                    <?= date('d/m/Y', strtotime($fecha_cobro)) ?>
                                                 </td>
-                                                <?php if($fecha_cobro < $hoy): ?>
-                                                    <td>
-                                                        <button onclick="preguntar('¿El préstamo ya venció, desea convertirlo a un préstamo antiguo?', 'cambiar_prestamo_a_antiguo', 'Sí, convertir', 'Cancelar', <?= $pc->id_prestamos ?>)"
-                                                                class="btn btn-sm btn-danger"
-                                                                title="Este préstamo ya venció, pasarlo a antiguos">
-                                                            <i class="fa fa-exclamation-triangle"></i> Vencido
+
+                                                <td>
+                                                    <?php
+                                                    // ── 2. LÓGICA DE BOTONES SEGÚN DÍAS Y CUOTAS ──
+
+                                                    if ($diferencia_dias < 0) {
+                                                        // 🔴 A) FECHA VENCIDA (Pasado)
+                                                        if ($cuotas_restantes <= 1) {
+                                                            // Es la ÚLTIMA cuota de todo el préstamo
+                                                            ?>
+                                                            <button onclick="preguntar('¿El préstamo ya venció, desea convertirlo a un préstamo antiguo?', 'cambiar_prestamo_a_antiguo', 'Sí, convertir', 'Cancelar', <?= $pc->id_prestamos ?>)"
+                                                                    class="btn btn-sm btn-danger font-weight-bold shadow-sm"
+                                                                    title="La última cuota venció. Préstamo finalizado sin pago total.">
+                                                                <i class="fa fa-ban"></i> Préstamo Vencido
+                                                            </button>
+                                                            <?php
+                                                        } else {
+                                                            // Le quedan más cuotas por delante (Mora regular)
+                                                            ?>
+                                                            <button onclick="window.location.href='<?= _SERVER_ ?>cobros/pagar/<?= $pc->id_prestamos ?>'"
+                                                                    class="btn btn-sm text-white font-weight-bold shadow-sm" style="background-color: #fd7e14; border-color: #fd7e14;"
+                                                                    title="El cliente tiene una cuota atrasada. Debe regularizar.">
+                                                                <i class="fa fa-exclamation-circle"></i> Regularizar (Mora)
+                                                            </button>
+                                                            <br>
+                                                            <small class="text-muted" style="font-size: 0.75rem;">Faltan <?= $cuotas_restantes ?> cuotas</small>
+                                                            <?php
+                                                        }
+
+                                                    } elseif ($diferencia_dias >= 0 && $diferencia_dias <= 2) {
+                                                        // 🔵 B) COBRO PRÓXIMO (Vence Hoy, Mañana o Pasado Mañana)
+                                                        // Añadimos el botón azul primario para ir a cobrar directamente
+                                                        ?>
+                                                        <button onclick="window.location.href='<?= _SERVER_ ?>cobros/pagar/<?= $pc->id_prestamos ?>'"
+                                                                class="btn btn-sm btn-primary font-weight-bold shadow-sm"
+                                                                title="La cuota vence pronto. Ir a la caja a cobrar.">
+                                                            <i class="fa fa-money-bill-wave"></i> Cobrar Cuota
                                                         </button>
-                                                    </td>
-                                                <?php else: ?>
-                                                    <td>Cuota aún a tiempo</td>
-                                                <?php endif; ?>
+                                                        <br>
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            <?= $diferencia_dias == 0 ? 'Vence HOY' : 'Vence en ' . $diferencia_dias . ' día(s)' ?>
+                                                        </small>
+                                                        <?php
+
+                                                    } else {
+                                                        // 🟢 C) COBRO LEJANO (Faltan más de 2 días)
+                                                        ?>
+                                                        <span class="badge bg-success text-white p-2" style="font-size: 0.85em;">
+                <i class="fa fa-check-circle"></i> Al día
+            </span>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                </td>
                                             </tr>
                                             <?php
                                         }

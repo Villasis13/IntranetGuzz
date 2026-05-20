@@ -27,10 +27,11 @@ class Reporte
     }
     public function reporte_hoy_egresos($dia){
         try{
-            $sql = 'select * from prestamos pr 
-         inner join clientes cl on pr.id_cliente=cl.id_cliente
-         inner join usuarios u  on u.id_usuario=pr.id_usuario
-         where date(pr.prestamo_fecha)=? ';
+            $sql = 'select pr.*, pr.prestamo_fecha_emision as prestamo_fecha, cl.cliente_nombre, cl.cliente_apellido_paterno, u.usuario_nickname 
+                from prestamos pr 
+                inner join clientes cl on pr.id_cliente=cl.id_cliente
+                inner join usuarios u  on u.id_usuario=pr.id_usuario
+                where date(pr.prestamo_fecha_emision) = ? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$dia]);
             return $stm->fetchAll();
@@ -39,7 +40,6 @@ class Reporte
             return [];
         }
     }
-
     public function reporte_mes($mes){
         try{
             $sql = 'select * from pagos p 
@@ -60,10 +60,11 @@ class Reporte
 
     public function reporte_mes_egresos($mes){
         try{
-            $sql = 'select * from prestamos pr 
-         inner join clientes cl on pr.id_cliente=cl.id_cliente
-         inner join usuarios u on pr.id_usuario=u.id_usuario
-         where month(pr.prestamo_fecha)= ? ';
+            $sql = 'select pr.*, pr.prestamo_fecha_emision as prestamo_fecha, cl.cliente_nombre, cl.cliente_apellido_paterno, u.usuario_nickname 
+                from prestamos pr 
+                inner join clientes cl on pr.id_cliente=cl.id_cliente
+                inner join usuarios u on pr.id_usuario=u.id_usuario
+                where month(pr.prestamo_fecha_emision) = ? ';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$mes]);
             return $stm->fetchAll();
@@ -91,14 +92,16 @@ class Reporte
         }
     }
 
-    public function reporte_fechas_egresos($inicio,$fin){
+    public function reporte_fechas_egresos($inicio, $fin){
         try{
-            $sql = 'select * from prestamos pr 
-         inner join clientes cl on pr.id_cliente=cl.id_cliente
-         inner join usuarios u on pr.id_usuario=u.id_usuario
-         where date(pr.prestamo_fecha) between ? and ? ';
+            // Añadimos el alias as prestamo_fecha para no romper las vistas
+            $sql = 'select pr.*, pr.prestamo_fecha_emision as prestamo_fecha, cl.cliente_nombre, cl.cliente_apellido_paterno, u.usuario_nickname 
+                from prestamos pr 
+                inner join clientes cl on pr.id_cliente=cl.id_cliente
+                inner join usuarios u on pr.id_usuario=u.id_usuario
+                where date(pr.prestamo_fecha_emision) between ? and ? ';
             $stm = $this->pdo->prepare($sql);
-            $stm->execute([$inicio,$fin]);
+            $stm->execute([$inicio, $fin]);
             return $stm->fetchAll();
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);

@@ -29,8 +29,8 @@
                     <div class="info-group mb-3">
                         <label class="fw-bold">Resta por Pagar:</label>
                         <span class="badge bg-danger fs-6">
-                            <?= !empty($prestamos_data->prestamo_saldo_pagar) ? "S/ " . number_format($prestamos_data->prestamo_saldo_pagar, 2) : "Sin saldo restante" ?>
-                        </span>
+                <?= !empty($prestamos_data->prestamo_saldo_pagar) ? "S/ " . number_format($prestamos_data->prestamo_saldo_pagar, 2) : "Sin saldo restante" ?>
+            </span>
                         <input id="input_resta_por_pagar" name="input_resta_por_pagar" type="hidden" value="<?= $valor_resta_por_pagar ?>">
                     </div>
 
@@ -61,12 +61,19 @@
                         <label class="fw-bold">Tipo de Pago:</label>
                         <span class="badge bg-info text-dark"><?= strtoupper($prestamos_data->prestamo_tipo_pago) ?></span>
                     </div>
+
                     <div class="info-group mb-3">
                         <label class="fw-bold">Fecha de Emisión:</label>
-                        <?= date('d/m/Y', strtotime($prestamos_data->prestamo_fecha)) ?>
+                        <?= date('d/m/Y', strtotime($prestamos_data->prestamo_fecha_emision)) ?>
+                    </div>
+
+                    <div class="info-group mb-3">
+                        <label class="fw-bold text-danger"><i class="fa fa-flag-checkered me-1"></i>Vencimiento del Préstamo:</label>
+                        <?= !empty($fecha_fin_prestamo) ? date('d/m/Y', strtotime($fecha_fin_prestamo)) : '<span class="text-muted">No programado</span>' ?>
                     </div>
                 </div>
             </div>
+
 
             <?php if (!empty($cuota_a_pagar)) { ?>
             <div class="row mb-4">
@@ -91,7 +98,7 @@
                                 </div>
 
                                 <div class="text-sm text-danger fw-bold text-end">
-                                    <i class="fa fa-calendar-times me-1"></i> Vence:<br>
+                                    <i class="fa fa-calendar-times me-1"></i> Fecha de Vencimiento de la Cuota:<br>
                                     <?= date('d/m/Y', strtotime($cuota_a_pagar->pago_diario_fecha)) ?>
                                 </div>
                             </div>
@@ -242,8 +249,8 @@
                                     <strong>Garantía:</strong> <?= $prestamos_data->prestamo_garantia ?>
                                 </p>
                                 <div>
-                                    <label class="fw-bold mb-0">Garantes:</label>
-                                    <span class="text-muted ms-2"><?= $garante->cliente_nombre .' ' . $garante->cliente_apellido_paterno ?></span>
+                                    <label class="fw-bold mb-0">Garante:</label>
+                                    <span class="text-muted ms-2"><?= $garante->cliente_nombre .' ' . $garante->cliente_apellido_paterno. ' '. $garante->cliente_apellido_materno ?></span>
                                 </div>
                             </div>
                         </div>

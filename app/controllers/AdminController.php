@@ -47,6 +47,7 @@ class AdminController{
             $actualizar_clientes = $this->clientes->listar_clientes_actualizar();
             $proximos_cobros = $this->cobros->listar_proximos_cobros();
 
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'admin/inicio.php';

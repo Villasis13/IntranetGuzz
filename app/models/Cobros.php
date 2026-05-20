@@ -201,12 +201,11 @@ class Cobros
         try{
             $sql = 'SELECT * FROM prestamos p
                INNER JOIN clientes c ON p.id_cliente = c.id_cliente
-               WHERE p.prestamo_prox_cobro <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
-               AND p.prestamo_estado = 1
+              where  p.prestamo_estado = 1
                ORDER BY p.prestamo_prox_cobro ASC';
             $stm = $this->pdo->prepare($sql);
             $stm->execute();
-            return $stm->fetchAll(PDO::FETCH_OBJ);
+            return $stm->fetchAll();
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];
@@ -424,5 +423,36 @@ class Cobros
         return $stm->execute([$monto_capital, $id_cliente]);
     }
 
+    public function contar_cuotas_pendientes($id_prestamo){
+        try{
+            // Ajusta los nombres de tu tabla de cuotas si es necesario
+            $sql = "SELECT COUNT(*) as pendientes FROM pagos_diarios 
+                WHERE id_prestamos = ? AND pago_diario_estado = 1"; // Asumo que estado 0 = no pagado
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            $resultado = $stm->fetch();
+            return $resultado->pendientes;
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 0;
+        }
+    }
+
+    public function traer_fecha_fin_prestamo($id_prestamo){
+        try {
+            // Usamos MAX() para obtener la fecha de la última cuota programada
+            $sql = "SELECT MAX(pago_diario_fecha) as fecha_vencimiento 
+                FROM pagos_diarios 
+                WHERE id_prestamos = ?";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            $resultado = $stm->fetch();
+
+            return $resultado ? $resultado->fecha_vencimiento : null;
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
 
 }

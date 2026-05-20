@@ -77,6 +77,8 @@ class CobrosController
 
             $total_pagos_cuenta = $this->prestamos->listar_total_pagos_contados($id_prestamo);
 
+            $fecha_fin_prestamo = $this->cobros->traer_fecha_fin_prestamo($id_prestamo);
+
             // --- LÓGICA DE CUOTAS SECUENCIALES ---
 
             // 1. Filtrar solo las cuotas pendientes (Asumo que estado 1 es pendiente, cambialo si usas 0 u otro valor)
@@ -367,7 +369,6 @@ class CobrosController
             $pdf->AddPage();
 
             // ── ENCABEZADO ────────────────────────────────────────────────────
-            $pdf->Image(_SERVER_._MEDIAIMG_.'MG1.png', 5, 5, 12);
             $pdf->Ln(9);
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->Cell($W, 5, 'INVERSIONES GUZZ E.I.R.L', 0, 1, 'C');

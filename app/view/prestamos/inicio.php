@@ -168,7 +168,7 @@
                         <select class="form-control" id="prestamo_garante" name="prestamo_garante">
                             <option value="">Seleccionar</option>
                             <?php foreach ($clientes_g as $c) { ?>
-                                <option value="<?= $c->id_cliente ?>"><?= $c->cliente_dni . ' ' . $c->cliente_nombre ?></option>
+                                <option value="<?= $c->id_cliente ?>"><?= $c->cliente_dni . ' ' . $c->cliente_nombre. ' ' .$c->cliente_apellido_paterno. ' '.  $c->cliente_apellido_materno ?></option>
                             <?php } ?>
                         </select>
                     </div>
