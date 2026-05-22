@@ -39,47 +39,119 @@
                 <div class="card-body">
                     <h5 class="mb-3 font-weight-bold text-primary">Historial ingresos de hoy (<?=$fecha?>)</h5>
                     <div class="table-responsive">
-                        <table class="table table-striped" width="100%">
-                            <thead class="text-center">
-                            <tr>
-                                <th>#</th>
-                                <th>Ingreso Monto</th>
-                                <th>Hora</th>
-                                <th>Metodo de Pago</th>
-                                <th>Recepción (Cajero/a)</th>
-                                <th>Acción</th>
-<!--                                <th>Ver reporte</th>-->
-                            </tr>
+                        <table class="table table-hover align-middle small" width="100%">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th>#</th>
+                                    <th>N° Recibo</th>
+                                    <th>Fecha Cuota</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Usuario</th>
+                                    <th>Cuota Original</th>
+                                    <th>Descuento</th>
+                                    <th>Monto Final</th>
+                                    <th>Monto Recibido</th>
+                                    <th>Diferencia</th>
+                                    <th>Acciones</th>
+                                </tr>
                             </thead>
                             <tbody>
-							<?php
-                            $con = 1;
-							foreach ($pagos_hoy as $cg){
-								?>
+                            <?php $con = 1; foreach ($pagos_hoy as $cg):
+                                $diferencia     = floatval($cg->pago_monto_vuelto ?? 0);
+                                $tiene_descuento = !empty($cg->pago_descuento_estado) && $cg->pago_descuento_estado == 1;
+                                if ($diferencia > 0)      $cls_dif = 'text-success fw-semibold';
+                                elseif ($diferencia < 0)  $cls_dif = 'text-danger fw-semibold';
+                                else                      $cls_dif = 'text-muted';
+                            ?>
                                 <tr class="text-center">
-                                    <td><?= $con?></td>
-                                    <td><?= $cg->pago_monto?></td>
-                                    <td><?= date('H:i',strtotime($cg->pago_fecha)) ?></td>
-                                    <td><?= $cg->pago_metodo ?> </td>
-                                    <td><?= $cg->pago_recepcion ?> </td>
+                                    <td><?= $con ?></td>
+                                    <td class="fw-semibold"><?= str_pad($cg->id_pago, 6, '0', STR_PAD_LEFT) ?></td>
+                                    <td><?= !empty($cg->pago_diario_fecha) ? date('d/m/Y', strtotime($cg->pago_diario_fecha)) : '—' ?></td>
+                                    <td><?= date('d/m/Y H:i', strtotime($cg->pago_fecha)) ?></td>
+                                    <td><?= htmlspecialchars($cg->usuario_nickname ?? $cg->pago_recepcion) ?></td>
+                                    <td>S/ <?= number_format($cg->pago_diario_monto ?? 0, 2) ?></td>
+                                    <td class="<?= $tiene_descuento ? 'text-danger' : 'text-muted' ?>">
+                                        <?= $tiene_descuento ? '- S/ ' . number_format($cg->pago_descuento_monto, 2) : '—' ?>
+                                    </td>
+                                    <td class="fw-semibold text-primary">S/ <?= number_format($cg->pago_monto, 2) ?></td>
+                                    <td>S/ <?= number_format($cg->pago_monto_recibido ?? 0, 2) ?></td>
+                                    <td class="<?= $cls_dif ?>">
+                                        <?php
+                                        if ($diferencia > 0)      echo '+ S/ ' . number_format($diferencia, 2);
+                                        elseif ($diferencia < 0)  echo '- S/ ' . number_format(abs($diferencia), 2);
+                                        else                       echo 'S/ 0.00';
+                                        ?>
+                                    </td>
                                     <td>
-                                        <button data-toggle="modal"
-                                                data-target="#editar_monto"
-                                                onclick="pago_x_id(<?= $cg->id_pago?>)"
-                                                class="btn btn-xs btn-warning btne">
+                                        <button class="btn btn-xs btn-info btne me-1"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#detalle-<?= $cg->id_pago ?>"
+                                                title="Ver detalle método de pago">
+                                            <i class="fa fa-eye"></i>
+                                        </button>
+                                        <button data-bs-toggle="modal"
+                                                data-bs-target="#editar_monto"
+                                                onclick="pago_x_id(<?= $cg->id_pago ?>)"
+                                                class="btn btn-xs btn-warning btne"
+                                                title="Editar monto">
                                             <i class="fa fa-pencil"></i>
                                         </button>
                                     </td>
-
-
-<!--                                        -->
-<!--                                    </td>-->
                                 </tr>
-								<?php
-								$con++;
-							}
-							?>
 
+                                <tr class="collapse" id="detalle-<?= $cg->id_pago ?>">
+                                    <td colspan="11" class="p-0">
+                                        <div class="px-4 py-3 bg-light border-top border-bottom">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <p class="text-primary fw-bold mb-2 small text-uppercase">
+                                                        <i class="fa fa-credit-card me-1"></i> Método de Pago
+                                                    </p>
+                                                    <table class="table table-sm table-borderless mb-0 small">
+                                                        <tr>
+                                                            <td class="text-muted" style="width:40%">Método</td>
+                                                            <td class="fw-semibold"><?= htmlspecialchars($cg->metodo_pago_nombre ?? '—') ?></td>
+                                                        </tr>
+                                                        <?php if (!empty($cg->pago_operacion)): ?>
+                                                        <tr>
+                                                            <td class="text-muted">N° Operación</td>
+                                                            <td><?= htmlspecialchars($cg->pago_operacion) ?></td>
+                                                        </tr>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($cg->pago_oper_titular)): ?>
+                                                        <tr>
+                                                            <td class="text-muted">Titular</td>
+                                                            <td><?= htmlspecialchars($cg->pago_oper_titular) ?></td>
+                                                        </tr>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($cg->banco_nombre)): ?>
+                                                        <tr>
+                                                            <td class="text-muted">Banco / Entidad</td>
+                                                            <td><?= htmlspecialchars($cg->banco_nombre) ?> (<?= htmlspecialchars($cg->banco_abreviado) ?>)</td>
+                                                        </tr>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($cg->pago_fecha_operacion)): ?>
+                                                        <tr>
+                                                            <td class="text-muted">Fecha Operación</td>
+                                                            <td><?= date('d/m/Y', strtotime($cg->pago_fecha_operacion)) ?></td>
+                                                        </tr>
+                                                        <?php endif; ?>
+                                                    </table>
+                                                </div>
+                                                <?php if (!empty($cg->pago_observacion)): ?>
+                                                <div class="col-md-6">
+                                                    <p class="text-primary fw-bold mb-2 small text-uppercase">
+                                                        <i class="fa fa-comment me-1"></i> Observación
+                                                    </p>
+                                                    <p class="small mb-0"><?= htmlspecialchars($cg->pago_observacion) ?></p>
+                                                </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            <?php $con++; endforeach; ?>
                             </tbody>
                         </table>
                     </div>

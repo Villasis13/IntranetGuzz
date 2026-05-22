@@ -103,6 +103,21 @@ class CobrosController
             }
             // -------------------------------------
 
+            // Deuda actual del cliente
+            $saldo_total_pendiente = floatval($prestamos_data->prestamo_saldo_pagar ?? 0);
+            $tasa                  = floatval($prestamos_data->prestamo_interes ?? 0);
+            $capital_pendiente     = $tasa > 0
+                ? round($saldo_total_pendiente / (1 + $tasa / 100), 2)
+                : $saldo_total_pendiente;
+            $valor_resta_por_pagar = $saldo_total_pendiente;
+
+            // Condición de amortización: activo + capital pendiente + antes del vencimiento + no cancelado
+            $puede_amortizar = intval($prestamos_data->prestamo_estado) === 1
+                && $capital_pendiente > 0
+                && !empty($cuota_a_pagar)
+                && strtotime(date('Y-m-d')) < strtotime($cuota_a_pagar->pago_diario_fecha)
+                && !in_array(intval($prestamos_data->prestamo_estado), [2, 4]);
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'cobros/pagar.php';
@@ -300,6 +315,175 @@ class CobrosController
                 "id_pago" => $id_pago_generado
             )
         ));
+    }
+
+    public function amortizar()
+    {
+        try {
+            $this->nav = new Navbar();
+            $navs = $this->nav->listar_menus(
+                $this->encriptar->desencriptar($_SESSION['ru'], _FULL_KEY_)
+            );
+
+            $id_prestamo    = (int)$_GET['id'];
+            $prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
+            $cliente_data   = $this->clientes->listar_x_id($prestamos_data->id_cliente);
+            $metodos_pago   = $this->cobros->listar_metodos_de_pago();
+            $bancos         = $this->cobros->listar_bancos();
+
+            $todas_las_cuotas  = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
+            $cuotas_pendientes = array_values(array_filter(
+                $todas_las_cuotas, fn($c) => $c->pago_diario_estado == 1
+            ));
+            $cuota_a_pagar = $cuotas_pendientes[0] ?? null;
+
+            $saldo_total_pendiente = floatval($prestamos_data->prestamo_saldo_pagar ?? 0);
+            $tasa                  = floatval($prestamos_data->prestamo_interes ?? 0);
+            $capital_pendiente     = $tasa > 0
+                ? round($saldo_total_pendiente / (1 + $tasa / 100), 2)
+                : $saldo_total_pendiente;
+
+            $puede_amortizar = intval($prestamos_data->prestamo_estado) === 1
+                && $capital_pendiente > 0
+                && !empty($cuota_a_pagar)
+                && strtotime(date('Y-m-d')) < strtotime($cuota_a_pagar->pago_diario_fecha)
+                && !in_array(intval($prestamos_data->prestamo_estado), [2, 4]);
+
+            if (!$puede_amortizar) {
+                header('Location: ' . _SERVER_ . 'cobros/pagar/' . $id_prestamo);
+                exit;
+            }
+
+            require _VIEW_PATH_ . 'header.php';
+            require _VIEW_PATH_ . 'navbar.php';
+            require _VIEW_PATH_ . 'cobros/amortizar.php';
+            require _VIEW_PATH_ . 'footer.php';
+
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            echo "<script language=\"javascript\">alert(\"Error al cargar amortización\");</script>";
+            echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
+        }
+    }
+
+    public function guardar_amortizacion()
+    {
+        $result  = 2;
+        $message = 'Error al procesar la amortización.';
+        $transaction_started = false;
+
+        try {
+            $id_prestamo     = (int)$_POST['id_prestamo'];
+            $monto_amortizar = (float)$_POST['monto_amortizar'];
+            $id_usuario      = $this->encriptar->desencriptar($_SESSION['c_u'], _FULL_KEY_);
+            $usuario_nombre  = $this->cobros->listar_usuario($id_usuario);
+
+            $prestamo     = $this->prestamos->listar_x_id($id_prestamo);
+            $caja_abierta = $this->caja->traer_datos_caja();
+
+            if (!$prestamo || !$caja_abierta) {
+                $message = 'No se encontraron los datos del préstamo o la caja está cerrada.';
+                echo json_encode(['result' => ['code' => $result, 'message' => $message]]);
+                return;
+            }
+
+            $saldo_total       = floatval($prestamo->prestamo_saldo_pagar);
+            $tasa              = floatval($prestamo->prestamo_interes);
+            $capital_pendiente = $tasa > 0
+                ? round($saldo_total / (1 + $tasa / 100), 2)
+                : $saldo_total;
+
+            // Validaciones de negocio
+            if ($monto_amortizar <= 0) {
+                echo json_encode(['result' => ['code' => 3, 'message' => 'El monto debe ser mayor a S/ 0.00.']]);
+                return;
+            }
+            if ($monto_amortizar > $capital_pendiente) {
+                echo json_encode(['result' => ['code' => 4, 'message' => 'El monto excede el capital pendiente (S/ ' . number_format($capital_pendiente, 2) . ').']]);
+                return;
+            }
+            if ($monto_amortizar > $saldo_total) {
+                echo json_encode(['result' => ['code' => 5, 'message' => 'El monto excede el saldo total pendiente (S/ ' . number_format($saldo_total, 2) . ').']]);
+                return;
+            }
+
+            $this->cobros->iniciar_transaccion();
+            $transaction_started = true;
+
+            // Registrar en tabla pagos
+            $mt = microtime(true);
+            $this->builder->save('pagos', [
+                'id_prestamo'          => $id_prestamo,
+                'id_pago_diario'       => null,
+                'pago_monto'           => $monto_amortizar,
+                'pago_metodo'          => $_POST['pago_metodo'] ?? '',
+                'pago_fecha'           => date('Y-m-d H:i:s'),
+                'pago_estado'          => 1,
+                'pago_mt'              => $mt,
+                'id_cliente'           => $prestamo->id_cliente,
+                'id_usuario'           => $id_usuario,
+                'pago_recepcion'       => $usuario_nombre->usuario_nickname ?? '',
+                'pago_monto_recibido'  => !empty($_POST['monto_recibido'])      ? (float)$_POST['monto_recibido']      : null,
+                'pago_monto_vuelto'    => !empty($_POST['monto_vuelto'])        ? (float)$_POST['monto_vuelto']        : null,
+                'pago_operacion'       => !empty($_POST['num_operacion'])        ? trim($_POST['num_operacion'])         : null,
+                'pago_oper_titular'    => !empty($_POST['nombre_titular'])       ? trim($_POST['nombre_titular'])        : null,
+                'id_banco'             => !empty($_POST['banco_entidad'])        ? (int)$_POST['banco_entidad']         : null,
+                'pago_fecha_operacion' => !empty($_POST['fecha_transferencia'])  ? $_POST['fecha_transferencia']        : null,
+                'pago_observacion'     => 'AMORTIZACIÓN' . (!empty($_POST['pago_observacion']) ? ': ' . trim($_POST['pago_observacion']) : ''),
+            ]);
+
+            // Actualizar caja
+            $this->builder->update('caja', [
+                'monto_caja' => $caja_abierta->monto_caja + $monto_amortizar,
+            ], ['id_caja' => $caja_abierta->id_caja]);
+
+            // Actualizar saldo del préstamo (amortización aplica sobre capital, el interés proporcional se limpia)
+            $nuevo_capital  = max(0, $capital_pendiente - $monto_amortizar);
+            $nuevo_saldo    = $tasa > 0 ? round($nuevo_capital * (1 + $tasa / 100), 2) : $nuevo_capital;
+            $datos_prestamo = ['prestamo_saldo_pagar' => $nuevo_saldo];
+            if ($nuevo_saldo <= 0) {
+                $datos_prestamo['prestamo_estado'] = 2;
+            }
+            $this->builder->update('prestamos', $datos_prestamo, ['id_prestamos' => $id_prestamo]);
+
+            // Redistribuir el nuevo saldo entre las cuotas pendientes y actualizar próximo cobro
+            $cuotas = $this->cobros->listar_cuotas_pendientes_ordenadas($id_prestamo);
+            $n      = count($cuotas);
+            if ($nuevo_saldo > 0 && $n > 0) {
+                $cuota_base = round($nuevo_saldo / $n, 2);
+                $acumulado  = 0;
+                foreach ($cuotas as $i => $cuota) {
+                    $monto = ($i === $n - 1)
+                        ? round($nuevo_saldo - $acumulado, 2)
+                        : $cuota_base;
+                    $this->builder->update('pagos_diarios',
+                        ['pago_diario_monto' => $monto],
+                        ['id_pago_diario'    => $cuota->id_pago_diario]
+                    );
+                    if ($i < $n - 1) $acumulado += $monto;
+                }
+
+                // Reflejar la próxima cuota actualizada en el préstamo
+                $this->builder->update('prestamos',
+                    ['prestamo_prox_cobro' => $cuotas[0]->pago_diario_fecha],
+                    ['id_prestamos'        => $id_prestamo]
+                );
+            }
+
+            $this->cobros->confirmar_transaccion();
+            $transaction_started = false;
+            $result  = 1;
+            $message = 'Amortización registrada correctamente.';
+
+        } catch (Exception $e) {
+            if ($transaction_started) {
+                $this->cobros->revertir_transaccion();
+            }
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+
+        echo json_encode(['result' => ['code' => $result, 'message' => $message]]);
     }
 
     public function aplicar_descuento()

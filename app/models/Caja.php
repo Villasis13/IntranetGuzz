@@ -66,7 +66,19 @@ class Caja
 
     public function ingresos_hoy($fecha){
         try{
-            $sql = 'select * from pagos where date(pago_fecha)=?';
+            $sql = 'SELECT p.*,
+                        mp.metodo_pago_nombre,
+                        b.banco_nombre,
+                        b.banco_abreviado,
+                        pd.pago_diario_fecha,
+                        pd.pago_diario_monto,
+                        u.usuario_nickname
+                    FROM pagos p
+                    LEFT JOIN metodos_pago  mp ON mp.id_metodo_pago  = p.pago_metodo
+                    LEFT JOIN bancos         b  ON b.id_banco         = p.id_banco
+                    LEFT JOIN pagos_diarios pd ON pd.id_pago_diario  = p.id_pago_diario
+                    LEFT JOIN usuarios       u  ON u.id_usuario       = p.id_usuario
+                    WHERE DATE(p.pago_fecha) = ?';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$fecha]);
             return $stm->fetchAll();

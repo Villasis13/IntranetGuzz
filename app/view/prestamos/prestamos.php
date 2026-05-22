@@ -2,6 +2,18 @@
     .color-rojo {
         color: red !important;
     }
+    .fila-anulada {
+        opacity: 0.72;
+    }
+    .fila-anulada td {
+        color: #6c757d !important;
+        text-decoration: line-through;
+        text-decoration-color: rgba(220, 53, 69, 0.45);
+    }
+    .fila-anulada .badge,
+    .fila-anulada .btn {
+        text-decoration: none;
+    }
 </style>
 
 <div class="container-fluid">
@@ -49,7 +61,9 @@
 								$tipo_pago = $c->prestamo_tipo_pago;
 								$color_fila = '';
 
-								if ($tipo_pago == 'Diario') {
+								if ($c->prestamo_estado == 5) {
+									$color_fila = 'background-color: #fde8ea;'; // rojo claro — anulado
+								} elseif ($tipo_pago == 'Diario') {
 									$color_fila = 'background-color: #e3f2fd;'; // azul claro
 								} elseif ($tipo_pago == 'Semanal') {
 									$color_fila = 'background-color: #e8f5e9;'; // verde claro
@@ -60,7 +74,8 @@
 
 								?>
 								<?php
-								$clase_texto = ($c->prestamo_estado == 3 || $c->prestamo_estado == 4) ? 'color-rojo' : '';
+								$clase_texto  = ($c->prestamo_estado == 3 || $c->prestamo_estado == 4) ? 'color-rojo' : '';
+								$clase_texto .= ($c->prestamo_estado == 5) ? ' fila-anulada' : '';
 								?>
                                 <tr class="text-center <?= $clase_texto ?>" style="<?= $color_fila ?>">
 									<td><?= $a  ?></td>
@@ -105,10 +120,24 @@
                     <i class="fa fa-archive me-1"></i> P. Antiguo Cancelado
                   </span>';
                                             } else if($c->prestamo_estado == 5) {
-                                                // ANULADO: Rojo con icono de prohibición
-                                                echo '<span class="badge bg-danger text-white" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
-                    <i class="fa fa-ban me-1"></i> Anulado
-                  </span>';
+                                                // ANULADO: Etiqueta roja destacada
+                                                echo '<span style="
+                                                    display:inline-flex;
+                                                    align-items:center;
+                                                    gap:5px;
+                                                    background:#dc3545;
+                                                    color:#fff;
+                                                    font-weight:900;
+                                                    font-size:0.80rem;
+                                                    letter-spacing:2.5px;
+                                                    padding:6px 14px;
+                                                    border-radius:4px;
+                                                    text-transform:uppercase;
+                                                    border-left:5px solid #9a1526;
+                                                    box-shadow:0 2px 8px rgba(220,53,69,0.5);
+                                                ">
+                                                    <i class="fa fa-ban"></i> ANULADO
+                                                </span>';
                                             }
                                             ?>
                                     </td>
@@ -130,7 +159,7 @@
 
 
 										<?php
-										if($c->prestamo_estado != 3){
+										if($c->prestamo_estado != 3 && $c->prestamo_estado != 5){
 											?>
                                             <a onclick="preguntar('...','transferir_prestamo','SI','NO','<?= $c->id_prestamos ?>')"
                                                class="btn btn-sm btn-secondary text-white mt-1"

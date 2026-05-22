@@ -58,6 +58,20 @@ class Cobros
         }
     }
 
+    public function listar_cuotas_pendientes_ordenadas($id_prestamo){
+        try{
+            $sql = 'SELECT * FROM pagos_diarios
+                WHERE id_prestamos = ? AND pago_diario_estado = 1
+                ORDER BY pago_diario_fecha ASC';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetchAll(PDO::FETCH_OBJ);
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
     public function listar_cuota_individual($id){
         try{
             $sql = 'SELECT * FROM pagos_diarios WHERE id_pago_diario = ?';

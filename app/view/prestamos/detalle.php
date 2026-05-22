@@ -1,16 +1,55 @@
 <!--Contenido-->
+<?php
+$estado = intval($data_prestamo->prestamo_estado ?? 0);
+
+$estados_info = [
+    1 => ['label' => 'Activo',            'badge' => 'success',   'icono' => 'fa-check-circle'],
+    2 => ['label' => 'Cancelado',         'badge' => 'secondary', 'icono' => 'fa-lock'],
+    3 => ['label' => 'Antiguo',           'badge' => 'info',      'icono' => 'fa-archive'],
+    4 => ['label' => 'Antiguo Cancelado', 'badge' => 'secondary', 'icono' => 'fa-lock'],
+    5 => ['label' => 'Anulado',           'badge' => 'danger',    'icono' => 'fa-ban'],
+];
+
+$info_estado = $estados_info[$estado] ?? ['label' => 'Desconocido', 'badge' => 'dark', 'icono' => 'fa-question'];
+?>
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fas fa-file-invoice-dollar me-2"></i>Detalle del Préstamo
+            <span class="badge bg-<?= $info_estado['badge'] ?> ms-2 fs-6 align-middle">
+                <i class="fa <?= $info_estado['icono'] ?> me-1"></i><?= $info_estado['label'] ?>
+            </span>
         </h1>
-        <a href="#" class="btn btn-success">
+        <a href="javascript:history.back()" class="btn btn-secondary">
             <i class="fa fa-arrow-left me-2"></i>Volver
         </a>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white py-3">
+    <?php if ($estado !== 1): ?>
+    <div class="alert alert-<?= $estado === 5 ? 'danger' : 'secondary' ?> border-2 mb-4 shadow text-center py-4" role="alert">
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+            <i class="fa <?= $info_estado['icono'] ?> fa-3x"></i>
+            <span class="fw-black text-uppercase fs-2 lh-1 label-estado-prestamo">
+                <?= $estado === 5 ? 'PRÉSTAMO ANULADO' : htmlspecialchars($info_estado['label']) ?>
+            </span>
+        </div>
+        <p class="mb-0 fs-6">
+            <?php if ($estado === 5): ?>
+                Este préstamo fue anulado y ya no se encuentra activo. No es posible registrar pagos ni amortizaciones sobre este registro.
+            <?php elseif ($estado === 2 || $estado === 4): ?>
+                Este préstamo ha sido cancelado y se encuentra cerrado.
+            <?php elseif ($estado === 3): ?>
+                Este préstamo figura como antiguo. Puede consultarse pero no admite nuevas operaciones.
+            <?php endif; ?>
+        </p>
+    </div>
+    <?php endif; ?>
+
+    <div class="card shadow mb-4 position-relative overflow-hidden <?= $estado === 5 ? 'border-danger border-2' : '' ?>">
+        <?php if ($estado === 5): ?>
+        <div class="ribbon-anulado">ANULADO</div>
+        <?php endif; ?>
+        <div class="card-header bg-<?= $estado === 5 ? 'danger' : 'primary' ?> text-white py-3">
             <h5 class="m-0 font-weight-bold text-white">
                 <i class="fa fa-user me-2"></i>Datos del Cliente
             </h5>
@@ -61,8 +100,12 @@
 					<?= $data_prestamo->prestamo_tipo_pago ?>
                 </div>
                 <div class="col-md-4">
-                    <a target="_blank" href="<?= _SERVER_ ?>/Prestamos/generar_documento/<?= $id_prestamos ?>" class="btn btn-outline-dark">
+                    <a target="_blank"
+                       href="<?= _SERVER_ ?>/Prestamos/generar_documento/<?= $id_prestamos ?>"
+                       class="btn btn-outline-<?= $estado === 5 ? 'danger disabled' : 'dark' ?>"
+                       <?= $estado === 5 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>
                         <i class="fas fa-calendar-alt me-2"></i>Ver Cronograma
+                        <?= $estado === 5 ? '<small class="ms-1">(anulado)</small>' : '' ?>
                     </a>
                 </div>
             </div>
@@ -200,5 +243,31 @@
     }
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
+    }
+
+    /* Ribbon diagonal "ANULADO" */
+    .ribbon-anulado {
+        position: absolute;
+        top: 28px;
+        right: -40px;
+        width: 170px;
+        padding: 7px 0;
+        background: #dc3545;
+        color: #fff;
+        text-align: center;
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: 3px;
+        transform: rotate(45deg);
+        z-index: 10;
+        box-shadow: 0 3px 10px rgba(220, 53, 69, 0.55);
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* Texto grande del banner de estado */
+    .label-estado-prestamo {
+        letter-spacing: 4px;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 </style>

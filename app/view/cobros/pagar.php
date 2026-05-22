@@ -76,6 +76,60 @@
 
 
             <?php if (!empty($cuota_a_pagar)) { ?>
+
+            <!-- Resumen de deuda actual -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #4e73df;">
+                        <div class="card-body py-3">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Capital Pendiente</div>
+                            <div class="h5 fw-bold text-gray-800 mb-0">
+                                S/ <?= number_format($capital_pendiente, 2) ?>
+                            </div>
+                            <div class="text-xs text-muted mt-1">Sin intereses</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #1cc88a;">
+                        <div class="card-body py-3">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Próxima Cuota</div>
+                            <div class="h5 fw-bold text-gray-800 mb-0" id="texto_cuota_principal">
+                                S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
+                            </div>
+                            <div id="badge_descuento_visual" style="display:none;" class="mt-1">
+                                <span class="text-danger small" style="text-decoration:line-through;">
+                                    S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
+                                </span>
+                                <span class="badge bg-warning text-dark ms-1" id="texto_descuento_aplicado"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #f6c23e;">
+                        <div class="card-body py-3">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Fecha de Vencimiento</div>
+                            <div class="h5 fw-bold text-gray-800 mb-0">
+                                <?= date('d/m/Y', strtotime($cuota_a_pagar->pago_diario_fecha)) ?>
+                            </div>
+                            <div class="text-xs text-muted mt-1">Cuota actual</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #e74a3b;">
+                        <div class="card-body py-3">
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Saldo Total Pendiente</div>
+                            <div class="h5 fw-bold text-gray-800 mb-0">
+                                S/ <?= number_format($saldo_total_pendiente, 2) ?>
+                            </div>
+                            <div class="text-xs text-muted mt-1">Capital + intereses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row mb-4">
                 <div class="col-md-6 mb-3">
                     <div class="card shadow-sm h-100" style="border-left: 4px solid #4e73df;">
@@ -85,15 +139,8 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="h4 mb-0 fw-bold text-gray-800 transition-color" id="texto_cuota_principal">
+                                    <div class="h4 mb-0 fw-bold text-gray-800">
                                         S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
-                                    </div>
-
-                                    <div id="badge_descuento_visual" style="display: none;" class="mt-1">
-                            <span class="text-danger" style="text-decoration: line-through; font-size: 0.85em;">
-                                S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
-                            </span>
-                                        <span class="badge bg-warning text-dark ms-1" id="texto_descuento_aplicado"></span>
                                     </div>
                                 </div>
 
@@ -166,7 +213,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-12" id="grupo_efectivo" style="display: none;">
+                    <div class="col-md-12" id="grupo_efectivo">
                         <div class="row g-3 border p-3 rounded bg-light mx-0">
                             <div class="col-md-6">
                                 <div class="form-floating">
@@ -176,8 +223,16 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" id="monto_vuelto" name="monto_vuelto" class="form-control text-danger font-weight-bold" readonly value="0.00" placeholder=" ">
-                                    <label>Vuelto (S/)</label>
+                                    <input type="text" id="monto_vuelto" name="monto_vuelto" class="form-control font-weight-bold" readonly value="0.00" placeholder=" ">
+                                    <label id="label_vuelto">Diferencia (S/)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="grupo_no_vuelto" style="display: none;">
+                                <div class="form-check form-switch pt-1">
+                                    <input class="form-check-input" type="checkbox" id="no_vuelto" name="no_vuelto" onchange="calcular_vuelto()">
+                                    <label class="form-check-label text-warning fw-semibold" for="no_vuelto">
+                                        <i class="fa fa-ban me-1"></i> No vuelto
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -288,7 +343,7 @@
                             </li>
 
                             <li class="list-group-item d-flex justify-content-between align-items-center" id="li_resumen_vuelto" style="display: none !important;">
-                                <span class="text-muted"><i class="fa fa-reply me-1"></i> Vuelto a Entregar</span>
+                                <span id="label_resumen_diferencia" class="text-muted"><i class="fa fa-reply me-1"></i> Vuelto a Entregar</span>
                                 <span class="font-weight-bold text-danger h6 mb-0" id="resumen_vuelto">S/ 0.00</span>
                             </li>
                         </ul>
@@ -297,10 +352,16 @@
             </div>
         </div>
 
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 d-flex justify-content-center gap-3 flex-wrap">
                     <button id="btn-guardar-pago" onclick="guardar_pago_prestamo()" type="button" class="btn btn-lg btn-primary px-5">
                         <i class="fa fa-check-circle me-2"></i>Confirmar Pago
                     </button>
+                    <?php if ($puede_amortizar): ?>
+                    <a href="<?= _SERVER_ ?>cobros/amortizar/<?= $id_prestamo ?>"
+                       class="btn btn-lg btn-success px-5">
+                        <i class="fa fa-hand-holding-usd me-2"></i>Amortizar
+                    </a>
+                    <?php endif; ?>
                 </div>
 
             <?php } else { ?>

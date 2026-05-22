@@ -555,15 +555,19 @@ function cambiar_metodo_pago() {
     $('#num_operacion').val('');
     $('#nombre_titular').val('');
     $('#banco_entidad').val('');
+    $('#no_vuelto').prop('checked', false);
+    $('#grupo_no_vuelto').hide();
 
     // 3. Mostramos lo que corresponde
-    if (metodo === 'efectivo') {
-        $('#grupo_efectivo').show(200);
-    } else if (metodo === 'transferencia') {
+    $('#grupo_efectivo').show(200);
+    if (metodo === 'transferencia') {
         $('#grupo_transferencia').show(200);
         $('#grupo_operacion_titular').show(200);
+        // Pre-llenamos con el monto a pagar como valor sugerido
+        $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
     } else if (metodo === 'yape' || metodo === 'plin') {
         $('#grupo_operacion_titular').show(200);
+        $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
     }
 
     // 4. Forzamos el cálculo
@@ -571,26 +575,39 @@ function cambiar_metodo_pago() {
 }
 
 function calcular_vuelto() {
-    let monto_pagar = parseFloat($('#monto_pagar').val()) || 0;
-    let metodo = $('#pago_metodo').find(':selected').data('tipo');
+    let monto_pagar    = parseFloat($('#monto_pagar').val()) || 0;
+    let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
+    let metodo         = $('#pago_metodo').find(':selected').data('tipo');
 
-    if (metodo === 'transferencia' || metodo === 'yape' || metodo === 'plin') {
-        $('#monto_recibido').val(monto_pagar.toFixed(2));
-        $('#monto_vuelto').val('0.00');
+    // Diferencia real: positiva = vuelto, negativa = falta, cero = exacto
+    let diferencia = monto_pagar > 0 ? monto_recibido - monto_pagar : 0;
+
+    // "No vuelto" solo aplica para efectivo con diferencia positiva
+    if (metodo === 'efectivo' && diferencia > 0) {
+        $('#grupo_no_vuelto').show(150);
     } else {
-        let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
-
-        if (monto_recibido >= monto_pagar && monto_pagar > 0) {
-            let vuelto = monto_recibido - monto_pagar;
-            $('#monto_vuelto').val(vuelto.toFixed(2));
-        } else {
-            $('#monto_vuelto').val('0.00');
-        }
+        $('#grupo_no_vuelto').hide(100);
+        $('#no_vuelto').prop('checked', false);
     }
 
-    // ==========================================
-    // LLAMAMOS AL RESUMEN PARA QUE SE ACTUALICE
-    // ==========================================
+    let vuelto_final = $('#no_vuelto').is(':checked') ? 0 : diferencia;
+    $('#monto_vuelto').val(vuelto_final.toFixed(2));
+
+    // Retroalimentación visual en el campo
+    let $campo = $('#monto_vuelto');
+    let $label = $('#label_vuelto');
+    $campo.removeClass('text-success text-danger text-muted');
+    if (vuelto_final > 0) {
+        $campo.addClass('text-success');
+        $label.text('Vuelto (S/)');
+    } else if (vuelto_final < 0) {
+        $campo.addClass('text-danger');
+        $label.text('Falta (S/)');
+    } else {
+        $campo.addClass('text-muted');
+        $label.text('Diferencia (S/)');
+    }
+
     actualizar_resumen();
 }
 
@@ -724,12 +741,12 @@ function actualizar_resumen() {
     let monto_vuelto = parseFloat($('#monto_vuelto').val()) || 0; // CAPTURAMOS EL VUELTO
     let metodo = $('#pago_metodo').find(':selected').data('tipo');
 
-    // 2. Si es pago digital, el recibido es igual al total a pagar
-    if (metodo === 'transferencia' || metodo === 'yape' || metodo === 'plin') {
-        monto_recibido = total_pagar;
-        $('#label_monto_recibido').text('Monto Recibido (' + (metodo.charAt(0).toUpperCase() + metodo.slice(1)) + ')');
+    // 2. Etiqueta dinámica según el método seleccionado
+    if (metodo) {
+        let nombre = metodo.charAt(0).toUpperCase() + metodo.slice(1);
+        $('#label_monto_recibido').text('Monto Recibido (' + nombre + ')');
     } else {
-        $('#label_monto_recibido').text('Monto Recibido (Efectivo)');
+        $('#label_monto_recibido').text('Monto Recibido');
     }
 
     // 3. Pintamos la Cuota Original
@@ -750,12 +767,18 @@ function actualizar_resumen() {
     // ==========================================
     // 6. NUEVO: Lógica visual para el Vuelto
     // ==========================================
-    if (metodo === 'efectivo' && monto_vuelto > 0) {
-        // Solo lo mostramos si pagaron en efectivo y de verdad sobra plata
-        $('#li_resumen_vuelto').attr('style', 'display: flex !important; background-color: #fff3cd;'); // Fondo un poco amarillo para resaltar
-        $('#resumen_vuelto').text('S/ ' + monto_vuelto.toFixed(2));
+    let $resumen_vuelto = $('#resumen_vuelto');
+    $resumen_vuelto.removeClass('text-success text-danger text-warning');
+
+    if (monto_vuelto > 0) {
+        $('#li_resumen_vuelto').attr('style', 'display: flex !important; background-color: #fff3cd;');
+        $('#label_resumen_diferencia').html('<i class="fa fa-reply me-1"></i> Vuelto a Entregar');
+        $resumen_vuelto.addClass('text-success').text('S/ ' + monto_vuelto.toFixed(2));
+    } else if (monto_vuelto < 0) {
+        $('#li_resumen_vuelto').attr('style', 'display: flex !important; background-color: #fde8e8;');
+        $('#label_resumen_diferencia').html('<i class="fa fa-exclamation-circle me-1"></i> Falta por Pagar');
+        $resumen_vuelto.addClass('text-danger').text('S/ ' + monto_vuelto.toFixed(2));
     } else {
-        // Lo ocultamos si pagaron exacto o por medios digitales
         $('#li_resumen_vuelto').attr('style', 'display: none !important;');
     }
 }
