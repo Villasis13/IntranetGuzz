@@ -10,13 +10,18 @@ class Reporte
 
     public function reporte_hoy($dia){
         try{
-            $sql = 'select * from pagos p 
-         inner join prestamos pr on p.id_prestamo=pr.id_prestamos
-         inner join clientes cl on pr.id_cliente=cl.id_cliente
-         inner join usuarios u on p.id_usuario=u.id_usuario
-         inner join pagos_diarios pg on p.id_pago_diario=pg.id_pago_diario
-        inner join metodos_pago mp on mp.id_metodo_pago=p.pago_metodo
-        where date(p.pago_fecha)=? ';
+            $sql = 'SELECT p.*, pr.*, cl.*, u.usuario_nickname,
+                        COALESCE(pg.pago_diario_fecha, DATE(p.pago_fecha)) AS pago_diario_fecha,
+                        COALESCE(pg.pago_diario_monto, p.pago_monto)       AS pago_diario_monto,
+                        mp.metodo_pago_nombre,
+                        CASE WHEN p.id_pago_diario IS NULL THEN "Amortización" ELSE "Cuota" END AS tipo_pago
+                    FROM pagos p
+                    INNER JOIN prestamos    pr ON p.id_prestamo  = pr.id_prestamos
+                    INNER JOIN clientes     cl ON pr.id_cliente  = cl.id_cliente
+                    INNER JOIN usuarios     u  ON p.id_usuario   = u.id_usuario
+                    LEFT  JOIN pagos_diarios pg ON p.id_pago_diario = pg.id_pago_diario
+                    LEFT  JOIN metodos_pago  mp ON p.pago_metodo    = mp.id_metodo_pago
+                    WHERE DATE(p.pago_fecha) = ?';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$dia]);
             return $stm->fetchAll();
@@ -42,13 +47,18 @@ class Reporte
     }
     public function reporte_mes($mes){
         try{
-            $sql = 'select * from pagos p 
-                    inner join prestamos pr on p.id_prestamo=pr.id_prestamos
-                    inner join clientes cl on pr.id_cliente=cl.id_cliente 
-                    inner join usuarios u on p.id_usuario=u.id_usuario
-                    inner join pagos_diarios pg on p.id_pago_diario=pg.id_pago_diario
-                    inner join metodos_pago mp on mp.id_metodo_pago=p.pago_metodo
-                    where month(p.pago_fecha)= ?';
+            $sql = 'SELECT p.*, pr.*, cl.*, u.usuario_nickname,
+                        COALESCE(pg.pago_diario_fecha, DATE(p.pago_fecha)) AS pago_diario_fecha,
+                        COALESCE(pg.pago_diario_monto, p.pago_monto)       AS pago_diario_monto,
+                        mp.metodo_pago_nombre,
+                        CASE WHEN p.id_pago_diario IS NULL THEN "Amortización" ELSE "Cuota" END AS tipo_pago
+                    FROM pagos p
+                    INNER JOIN prestamos     pr ON p.id_prestamo   = pr.id_prestamos
+                    INNER JOIN clientes      cl ON pr.id_cliente   = cl.id_cliente
+                    INNER JOIN usuarios      u  ON p.id_usuario    = u.id_usuario
+                    LEFT  JOIN pagos_diarios pg ON p.id_pago_diario = pg.id_pago_diario
+                    LEFT  JOIN metodos_pago  mp ON p.pago_metodo    = mp.id_metodo_pago
+                    WHERE MONTH(p.pago_fecha) = ?';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$mes]);
             return $stm->fetchAll();
@@ -76,13 +86,18 @@ class Reporte
 
     public function reporte_fechas($inicio,$fin){
         try{
-            $sql = 'select * from pagos p 
-         inner join prestamos pr on p.id_prestamo=pr.id_prestamos
-         inner join clientes cl on pr.id_cliente=cl.id_cliente
-          inner join usuarios u on p.id_usuario=u.id_usuario
-         inner join pagos_diarios pg on p.id_pago_diario=pg.id_pago_diario
-         inner join metodos_pago mp on mp.id_metodo_pago=p.pago_metodo
-         where date(p.pago_fecha) between ? and ? ';
+            $sql = 'SELECT p.*, pr.*, cl.*, u.usuario_nickname,
+                        COALESCE(pg.pago_diario_fecha, DATE(p.pago_fecha)) AS pago_diario_fecha,
+                        COALESCE(pg.pago_diario_monto, p.pago_monto)       AS pago_diario_monto,
+                        mp.metodo_pago_nombre,
+                        CASE WHEN p.id_pago_diario IS NULL THEN "Amortización" ELSE "Cuota" END AS tipo_pago
+                    FROM pagos p
+                    INNER JOIN prestamos     pr ON p.id_prestamo    = pr.id_prestamos
+                    INNER JOIN clientes      cl ON pr.id_cliente    = cl.id_cliente
+                    INNER JOIN usuarios      u  ON p.id_usuario     = u.id_usuario
+                    LEFT  JOIN pagos_diarios pg ON p.id_pago_diario = pg.id_pago_diario
+                    LEFT  JOIN metodos_pago  mp ON p.pago_metodo    = mp.id_metodo_pago
+                    WHERE DATE(p.pago_fecha) BETWEEN ? AND ?';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$inicio,$fin]);
             return $stm->fetchAll();

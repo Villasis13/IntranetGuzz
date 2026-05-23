@@ -129,10 +129,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="text" id="monto_vuelto" name="monto_vuelto"
+                                <input type="text" id="monto_vuelto"
                                        class="form-control font-weight-bold" readonly value="0.00" placeholder=" ">
-                                <label id="label_vuelto">Diferencia (S/)</label>
+                                <label id="label_vuelto">Diferencia / Vuelto (S/)</label>
                             </div>
+                            <input type="hidden" id="monto_vuelto_db" name="monto_vuelto" value="0">
                         </div>
                         <div class="col-md-12" id="grupo_no_vuelto" style="display:none;">
                             <div class="form-check form-switch pt-1">
@@ -225,8 +226,8 @@
                                     <span class="text-muted" id="label_monto_recibido">Monto Recibido</span>
                                     <span class="fw-bold text-success" id="resumen_recibido">S/ 0.00</span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center"
-                                    id="li_resumen_vuelto" style="display:none !important;">
+                                <li class="list-group-item justify-content-between align-items-center"
+                                    id="li_resumen_vuelto" style="display:none;">
                                     <span id="label_resumen_diferencia" class="text-muted">
                                         <i class="fa fa-reply me-1"></i> Vuelto a Entregar
                                     </span>
@@ -322,7 +323,7 @@ function confirmar_amortizacion() {
             monto_amortizar:    monto,
             pago_metodo:        metodo,
             monto_recibido:     $('#monto_recibido').val(),
-            monto_vuelto:       $('#monto_vuelto').val(),
+            monto_vuelto:       $('#monto_vuelto_db').val(),
             num_operacion:      $('#num_operacion').val(),
             nombre_titular:     $('#nombre_titular').val(),
             banco_entidad:      $('#banco_entidad').val(),
@@ -335,8 +336,11 @@ function confirmar_amortizacion() {
                 case 1:
                     respuesta('¡Amortización registrada!', 'success');
                     setTimeout(() => {
+                        if (r.result.id_pago) {
+                            window.open(urlweb + 'Cobros/generar_documento/' + r.result.id_pago, '_blank');
+                        }
                         window.location.href = urlweb + 'cobros/pagar/' + $('#id_prestamo').val();
-                    }, 1200);
+                    }, 1000);
                     break;
                 case 3:
                 case 4:

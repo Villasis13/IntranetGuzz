@@ -245,7 +245,7 @@ function guardar_pago_prestamo(){
     // NUEVOS CAMPOS DINÁMICOS
     var monto_pagar = $('#monto_pagar').val();
     var monto_recibido = $('#monto_recibido').val();
-    var monto_vuelto = $('#monto_vuelto').val();
+    var monto_vuelto = $('#monto_vuelto_db').val();
     var num_operacion = $('#num_operacion').val();
     var nombre_titular = $('#nombre_titular').val();
     var banco_entidad = $('#banco_entidad').val();
@@ -579,7 +579,6 @@ function calcular_vuelto() {
     let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
     let metodo         = $('#pago_metodo').find(':selected').data('tipo');
 
-    // Diferencia real: positiva = vuelto, negativa = falta, cero = exacto
     let diferencia = monto_pagar > 0 ? monto_recibido - monto_pagar : 0;
 
     // "No vuelto" solo aplica para efectivo con diferencia positiva
@@ -590,22 +589,35 @@ function calcular_vuelto() {
         $('#no_vuelto').prop('checked', false);
     }
 
-    let vuelto_final = $('#no_vuelto').is(':checked') ? 0 : diferencia;
-    $('#monto_vuelto').val(vuelto_final.toFixed(2));
+    let no_vuelto = $('#no_vuelto').is(':checked');
 
-    // Retroalimentación visual en el campo
+    // Valor real a guardar en DB: solo vuelto en efectivo (sin "no vuelto")
+    let vuelto_db = (metodo === 'efectivo' && diferencia > 0 && !no_vuelto) ? diferencia : 0;
+    $('#monto_vuelto_db').val(vuelto_db.toFixed(2));
+
+    // El campo visual siempre muestra la diferencia real
+    $('#monto_vuelto').val(diferencia.toFixed(2));
+
     let $campo = $('#monto_vuelto');
     let $label = $('#label_vuelto');
-    $campo.removeClass('text-success text-danger text-muted');
-    if (vuelto_final > 0) {
-        $campo.addClass('text-success');
-        $label.text('Vuelto (S/)');
-    } else if (vuelto_final < 0) {
-        $campo.addClass('text-danger');
-        $label.text('Falta (S/)');
-    } else {
+    $campo.removeClass('text-success text-danger text-muted text-primary');
+
+    if (diferencia === 0) {
         $campo.addClass('text-muted');
+        $label.text('Diferencia / Vuelto (S/)');
+    } else if (diferencia < 0) {
+        $campo.addClass('text-danger');
         $label.text('Diferencia (S/)');
+    } else {
+        // diferencia > 0
+        if (metodo === 'efectivo' && !no_vuelto) {
+            $campo.addClass('text-success');
+            $label.text('Vuelto (S/)');
+        } else {
+            // Yape/Plin/Transferencia con exceso, o Efectivo con "No vuelto"
+            $campo.addClass('text-primary');
+            $label.text('Diferencia (S/)');
+        }
     }
 
     actualizar_resumen();
@@ -733,15 +745,14 @@ $(document).ready(function() {
 });
 
 function actualizar_resumen() {
-    // 1. Capturamos todos los valores actuales
     let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
-    let descuento = parseFloat($('#descontar_cantidad').val()) || 0;
-    let total_pagar = parseFloat($('#monto_pagar').val()) || 0;
+    let descuento      = parseFloat($('#descontar_cantidad').val()) || 0;
+    let total_pagar    = parseFloat($('#monto_pagar').val()) || 0;
     let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
-    let monto_vuelto = parseFloat($('#monto_vuelto').val()) || 0; // CAPTURAMOS EL VUELTO
-    let metodo = $('#pago_metodo').find(':selected').data('tipo');
+    let diferencia     = parseFloat($('#monto_vuelto').val()) || 0; // Siempre es la diferencia real
+    let metodo         = $('#pago_metodo').find(':selected').data('tipo');
+    let no_vuelto      = $('#no_vuelto').is(':checked');
 
-    // 2. Etiqueta dinámica según el método seleccionado
     if (metodo) {
         let nombre = metodo.charAt(0).toUpperCase() + metodo.slice(1);
         $('#label_monto_recibido').text('Monto Recibido (' + nombre + ')');
@@ -749,36 +760,45 @@ function actualizar_resumen() {
         $('#label_monto_recibido').text('Monto Recibido');
     }
 
-    // 3. Pintamos la Cuota Original
     $('#resumen_cuota').text('S/ ' + cuota_original.toFixed(2));
 
-    // 4. Pintamos el Descuento (Si existe)
     if (descuento > 0) {
-        $('#li_resumen_descuento').attr('style', 'display: flex !important;');
+        $('#li_resumen_descuento').attr('style', 'display: flex;');
         $('#resumen_descuento').text('- S/ ' + descuento.toFixed(2));
     } else {
-        $('#li_resumen_descuento').attr('style', 'display: none !important;');
+        $('#li_resumen_descuento').attr('style', 'display: none;');
     }
 
-    // 5. Pintamos el Total Final y lo Recibido
     $('#resumen_total').text('S/ ' + total_pagar.toFixed(2));
     $('#resumen_recibido').text('S/ ' + monto_recibido.toFixed(2));
 
-    // ==========================================
-    // 6. NUEVO: Lógica visual para el Vuelto
-    // ==========================================
-    let $resumen_vuelto = $('#resumen_vuelto');
-    $resumen_vuelto.removeClass('text-success text-danger text-warning');
+    let $li    = $('#li_resumen_vuelto');
+    let $label = $('#label_resumen_diferencia');
+    let $valor = $('#resumen_vuelto');
+    $valor.removeClass('text-success text-danger text-warning text-primary text-muted');
 
-    if (monto_vuelto > 0) {
-        $('#li_resumen_vuelto').attr('style', 'display: flex !important; background-color: #fff3cd;');
-        $('#label_resumen_diferencia').html('<i class="fa fa-reply me-1"></i> Vuelto a Entregar');
-        $resumen_vuelto.addClass('text-success').text('S/ ' + monto_vuelto.toFixed(2));
-    } else if (monto_vuelto < 0) {
-        $('#li_resumen_vuelto').attr('style', 'display: flex !important; background-color: #fde8e8;');
-        $('#label_resumen_diferencia').html('<i class="fa fa-exclamation-circle me-1"></i> Falta por Pagar');
-        $resumen_vuelto.addClass('text-danger').text('S/ ' + monto_vuelto.toFixed(2));
+    if (diferencia === 0) {
+        // Monto exacto
+        $li.attr('style', 'display: flex;');
+        $label.html('<i class="fa fa-check-circle me-1"></i> Diferencia / Vuelto');
+        $valor.addClass('text-muted').text('S/ 0.00');
+    } else if (diferencia < 0) {
+        // Pago parcial
+        $li.attr('style', 'display: flex; background-color: #fde8e8;');
+        $label.html('<i class="fa fa-exclamation-circle me-1"></i> Diferencia');
+        $valor.addClass('text-danger').text('-S/ ' + Math.abs(diferencia).toFixed(2));
     } else {
-        $('#li_resumen_vuelto').attr('style', 'display: none !important;');
+        // diferencia > 0
+        if (metodo === 'efectivo' && !no_vuelto) {
+            // Vuelto en efectivo
+            $li.attr('style', 'display: flex; background-color: #fff3cd;');
+            $label.html('<i class="fa fa-reply me-1"></i> Vuelto a Entregar');
+            $valor.addClass('text-success').text('S/ ' + diferencia.toFixed(2));
+        } else {
+            // No-efectivo con exceso, o efectivo con "No vuelto"
+            $li.attr('style', 'display: flex; background-color: #e8f4fd;');
+            $label.html('<i class="fa fa-arrow-up me-1"></i> Diferencia');
+            $valor.addClass('text-primary').text('+S/ ' + diferencia.toFixed(2));
+        }
     }
 }

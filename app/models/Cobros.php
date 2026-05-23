@@ -169,7 +169,17 @@ class Cobros
 	}
 	public function listar_pagos_x_prestamo($id){
 		try{
-			$sql = 'SELECT * from pagos where id_prestamo = ?';
+			$sql = 'SELECT p.*,
+                        pd.pago_diario_fecha  AS fecha_cuota,
+                        pd.pago_diario_monto  AS cuota_original,
+                        u.usuario_nickname    AS pago_usuario,
+                        mp.metodo_pago_nombre AS metodo_nombre
+                    FROM pagos p
+                    LEFT JOIN pagos_diarios  pd ON p.id_pago_diario = pd.id_pago_diario
+                    LEFT JOIN usuarios       u  ON p.id_usuario     = u.id_usuario
+                    LEFT JOIN metodos_pago   mp ON p.pago_metodo    = mp.id_metodo_pago
+                    WHERE p.id_prestamo = ?
+                    ORDER BY p.pago_fecha ASC';
 			$stm = $this->pdo->prepare($sql);
 			$stm->execute([$id]);
 			return $stm->fetchAll();

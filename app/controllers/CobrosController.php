@@ -370,6 +370,7 @@ class CobrosController
     {
         $result  = 2;
         $message = 'Error al procesar la amortización.';
+        $id_pago_generado    = 0;
         $transaction_started = false;
 
         try {
@@ -472,6 +473,10 @@ class CobrosController
 
             $this->cobros->confirmar_transaccion();
             $transaction_started = false;
+
+            $pago_guardado    = $this->cobros->listar_pago_guardado_x_mt($mt);
+            $id_pago_generado = $pago_guardado ? $pago_guardado->id_pago : 0;
+
             $result  = 1;
             $message = 'Amortización registrada correctamente.';
 
@@ -483,7 +488,7 @@ class CobrosController
             $message = $e->getMessage();
         }
 
-        echo json_encode(['result' => ['code' => $result, 'message' => $message]]);
+        echo json_encode(['result' => ['code' => $result, 'message' => $message, 'id_pago' => $id_pago_generado]]);
     }
 
     public function aplicar_descuento()
@@ -582,10 +587,11 @@ class CobrosController
             $pdf->Cell(40, 4, 'Saldo Anterior:', 0, 0, 'L');
             $pdf->Cell(30, 4, 'S/ ' . number_format($saldo_anterior, 2), 0, 1, 'R');
 
-            // Cuota
-            $pdf->Cell($W, 4, 'Cuota:', 0, 1, 'L');
+            // Cuota o Amortización
+            $es_amortizacion = empty($data->id_pago_diario);
+            $pdf->Cell($W, 4, $es_amortizacion ? 'Amortización:' : 'Cuota:', 0, 1, 'L');
             $pdf->Cell(5,  4, '', 0, 0);
-            $pdf->Cell(35, 4, 'Original:', 0, 0, 'L');
+            $pdf->Cell(35, 4, $es_amortizacion ? 'Monto:' : 'Original:', 0, 0, 'L');
             $pdf->Cell(30, 4, 'S/ ' . number_format($cuota_original, 2), 0, 1, 'R');
 
             if ($data->pago_descuento_estado == 1 && floatval($data->pago_descuento_monto) > 0) {
@@ -605,12 +611,29 @@ class CobrosController
             $pdf->Cell(35, 4, 'Monto Pagado:', 0, 0, 'L');
             $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto), 2), 0, 1, 'R');
             if (!empty($data->pago_monto_recibido)) {
+                $monto_recibido = floatval($data->pago_monto_recibido);
+                $monto_pagado   = floatval($data->pago_monto);
+                $monto_vuelto   = floatval($data->pago_monto_vuelto ?? 0);
+                $diferencia     = round($monto_recibido - $monto_pagado, 2);
+
                 $pdf->Cell(5,  4, '', 0, 0);
                 $pdf->Cell(35, 4, 'Monto Recibido:', 0, 0, 'L');
-                $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto_recibido), 2), 0, 1, 'R');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($monto_recibido, 2), 0, 1, 'R');
                 $pdf->Cell(5,  4, '', 0, 0);
-                $pdf->Cell(35, 4, 'Vuelto:', 0, 0, 'L');
-                $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto_vuelto ?? 0), 2), 0, 1, 'R');
+
+                if ($diferencia == 0) {
+                    $pdf->Cell(35, 4, 'Diferencia / Vuelto:', 0, 0, 'L');
+                    $pdf->Cell(30, 4, 'S/ 0.00', 0, 1, 'R');
+                } elseif ($diferencia < 0) {
+                    $pdf->Cell(35, 4, 'Diferencia:', 0, 0, 'L');
+                    $pdf->Cell(30, 4, '-S/ ' . number_format(abs($diferencia), 2), 0, 1, 'R');
+                } elseif ($monto_vuelto > 0) {
+                    $pdf->Cell(35, 4, 'Vuelto:', 0, 0, 'L');
+                    $pdf->Cell(30, 4, 'S/ ' . number_format($monto_vuelto, 2), 0, 1, 'R');
+                } else {
+                    $pdf->Cell(35, 4, 'Diferencia:', 0, 0, 'L');
+                    $pdf->Cell(30, 4, '+S/ ' . number_format($diferencia, 2), 0, 1, 'R');
+                }
             }
             $pdf->Cell($W, 3, $SEP, 0, 1, 'C');
 

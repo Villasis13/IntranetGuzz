@@ -32,6 +32,7 @@
                         <thead class="text-center bg-light">
                         <tr>
                             <th>#</th>
+                            <th>Tipo</th>
                             <th>Fecha Cuota</th>
                             <th>Fecha de Registro</th>
                             <th>Usuario</th>
@@ -53,6 +54,13 @@
                                 ?>
                                 <tr class="text-center">
                                     <td><?= $c++ ?></td>
+                                    <td>
+                                        <?php if (($rp->tipo_pago ?? 'Cuota') === 'Amortización'): ?>
+                                            <span class="badge bg-warning text-dark">Amortización</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-primary">Cuota</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><small><?= date('d/m/Y', strtotime($rp->pago_diario_fecha)) ?></small></td>
                                     <td><small><?= date('d/m/Y H:i', strtotime($rp->pago_fecha)) ?></small></td>
                                     <td><small><?= htmlspecialchars($rp->usuario_nickname) ?></small></td>

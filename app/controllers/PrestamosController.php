@@ -373,7 +373,7 @@ class PrestamosController
             // 1. EXTRAER Y FORMATEAR LAS 4 FECHAS CLAVE (Formato DD/MM/YYYY)
 
             // A) Fecha de Emisión (La original del préstamo)
-            $fecha_emision = date('d/m/Y', strtotime($data_prestamo->prestamo_fecha));
+            $fecha_emision = date('d/m/Y', strtotime($data_prestamo->prestamo_fecha_emision));
 
             // B) Fecha de Inicio (Leída directamente de tu nuevo campo en la BD)
             // Asegúrate de que el campo en tu BD se llame exactamente 'prestamo_fecha_inicio'
@@ -387,7 +387,7 @@ class PrestamosController
 
 
             // Textos para los párrafos legales
-            $timestamp_prestamo = strtotime($data_prestamo->prestamo_fecha);
+            $timestamp_prestamo = strtotime($data_prestamo->prestamo_fecha_emision);
             $dia_fecha = date('d', $timestamp_prestamo);
             $mes_fecha = date('m', $timestamp_prestamo);
             $anho_fecha = date('Y', $timestamp_prestamo);

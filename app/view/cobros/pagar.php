@@ -223,9 +223,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" id="monto_vuelto" name="monto_vuelto" class="form-control font-weight-bold" readonly value="0.00" placeholder=" ">
-                                    <label id="label_vuelto">Diferencia (S/)</label>
+                                    <input type="text" id="monto_vuelto" class="form-control font-weight-bold" readonly value="0.00" placeholder=" ">
+                                    <label id="label_vuelto">Diferencia / Vuelto (S/)</label>
                                 </div>
+                                <input type="hidden" id="monto_vuelto_db" name="monto_vuelto" value="0">
                             </div>
                             <div class="col-md-12" id="grupo_no_vuelto" style="display: none;">
                                 <div class="form-check form-switch pt-1">
@@ -327,7 +328,7 @@
                                 <span class="font-weight-bold text-dark" id="resumen_cuota">S/ 0.00</span>
                             </li>
 
-                            <li class="list-group-item d-flex justify-content-between align-items-center text-danger" id="li_resumen_descuento" style="display: none !important;">
+                            <li class="list-group-item justify-content-between align-items-center text-danger" id="li_resumen_descuento" style="display: none;">
                                 <span><i class="fa fa-arrow-down me-1"></i> Descuento Aplicado</span>
                                 <span class="font-weight-bold" id="resumen_descuento">- S/ 0.00</span>
                             </li>
@@ -342,7 +343,7 @@
                                 <span class="font-weight-bold text-success" id="resumen_recibido">S/ 0.00</span>
                             </li>
 
-                            <li class="list-group-item d-flex justify-content-between align-items-center" id="li_resumen_vuelto" style="display: none !important;">
+                            <li class="list-group-item justify-content-between align-items-center" id="li_resumen_vuelto" style="display: none;">
                                 <span id="label_resumen_diferencia" class="text-muted"><i class="fa fa-reply me-1"></i> Vuelto a Entregar</span>
                                 <span class="font-weight-bold text-danger h6 mb-0" id="resumen_vuelto">S/ 0.00</span>
                             </li>

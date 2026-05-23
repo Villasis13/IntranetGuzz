@@ -176,32 +176,59 @@
 
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped" id="dataTablePagos">
+                        <table class="table table-hover table-striped table-sm small" id="dataTablePagos">
                             <thead class="thead-light">
                             <tr class="text-center">
-                                <th>#</th>
-                                <th>Fecha</th>
-                                <th>Nro. Recibo</th>
-                                <th>Monto Pagado</th>
+                                <th>Fecha Cuota</th>
+                                <th>Fecha Pago</th>
+                                <th>Usuario</th>
+                                <th>Recibo</th>
+                                <th>Método</th>
+                                <th>Cuota Original</th>
+                                <th>Descuento</th>
+                                <th>Monto Final</th>
+                                <th>Monto Recibido</th>
+                                <th>Diferencia / Vuelto</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php
                             if(!empty($pagos_p)){
-                                $a = 1;
                                 foreach ($pagos_p as $c){
+                                    // Diferencia / Vuelto
+                                    $monto_recibido = floatval($c->pago_monto_recibido ?? 0);
+                                    $monto_final    = floatval($c->pago_monto);
+                                    $monto_vuelto   = floatval($c->pago_monto_vuelto ?? 0);
+                                    $diferencia     = round($monto_recibido - $monto_final, 2);
+
+                                    if (empty($c->pago_monto_recibido)) {
+                                        $dif_html = '<span class="text-muted">-</span>';
+                                    } elseif ($diferencia == 0) {
+                                        $dif_html = '<span class="text-muted">S/ 0.00</span>';
+                                    } elseif ($diferencia < 0) {
+                                        $dif_html = '<span class="text-danger">-S/ ' . number_format(abs($diferencia), 2) . '</span>';
+                                    } elseif ($monto_vuelto > 0) {
+                                        $dif_html = '<span class="text-success">S/ ' . number_format($monto_vuelto, 2) . '</span>';
+                                    } else {
+                                        $dif_html = '<span class="text-primary">+S/ ' . number_format($diferencia, 2) . '</span>';
+                                    }
                                     ?>
                                     <tr class="text-center">
-                                        <td><?= $a ?></td>
-                                        <td><?= $c->pago_fecha ?></td>
+                                        <td><?= !empty($c->fecha_cuota) ? date('d/m/Y', strtotime($c->fecha_cuota)) : '-' ?></td>
+                                        <td><?= date('d/m/Y H:i', strtotime($c->pago_fecha)) ?></td>
+                                        <td><?= htmlspecialchars($c->pago_usuario ?? '-') ?></td>
                                         <td><?= $c->id_pago ?></td>
-                                        <td class="font-weight-bold text-success">S/. <?= number_format($c->pago_monto, 2) ?></td>
+                                        <td><?= htmlspecialchars($c->metodo_nombre ?? '-') ?></td>
+                                        <td>S/ <?= number_format(floatval($c->cuota_original ?? 0), 2) ?></td>
+                                        <td><?= $c->pago_descuento_monto > 0 ? '<span class="text-warning">-S/ ' . number_format($c->pago_descuento_monto, 2) . '</span>' : '<span class="text-muted">-</span>' ?></td>
+                                        <td class="font-weight-bold text-success">S/ <?= number_format($monto_final, 2) ?></td>
+                                        <td><?= !empty($c->pago_monto_recibido) ? 'S/ ' . number_format($monto_recibido, 2) : '<span class="text-muted">-</span>' ?></td>
+                                        <td><?= $dif_html ?></td>
                                     </tr>
                                     <?php
-                                    $a++;
                                 }
                             } else {
-                                echo '<tr><td colspan="4" class="text-center text-muted">No hay pagos registrados aún.</td></tr>';
+                                echo '<tr><td colspan="10" class="text-center text-muted">No hay pagos registrados aún.</td></tr>';
                             }
                             ?>
                             </tbody>
