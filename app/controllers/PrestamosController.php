@@ -106,8 +106,43 @@ class PrestamosController
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
 			$id_prestamos = $_GET['id'];
 			$data_prestamo = $this->prestamos->listar_x_id($id_prestamos);
-			$data_cliente = $this->clientes->listar_x_id($data_prestamo->id_cliente);
-			
+			$data_cliente  = $this->clientes->listar_x_id($data_prestamo->id_cliente);
+
+            // Reconstruct amortization history retroactively (no schema change required)
+            $tasa        = floatval($data_prestamo->prestamo_interes ?? 0);
+            $todos_pagos = (array)$this->cobros->listar_pagos_x_prestamo($id_prestamos);
+
+            $running_saldo        = floatval($data_prestamo->prestamo_saldo_pagar ?? 0);
+            $amortizaciones_detalle = [];
+
+            foreach (array_reverse($todos_pagos) as $pago) {
+                if (empty($pago->id_pago_diario)) {
+                    $saldo_total_despues = $running_saldo;
+                    $capital_despues     = $tasa > 0 ? round($saldo_total_despues / (1 + $tasa / 100), 2) : $saldo_total_despues;
+                    $capital_antes       = round($capital_despues + floatval($pago->pago_monto), 2);
+                    $saldo_total_antes   = $tasa > 0 ? round($capital_antes * (1 + $tasa / 100), 2) : $capital_antes;
+
+                    $amortizaciones_detalle[] = (object)[
+                        'pago_fecha'          => $pago->pago_fecha,
+                        'pago_usuario'        => $pago->pago_usuario ?? ($pago->pago_recepcion ?? '—'),
+                        'capital_antes'       => $capital_antes,
+                        'monto_amortizacion'  => floatval($pago->pago_monto),
+                        'capital_despues'     => $capital_despues,
+                        'interes'             => $tasa,
+                        'saldo_total_antes'   => $saldo_total_antes,
+                        'saldo_total_despues' => $saldo_total_despues,
+                        'id_pago'             => $pago->id_pago,
+                    ];
+
+                    $running_saldo = $saldo_total_antes;
+                } else {
+                    $cuota_original = floatval($pago->cuota_original ?? $pago->pago_monto);
+                    $running_saldo += $cuota_original;
+                }
+            }
+
+            $amortizaciones_detalle = array_reverse($amortizaciones_detalle);
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'prestamos/detalle.php';

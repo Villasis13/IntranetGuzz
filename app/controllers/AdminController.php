@@ -42,7 +42,8 @@ class AdminController{
             $egresos_hoy            = $datos_prestamos->total;
 
             // 2. INGRESOS (Cobros)
-            $ingresos_hoy = $this->cobros->prestamos_hoy($fecha)->total;
+            $ingresos_hoy      = $this->cobros->prestamos_hoy($fecha)->total;
+            $amortizaciones_hoy = $this->cobros->amortizaciones_hoy($fecha)->total;
 
             $actualizar_clientes = $this->clientes->listar_clientes_actualizar();
             $proximos_cobros = $this->cobros->listar_proximos_cobros();

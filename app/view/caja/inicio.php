@@ -127,9 +127,10 @@
         border-top: 1px solid #e2e8f0 !important;
         border-bottom: 1px solid #e2e8f0 !important;
     }
-    .arqueo-sec-header.pagos     { border-left-color: #1cc88a; }
-    .arqueo-sec-header.prestamos { border-left-color: #e74a3b; }
-    .arqueo-sec-header.manuales  { border-left-color: #36b9cc; }
+    .arqueo-sec-header.pagos         { border-left-color: #1cc88a; }
+    .arqueo-sec-header.amortizaciones{ border-left-color: #f6a821; }
+    .arqueo-sec-header.prestamos     { border-left-color: #e74a3b; }
+    .arqueo-sec-header.manuales      { border-left-color: #36b9cc; }
 
     /* ── Encabezados de columna ── */
     .arqueo-col-header {
@@ -300,18 +301,48 @@
                                 $suma_pagos = 0;
                                 if(!empty($pagos_caja)):
                                     foreach($pagos_caja as $pago):
-                                        $suma_pagos += $pago->pago_monto;
+                                        $suma_pagos += $pago->ingreso_display;
                                         ?>
                                         <tr class="data-row">
                                             <td><?= date('d/m/Y', strtotime($pago->pago_fecha)) ?></td>
                                             <td><?= date('H:i:s', strtotime($pago->pago_fecha)) ?></td>
                                             <td><?= $pago->cliente_nombre . ' ' . $pago->cliente_apellido_paterno ?></td>
                                             <td><?= ucfirst($pago->metodo_pago_nombre ?? $pago->pago_metodo) ?></td>
-                                            <td class="text-right m-ing">S/ <?= number_format($pago->pago_monto, 2) ?></td>
+                                            <td class="text-right m-ing">S/ <?= number_format($pago->ingreso_display, 2) ?></td>
                                             <td></td>
                                         </tr>
                                     <?php endforeach; else: ?>
                                     <tr class="arqueo-empty"><td colspan="6">No se han registrado pagos en este turno.</td></tr>
+                                <?php endif; ?>
+
+                                <!-- Amortizaciones -->
+                                <tr>
+                                    <td colspan="6" class="arqueo-sec-header amortizaciones">
+                                        <i class="fa fa-compress-alt mr-1"></i> Amortizaciones
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="arqueo-col-header" style="width:160px;">Fecha y Hora</th>
+                                    <th class="arqueo-col-header">Cliente</th>
+                                    <th class="arqueo-col-header" style="width:160px;">Método de Pago</th>
+                                    <th class="arqueo-col-header ing text-right" style="width:160px;">Monto Amortizado</th>
+                                    <th class="arqueo-col-header" colspan="2"></th>
+                                </tr>
+                                <?php
+                                $suma_amortizaciones = 0;
+                                if(!empty($amortizaciones_caja)):
+                                    foreach($amortizaciones_caja as $am):
+                                        $suma_amortizaciones += $am->ingreso_display;
+                                        ?>
+                                        <tr class="data-row">
+                                            <td><?= date('d/m/Y H:i:s', strtotime($am->pago_fecha)) ?></td>
+                                            <td><?= $am->cliente_nombre . ' ' . $am->cliente_apellido_paterno ?></td>
+                                            <td><?= ucfirst($am->metodo_pago_nombre ?? $am->pago_metodo) ?></td>
+                                            <td class="text-right m-ing">S/ <?= number_format($am->ingreso_display, 2) ?></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    <?php endforeach; else: ?>
+                                    <tr class="arqueo-empty"><td colspan="6">No se han registrado amortizaciones en este turno.</td></tr>
                                 <?php endif; ?>
 
                                 <!-- Préstamos -->
@@ -414,7 +445,7 @@
                         <!-- └─────────────────────────────────────┘ -->
                         <?php
                         $monto_apertura         = $ultima_caja->monto_apertura_caja;
-                        $total_ingresos         = $suma_pagos + $suma_ingresos_manuales;
+                        $total_ingresos         = $suma_pagos + $suma_amortizaciones + $suma_ingresos_manuales;
                         $total_egresos          = $suma_prestamos;
                         $saldo_actual_calculado = $monto_apertura + $total_ingresos - $total_egresos;
                         ?>

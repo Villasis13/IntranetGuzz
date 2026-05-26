@@ -20,19 +20,20 @@
         </div>
     </div>
 </div>
-<?php if(!empty($reporte)): ?>
+
+
+<?php if(!empty($reporte_cuotas)): ?>
     <div class="col-12 px-3">
         <div class="card shadow mb-3 my-3">
             <div class="card-body mt-3">
                 <div class="card-header py-3 bg-primary">
-                    <h5 class="m-0 font-weight-bold text-white">Pagos del reporte</h5>
+                    <h5 class="m-0 font-weight-bold text-white">Pago de Cuotas</h5>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-bordered w-100">
                         <thead class="text-center bg-light">
                         <tr>
                             <th>#</th>
-                            <th>Tipo</th>
                             <th>Fecha Cuota</th>
                             <th>Fecha de Registro</th>
                             <th>Usuario</th>
@@ -46,49 +47,32 @@
                         <tbody>
                         <?php
                         $c = 1;
-                        $total_ingresos = 0;
-
-                        if (!empty($reporte)):
-                            foreach ($reporte as $rp):
-                                $total_ingresos += $rp->pago_monto;
-                                ?>
-                                <tr class="text-center">
-                                    <td><?= $c++ ?></td>
-                                    <td>
-                                        <?php if (($rp->tipo_pago ?? 'Cuota') === 'Amortización'): ?>
-                                            <span class="badge bg-warning text-dark">Amortización</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-primary">Cuota</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><small><?= date('d/m/Y', strtotime($rp->pago_diario_fecha)) ?></small></td>
-                                    <td><small><?= date('d/m/Y H:i', strtotime($rp->pago_fecha)) ?></small></td>
-                                    <td><small><?= htmlspecialchars($rp->usuario_nickname) ?></small></td>
-                                    <td><small><?= htmlspecialchars($rp->cliente_nombre . " " . $rp->cliente_apellido_paterno) ?></small></td>
-                                    <td><small><?= htmlspecialchars($rp->metodo_pago_nombre) ?></small></td>
-                                    <td><small>S/ <?= number_format($rp->pago_diario_monto, 2) ?></small></td>
-
-                                    <?php
-                                    // CORRECCIÓN VITAL: Se usa "==" para preguntar, no "=" que asigna el valor
-                                    if ($rp->pago_descuento_estado == 1) {
-                                        ?>
-                                        <td class="text-danger"><small>S/ <?= number_format($rp->pago_descuento_monto ?? 0, 2) ?></small></td>
-                                        <td class="text-success fw-bold"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
-                                    <?php } else { ?>
-                                        <td><small class="text-muted">No aplica</small></td>
-                                        <td class="text-success fw-bold"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
-                                    <?php } ?>
-                                </tr>
-                            <?php
-                            endforeach;
-                        endif;
-                        ?>
+                        $total_cuotas = 0;
+                        foreach ($reporte_cuotas as $rp):
+                            $total_cuotas += $rp->pago_monto;
+                            ?>
+                            <tr class="text-center">
+                                <td><?= $c++ ?></td>
+                                <td><small><?= date('d/m/Y', strtotime($rp->pago_diario_fecha)) ?></small></td>
+                                <td><small><?= date('d/m/Y H:i', strtotime($rp->pago_fecha)) ?></small></td>
+                                <td><small><?= htmlspecialchars($rp->usuario_nickname) ?></small></td>
+                                <td><small><?= htmlspecialchars($rp->cliente_nombre . " " . $rp->cliente_apellido_paterno) ?></small></td>
+                                <td><small><?= htmlspecialchars($rp->metodo_pago_nombre) ?></small></td>
+                                <td><small>S/ <?= number_format($rp->pago_diario_monto, 2) ?></small></td>
+                                <?php if ($rp->pago_descuento_estado == 1): ?>
+                                    <td class="text-danger"><small>S/ <?= number_format($rp->pago_descuento_monto ?? 0, 2) ?></small></td>
+                                    <td class="text-success fw-bold"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
+                                <?php else: ?>
+                                    <td><small class="text-muted">No aplica</small></td>
+                                    <td class="text-success fw-bold"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
+                                <?php endif; ?>
+                            </tr>
+                        <?php endforeach; ?>
                         </tbody>
                         <tfoot>
                         <tr class="text-end table-success fw-bold">
-                            <!-- El colspan debe ser 8 para que el total quede en la 9na columna (Monto Pagado) -->
-                            <td colspan="8">Total Ingresos:</td>
-                            <td class="text-center">S/ <?= number_format($total_ingresos, 2) ?></td>
+                            <td colspan="8">Total Cuotas:</td>
+                            <td class="text-center">S/ <?= number_format($total_cuotas, 2) ?></td>
                         </tr>
                         </tfoot>
                     </table>
@@ -101,11 +85,89 @@
         <div class="card shadow mb-3 my-3">
             <div class="card-body mt-3">
                 <div class="card-header py-3 bg-primary">
-                    <h5 class="m-0 font-weight-bold text-white">Pagos del reporte</h5>
+                    <h5 class="m-0 font-weight-bold text-white">Pago de Cuotas</h5>
                 </div>
                 <div class="text-center py-4">
                     <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">Ingresos no registrados en este período</h5>
+                    <h5 class="text-muted">No hay cuotas registradas en este período</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if(!empty($reporte_amortizaciones)): ?>
+    <div class="col-12 px-3">
+        <div class="card shadow mb-3 my-3">
+            <div class="card-body mt-3">
+                <div class="card-header py-3" style="background: #f6a821;">
+                    <h5 class="m-0 font-weight-bold text-white">Amortizaciones</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered w-100">
+                        <thead class="text-center bg-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Capital Antes</th>
+                            <th style="color:#f6a821;">Amortización</th>
+                            <th>Capital Después</th>
+                            <th>Interés</th>
+                            <th>Saldo Total Antes</th>
+                            <th>Saldo Total Después</th>
+                            <th>Recibo</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $c = 1;
+                        $total_amortizaciones = 0;
+                        foreach ($reporte_amortizaciones as $rp):
+                            $total_amortizaciones += $rp->pago_monto;
+                            $na = '<small class="text-muted">—</small>';
+                            ?>
+                            <tr class="text-center">
+                                <td><?= $c++ ?></td>
+                                <td><small><?= date('d/m/Y H:i', strtotime($rp->pago_fecha)) ?></small></td>
+                                <td><small><?= htmlspecialchars($rp->usuario_nickname) ?></small></td>
+                                <td><small class="text-muted"><?= $rp->capital_antes       !== null ? 'S/ '.number_format($rp->capital_antes,       2) : $na ?></small></td>
+                                <td class="fw-bold" style="color:#f6a821;"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
+                                <td><small class="text-success fw-bold"><?= $rp->capital_despues     !== null ? 'S/ '.number_format($rp->capital_despues,     2) : $na ?></small></td>
+                                <td><small class="text-muted"><?= $rp->interes             !== null ? number_format($rp->interes, 1).' %'                          : $na ?></small></td>
+                                <td><small class="text-muted"><?= $rp->saldo_total_antes   !== null ? 'S/ '.number_format($rp->saldo_total_antes,   2) : $na ?></small></td>
+                                <td><small class="text-success fw-bold"><?= $rp->saldo_total_despues !== null ? 'S/ '.number_format($rp->saldo_total_despues, 2) : $na ?></small></td>
+                                <td>
+                                    <a href="<?= _SERVER_ ?>Cobros/generar_documento/<?= $rp->id_pago ?>" target="_blank"
+                                       class="btn btn-xs btn-outline-secondary" style="font-size:11px;">
+                                        <i class="fa fa-file-pdf-o"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                        <tfoot>
+                        <tr class="text-end fw-bold" style="background:#fff3cd;">
+                            <td colspan="4" class="text-end">Total Amortizaciones:</td>
+                            <td class="text-center" style="color:#f6a821;">S/ <?= number_format($total_amortizaciones, 2) ?></td>
+                            <td colspan="5"></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php else: ?>
+    <div class="col-12 px-3">
+        <div class="card shadow mb-3 my-3">
+            <div class="card-body mt-3">
+                <div class="card-header py-3" style="background: #f6a821;">
+                    <h5 class="m-0 font-weight-bold text-white">Amortizaciones</h5>
+                </div>
+                <div class="text-center py-4">
+                    <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay amortizaciones registradas en este período</h5>
                 </div>
             </div>
         </div>

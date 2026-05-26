@@ -230,6 +230,69 @@ $info_estado = $estados_info[$estado] ?? ['label' => 'Desconocido', 'badge' => '
 <!--            </form>-->
 <!--        </div>-->
 <!--    </div>-->
+
+    <?php if (!empty($amortizaciones_detalle)): ?>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3" style="background-color: #f6a821;">
+            <h5 class="m-0 font-weight-bold text-white">
+                <i class="fa fa-hand-holding-usd me-2"></i>Amortizaciones Realizadas
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered text-center mb-0">
+                    <thead class="thead-light">
+                    <tr>
+                        <th class="text-muted" style="width:40px;">#</th>
+                        <th class="text-muted">FECHA</th>
+                        <th class="text-muted">USUARIO</th>
+                        <th class="text-muted">CAPITAL ANTES</th>
+                        <th style="color:#f6a821;">AMORTIZACIÓN</th>
+                        <th class="text-muted">CAPITAL DESPUÉS</th>
+                        <th class="text-muted">INTERÉS</th>
+                        <th class="text-muted">SALDO TOTAL ANTES</th>
+                        <th class="text-muted">SALDO TOTAL DESPUÉS</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php $n = 1; foreach ($amortizaciones_detalle as $am): ?>
+                    <tr>
+                        <td class="align-middle"><?= $n++ ?></td>
+                        <td class="align-middle"><?= date('d/m/Y H:i', strtotime($am->pago_fecha)) ?></td>
+                        <td class="align-middle">
+                            <span class="badge badge-light border text-dark">
+                                <i class="fa fa-user me-1 text-secondary"></i>
+                                <?= htmlspecialchars($am->pago_usuario) ?>
+                            </span>
+                        </td>
+                        <td class="align-middle text-muted">S/ <?= number_format($am->capital_antes, 2) ?></td>
+                        <td class="align-middle font-weight-bold" style="color:#f6a821;">
+                            - S/ <?= number_format($am->monto_amortizacion, 2) ?>
+                        </td>
+                        <td class="align-middle text-success font-weight-bold">S/ <?= number_format($am->capital_despues, 2) ?></td>
+                        <td class="align-middle text-muted"><?= number_format($am->interes, 1) ?> %</td>
+                        <td class="align-middle text-muted">S/ <?= number_format($am->saldo_total_antes, 2) ?></td>
+                        <td class="align-middle text-success font-weight-bold">S/ <?= number_format($am->saldo_total_despues, 2) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                    <tfoot class="bg-light">
+                    <tr>
+                        <td colspan="3" class="text-right font-weight-bold align-middle text-uppercase">
+                            Total Amortizado:
+                        </td>
+                        <td colspan="6" class="font-weight-bold align-middle" style="color:#f6a821;">
+                            - S/ <?= number_format(array_sum(array_column($amortizaciones_detalle, 'monto_amortizacion')), 2) ?>
+                            <small class="text-muted ms-2">(<?= count($amortizaciones_detalle) ?> amortización<?= count($amortizaciones_detalle) > 1 ? 'es' : '' ?>)</small>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
 </div>
 
 <style>

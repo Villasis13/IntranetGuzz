@@ -45,32 +45,41 @@
                 </div>
             </div>
 
-            <!-- Resumen de deuda -->
+            <!-- Resumen de deuda / preview dinámico -->
             <div class="row g-3 mb-4">
-                <div class="col-sm-6 col-md-4">
+                <div class="col-sm-6 col-xl-3">
                     <div class="card shadow-sm h-100" style="border-left: 4px solid #4e73df;">
                         <div class="card-body py-3">
-                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Capital Pendiente</div>
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Capital Pendiente Actual</div>
                             <div class="h5 fw-bold mb-0">S/ <?= number_format($capital_pendiente, 2) ?></div>
-                            <div class="text-xs text-muted mt-1">Límite máximo a amortizar</div>
+                            <div class="text-xs text-muted mt-1">Capital antes de amortizar</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="card shadow-sm h-100" style="border-left: 4px solid #e74a3b;">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #f6a821;">
                         <div class="card-body py-3">
-                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Saldo Total Pendiente</div>
-                            <div class="h5 fw-bold mb-0">S/ <?= number_format($saldo_total_pendiente, 2) ?></div>
-                            <div class="text-xs text-muted mt-1">Capital + intereses</div>
+                            <div class="text-xs fw-bold text-uppercase mb-1" style="color:#f6a821;">Monto a Amortizar</div>
+                            <div class="h5 fw-bold mb-0" id="card_monto_amortizar">S/ 0.00</div>
+                            <div class="text-xs text-muted mt-1">Monto ingresado para amortización</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-12 col-md-4">
+                <div class="col-sm-6 col-xl-3">
                     <div class="card shadow-sm h-100" style="border-left: 4px solid #1cc88a;">
                         <div class="card-body py-3">
-                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Saldo Resultante</div>
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Capital Pendiente Después</div>
+                            <div class="h5 fw-bold mb-0" id="card_capital_despues">S/ <?= number_format($capital_pendiente, 2) ?></div>
+                            <div class="text-xs text-muted mt-1">Capital restante luego de amortizar</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card shadow-sm h-100" style="border-left: 4px solid #e74a3b;">
+                        <div class="card-body py-3">
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Saldo Total Después</div>
                             <div class="h5 fw-bold mb-0" id="saldo_resultante_preview">S/ <?= number_format($saldo_total_pendiente, 2) ?></div>
-                            <div class="text-xs text-muted mt-1">Después de amortizar</div>
+                            <div class="text-xs text-muted mt-1">Capital restante + interés actualizado</div>
                         </div>
                     </div>
                 </div>
@@ -291,9 +300,11 @@ function validar_amortizacion() {
         $btn.prop('disabled', false);
     }
 
-    // Actualizar preview del saldo resultante (amortización sobre capital)
+    // Actualizar cards dinámicos
     const nuevo_capital = Math.max(0, CAPITAL_MAX - monto);
     const nuevo_saldo   = TASA > 0 ? nuevo_capital * (1 + TASA / 100) : nuevo_capital;
+    $('#card_monto_amortizar').text('S/ ' + (monto > 0 ? monto.toFixed(2) : '0.00'));
+    $('#card_capital_despues').text('S/ ' + nuevo_capital.toFixed(2));
     $('#saldo_resultante_preview').text('S/ ' + nuevo_saldo.toFixed(2));
 }
 

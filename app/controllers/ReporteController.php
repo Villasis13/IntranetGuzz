@@ -43,6 +43,52 @@ class ReporteController
         $this->cobros = new Cobros();
         $this->reporte = new Reporte();
     }
+    private function _enriquecer_amortizaciones(array $raw): array {
+        if (empty($raw)) return [];
+
+        $loan_ids  = array_unique(array_column($raw, 'id_prestamo'));
+        $snapshots = [];
+
+        foreach ($loan_ids as $id_p) {
+            $prestamo = $this->prestamos->listar_x_id((int)$id_p);
+            if (!$prestamo) continue;
+
+            $tasa          = floatval($prestamo->prestamo_interes ?? 0);
+            $todos_pagos   = (array)$this->cobros->listar_pagos_x_prestamo($id_p);
+            $running_saldo = floatval($prestamo->prestamo_saldo_pagar ?? 0);
+
+            foreach (array_reverse($todos_pagos) as $pago) {
+                if (empty($pago->id_pago_diario)) {
+                    $s_despues = $running_saldo;
+                    $c_despues = $tasa > 0 ? round($s_despues / (1 + $tasa / 100), 2) : $s_despues;
+                    $c_antes   = round($c_despues + floatval($pago->pago_monto), 2);
+                    $s_antes   = $tasa > 0 ? round($c_antes * (1 + $tasa / 100), 2) : $c_antes;
+
+                    $snapshots[$pago->id_pago] = [
+                        'capital_antes'       => $c_antes,
+                        'capital_despues'     => $c_despues,
+                        'saldo_total_antes'   => $s_antes,
+                        'saldo_total_despues' => $s_despues,
+                        'interes'             => $tasa,
+                    ];
+                    $running_saldo = $s_antes;
+                } else {
+                    $running_saldo += floatval($pago->cuota_original ?? $pago->pago_monto);
+                }
+            }
+        }
+
+        foreach ($raw as $am) {
+            $snap = $snapshots[$am->id_pago] ?? [];
+            $am->capital_antes       = $snap['capital_antes']       ?? null;
+            $am->capital_despues     = $snap['capital_despues']     ?? null;
+            $am->saldo_total_antes   = $snap['saldo_total_antes']   ?? null;
+            $am->saldo_total_despues = $snap['saldo_total_despues'] ?? null;
+            $am->interes             = $snap['interes']             ?? null;
+        }
+        return $raw;
+    }
+
     public function inicio(){
         try{
             $this->nav = new Navbar();
@@ -94,6 +140,13 @@ class ReporteController
                 if ($con_egresos)  $egresos = $this->reporte->reporte_fechas_egresos($fecha_inicio, $fecha_fin);
             }
 
+            $reporte_cuotas = array_values(array_filter(
+                (array)$reporte, fn($r) => ($r->tipo_pago ?? 'Cuota') !== 'Amortización'
+            ));
+            $reporte_amortizaciones = $this->_enriquecer_amortizaciones(array_values(array_filter(
+                (array)$reporte, fn($r) => ($r->tipo_pago ?? 'Cuota') === 'Amortización'
+            )));
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'admin/ver_reportes.php';
@@ -143,10 +196,22 @@ class ReporteController
             }
 
             // ==========================================
-            // Cálculos
+            // Separar cuotas de amortizaciones y calcular totales
             // ==========================================
-            $total_ingresos = 0;
-            foreach ((array)$reporte as $rp) $total_ingresos += $rp->pago_monto;
+            $reporte_cuotas = array_values(array_filter(
+                (array)$reporte, fn($r) => ($r->tipo_pago ?? 'Cuota') !== 'Amortización'
+            ));
+            $reporte_amortizaciones = $this->_enriquecer_amortizaciones(array_values(array_filter(
+                (array)$reporte, fn($r) => ($r->tipo_pago ?? 'Cuota') === 'Amortización'
+            )));
+
+            $total_cuotas         = 0;
+            foreach ($reporte_cuotas as $rp) $total_cuotas += $rp->pago_monto;
+
+            $total_amortizaciones = 0;
+            foreach ($reporte_amortizaciones as $rp) $total_amortizaciones += $rp->pago_monto;
+
+            $total_ingresos = $total_cuotas + $total_amortizaciones;
 
             $total_egresos         = 0;
             $total_capital_interes = 0;
@@ -185,12 +250,11 @@ class ReporteController
             $pdf->Cell(95, 6, 'Generado: ' . date('d/m/Y H:i:s'), 1, 1, 'L', true);
             $pdf->Ln(4);
 
-            // ── SECCIÓN 1: Ingresos ───────────────────────────────────────────────
+            // ── SECCIÓN 1: Pago de Cuotas ─────────────────────────────────────────
             $pdf->SetFillColor(200, 200, 200);
             $pdf->SetFont('Arial', 'B', 9);
-            $pdf->Cell(190, 6, 'Ingresos - Pagos de Cuotas', 1, 1, 'L', true);
+            $pdf->Cell(190, 6, 'Ingresos - Pago de Cuotas', 1, 1, 'L', true);
 
-            // Encabezados de tabla de ingresos (Suman 190)
             $pdf->SetFont('Arial', 'B', 7);
             $pdf->Cell(8,  5, '#', 1, 0, 'C', true);
             $pdf->Cell(17, 5, 'F. Cuota', 1, 0, 'C', true);
@@ -203,12 +267,12 @@ class ReporteController
             $pdf->Cell(22, 5, 'Monto Pagado', 1, 1, 'C', true);
 
             $pdf->SetFont('Arial', '', 7);
-            if (!empty($reporte)) {
+            if (!empty($reporte_cuotas)) {
                 $c = 1;
-                foreach ($reporte as $rp) {
+                foreach ($reporte_cuotas as $rp) {
                     $nombre_cliente = substr($rp->cliente_nombre . ' ' . $rp->cliente_apellido_paterno, 0, 25);
                     $usuario = substr($rp->usuario_nickname, 0, 12);
-                    $metodo = substr($rp->metodo_pago_nombre, 0, 12);
+                    $metodo  = substr($rp->metodo_pago_nombre, 0, 12);
 
                     $pdf->Cell(8,  5, $c++, 1, 0, 'C');
                     $pdf->Cell(17, 5, date('d/m/Y', strtotime($rp->pago_diario_fecha)), 1, 0, 'C');
@@ -228,17 +292,59 @@ class ReporteController
                     $pdf->Cell(22, 5, 'S/ ' . number_format($rp->pago_monto, 2), 1, 1, 'R');
                     $pdf->SetFont('Arial', '', 7);
                 }
-                // Fila de Total
                 $pdf->SetFillColor(213, 232, 212);
                 $pdf->SetFont('Arial', 'B', 8);
-                $pdf->Cell(168, 5, 'Total Ingresos', 1, 0, 'R', true);
-                $pdf->Cell(22,  5, 'S/ ' . number_format($total_ingresos, 2), 1, 1, 'R', true);
+                $pdf->Cell(168, 5, 'Total Cuotas', 1, 0, 'R', true);
+                $pdf->Cell(22,  5, 'S/ ' . number_format($total_cuotas, 2), 1, 1, 'R', true);
             } else {
-                $pdf->Cell(190, 5, 'Ingresos no registrados en este periodo.', 1, 1, 'C');
+                $pdf->Cell(190, 5, 'No hay cuotas registradas en este periodo.', 1, 1, 'C');
             }
             $pdf->Ln(4);
 
-            // ── SECCIÓN 2: Egresos ────────────────────────────────────────────────
+            // ── SECCIÓN 2: Amortizaciones ─────────────────────────────────────────
+            $pdf->SetFillColor(200, 160, 50);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(190, 6, 'Ingresos - Amortizaciones', 1, 1, 'L', true);
+
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 7);
+            $pdf->Cell(25, 5, 'Fecha',          1, 0, 'C', true);
+            $pdf->Cell(20, 5, 'Usuario',         1, 0, 'C', true);
+            $pdf->Cell(25, 5, 'Capital Antes',   1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Amortizacion',    1, 0, 'C', true);
+            $pdf->Cell(25, 5, 'Capital Despues', 1, 0, 'C', true);
+            $pdf->Cell(14, 5, 'Interes',         1, 0, 'C', true);
+            $pdf->Cell(30, 5, 'Saldo T. Antes',  1, 0, 'C', true);
+            $pdf->Cell(29, 5, 'Saldo T. Despues',1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 7);
+            if (!empty($reporte_amortizaciones)) {
+                $c = 1;
+                foreach ($reporte_amortizaciones as $rp) {
+                    $usuario = substr($rp->usuario_nickname, 0, 14);
+                    $na      = 'N/A';
+
+                    $pdf->Cell(25, 5, date('d/m/Y H:i', strtotime($rp->pago_fecha)), 1, 0, 'C');
+                    $pdf->Cell(20, 5, $usuario, 1, 0, 'C');
+                    $pdf->Cell(25, 5, $rp->capital_antes       !== null ? 'S/ '.number_format($rp->capital_antes,       2) : $na, 1, 0, 'R');
+                    $pdf->SetFont('Arial', 'B', 7);
+                    $pdf->Cell(22, 5, 'S/ ' . number_format($rp->pago_monto, 2), 1, 0, 'R');
+                    $pdf->SetFont('Arial', '', 7);
+                    $pdf->Cell(25, 5, $rp->capital_despues     !== null ? 'S/ '.number_format($rp->capital_despues,     2) : $na, 1, 0, 'R');
+                    $pdf->Cell(14, 5, $rp->interes             !== null ? number_format($rp->interes, 1).' %'              : $na, 1, 0, 'C');
+                    $pdf->Cell(30, 5, $rp->saldo_total_antes   !== null ? 'S/ '.number_format($rp->saldo_total_antes,   2) : $na, 1, 0, 'R');
+                    $pdf->Cell(29, 5, $rp->saldo_total_despues !== null ? 'S/ '.number_format($rp->saldo_total_despues, 2) : $na, 1, 1, 'R');
+                }
+                $pdf->SetFillColor(255, 243, 205);
+                $pdf->SetFont('Arial', 'B', 8);
+                $pdf->Cell(168, 5, 'Total Amortizaciones', 1, 0, 'R', true);
+                $pdf->Cell(22,  5, 'S/ ' . number_format($total_amortizaciones, 2), 1, 1, 'R', true);
+            } else {
+                $pdf->Cell(190, 5, 'No hay amortizaciones registradas en este periodo.', 1, 1, 'C');
+            }
+            $pdf->Ln(4);
+
+            // ── SECCIÓN 3: Egresos ────────────────────────────────────────────────
             $pdf->SetFillColor(200, 200, 200);
             $pdf->SetFont('Arial', 'B', 9);
             $pdf->Cell(190, 6, 'Egresos - Préstamos Otorgados', 1, 1, 'L', true);

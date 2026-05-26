@@ -49,9 +49,10 @@ class CajaController
             $monto_caja_abierta = null;
 
             // Nuevas variables para el Arqueo
-            $pagos_caja = [];
-            $prestamos_caja = [];
-            $ingresos_manuales = [];
+            $pagos_caja            = [];
+            $amortizaciones_caja   = [];
+            $prestamos_caja        = [];
+            $ingresos_manuales     = [];
             $anulaciones_prestamos = [];
 
             // Asume el nombre del usuario logueado (Ajusta la variable de sesión según tu sistema)
@@ -61,16 +62,19 @@ class CajaController
                 $fecha_caja = $this->caja->traer_fecha()->fecha_caja;
                 $monto_caja_abierta = $this->caja->traer_monto_caja()->monto_caja;
 
-                // 1. Traer Pagos desde la fecha de apertura
+                // 1. Traer Pagos de cuotas desde la fecha de apertura
                 $pagos_caja = $this->prestamos->listar_pagos_desde($fecha_caja);
 
-                // 2. Traer Préstamos desde la fecha de apertura
+                // 2. Traer Amortizaciones desde la fecha de apertura
+                $amortizaciones_caja = $this->prestamos->listar_amortizaciones_desde($fecha_caja);
+
+                // 3. Traer Préstamos desde la fecha de apertura
                 $prestamos_caja = $this->prestamos->listar_prestamos_desde($fecha_caja);
 
-                // 3. Traer Ingresos Manuales a caja desde la apertura (Tipo 1 = Ingreso manual)
+                // 4. Traer Ingresos Manuales a caja desde la apertura (Tipo 1 = Ingreso manual)
                 $ingresos_manuales = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
 
-                // 4. Traer Anulaciones de préstamos (Tipo 3 = Devolución por anulación)
+                // 5. Traer Anulaciones de préstamos (Tipo 3 = Devolución por anulación)
                 $anulaciones_prestamos = $this->prestamos->listar_anulaciones_prestamos_desde($ultima_caja->id_caja);
             }
 
@@ -379,6 +383,7 @@ class CajaController
 
             $fecha_caja            = null;
             $pagos_caja            = [];
+            $amortizaciones_caja   = [];
             $prestamos_caja        = [];
             $ingresos_manuales     = [];
             $anulaciones_prestamos = [];
@@ -386,14 +391,18 @@ class CajaController
             if($ultima_caja->estado_caja == 1){
                 $fecha_caja            = $this->caja->traer_fecha()->fecha_caja;
                 $pagos_caja            = $this->prestamos->listar_pagos_desde($fecha_caja);
+                $amortizaciones_caja   = $this->prestamos->listar_amortizaciones_desde($fecha_caja);
                 $prestamos_caja        = $this->prestamos->listar_prestamos_desde($fecha_caja);
                 $ingresos_manuales     = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
                 $anulaciones_prestamos = $this->prestamos->listar_anulaciones_prestamos_desde($ultima_caja->id_caja);
             }
 
-            // Cálculos (idénticos a la vista)
+            // Cálculos (idénticos a la vista) — usar ingreso_display para reflejar efectivo real
             $suma_pagos = 0;
-            foreach ((array)$pagos_caja as $p) $suma_pagos += $p->pago_monto;
+            foreach ((array)$pagos_caja as $p) $suma_pagos += $p->ingreso_display;
+
+            $suma_amortizaciones = 0;
+            foreach ((array)$amortizaciones_caja as $am) $suma_amortizaciones += $am->ingreso_display;
 
             // Préstamos anulados (estado=5) se muestran pero NO cuentan en el total de egresos
             $suma_prestamos = 0;
@@ -408,7 +417,7 @@ class CajaController
             $suma_anulaciones = 0;
             foreach ((array)$anulaciones_prestamos as $an) $suma_anulaciones += $an->caja_movimiento_monto;
 
-            $total_ingresos = $suma_pagos + $suma_ingresos_manuales;
+            $total_ingresos = $suma_pagos + $suma_amortizaciones + $suma_ingresos_manuales;
             $total_egresos  = $suma_prestamos;
             $saldo_final    = $ultima_caja->monto_apertura_caja + $total_ingresos - $total_egresos;
 
@@ -475,14 +484,45 @@ class CajaController
                     $pdf->Cell(22, 5, date('H:i:s', strtotime($pago->pago_fecha)), 1, 0, 'C');
                     $pdf->Cell(80, 5, $pago->cliente_nombre . ' ' . $pago->cliente_apellido_paterno, 1, 0, 'L');
                     $pdf->Cell(28, 5, ucfirst($pago->metodo_pago_nombre ?? $pago->pago_metodo), 1, 0, 'C');
-                    $pdf->Cell(20, 5, 'S/ ' . number_format($pago->pago_monto, 2), 1, 1, 'R');
+                    $pdf->Cell(20, 5, 'S/ ' . number_format($pago->ingreso_display, 2), 1, 1, 'R');
                 }
             } else {
                 $pdf->Cell(180, 5, 'No se han registrado pagos en este turno.', 1, 1, 'C');
             }
             $pdf->Ln(3);
 
-            // ── SECCIÓN 3: Préstamos ──────────────────────────────────────────────
+            // ── SECCIÓN 3: Amortizaciones ─────────────────────────────────────────
+            $pdf->SetFillColor(200, 160, 50);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(180, 6, 'Amortizaciones', 1, 1, 'L', true);
+
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(42, 5, 'Fecha y Hora',    1, 0, 'C', true);
+            $pdf->Cell(78, 5, 'Cliente',          1, 0, 'C', true);
+            $pdf->Cell(36, 5, 'Metodo de Pago',   1, 0, 'C', true);
+            $pdf->Cell(24, 5, 'Monto Amortizado', 1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 8);
+            if (!empty($amortizaciones_caja)) {
+                foreach ($amortizaciones_caja as $am) {
+                    $pdf->Cell(42, 5, date('d/m/Y H:i', strtotime($am->pago_fecha)), 1, 0, 'C');
+                    $pdf->Cell(78, 5, $am->cliente_nombre . ' ' . $am->cliente_apellido_paterno, 1, 0, 'L');
+                    $pdf->Cell(36, 5, ucfirst($am->metodo_pago_nombre ?? $am->pago_metodo), 1, 0, 'C');
+                    $pdf->SetFont('Arial', 'B', 8);
+                    $pdf->Cell(24, 5, 'S/ ' . number_format($am->ingreso_display, 2), 1, 1, 'R');
+                    $pdf->SetFont('Arial', '', 8);
+                }
+                $pdf->SetFillColor(255, 243, 205);
+                $pdf->SetFont('Arial', 'B', 8);
+                $pdf->Cell(156, 5, 'Total Amortizaciones', 1, 0, 'R', true);
+                $pdf->Cell(24,  5, 'S/ ' . number_format($suma_amortizaciones, 2), 1, 1, 'R', true);
+            } else {
+                $pdf->Cell(180, 5, 'No se han registrado amortizaciones en este turno.', 1, 1, 'C');
+            }
+            $pdf->Ln(3);
+
+            // ── SECCIÓN 4: Préstamos ──────────────────────────────────────────────
             $pdf->SetFillColor(200, 200, 200);
             $pdf->SetFont('Arial', 'B', 9);
             $pdf->Cell(180, 6, 'Prestamos Otorgados', 1, 1, 'L', true);

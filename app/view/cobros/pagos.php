@@ -179,6 +179,7 @@
                         <table class="table table-hover table-striped table-sm small" id="dataTablePagos">
                             <thead class="thead-light">
                             <tr class="text-center">
+                                <th>Tipo</th>
                                 <th>Fecha Cuota</th>
                                 <th>Fecha Pago</th>
                                 <th>Usuario</th>
@@ -195,6 +196,7 @@
                             <?php
                             if(!empty($pagos_p)){
                                 foreach ($pagos_p as $c){
+                                    $es_amortizacion = empty($c->fecha_cuota);
                                     // Diferencia / Vuelto
                                     $monto_recibido = floatval($c->pago_monto_recibido ?? 0);
                                     $monto_final    = floatval($c->pago_monto);
@@ -214,12 +216,25 @@
                                     }
                                     ?>
                                     <tr class="text-center">
+                                        <td>
+                                            <?php if ($es_amortizacion): ?>
+                                                <span class="badge badge-warning text-dark">Amortización</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-primary">Cuota</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= !empty($c->fecha_cuota) ? date('d/m/Y', strtotime($c->fecha_cuota)) : '-' ?></td>
                                         <td><?= date('d/m/Y H:i', strtotime($c->pago_fecha)) ?></td>
                                         <td><?= htmlspecialchars($c->pago_usuario ?? '-') ?></td>
                                         <td><?= $c->id_pago ?></td>
                                         <td><?= htmlspecialchars($c->metodo_nombre ?? '-') ?></td>
-                                        <td>S/ <?= number_format(floatval($c->cuota_original ?? 0), 2) ?></td>
+                                        <td>
+                                            <?php if ($es_amortizacion): ?>
+                                                <span class="text-muted">-</span>
+                                            <?php else: ?>
+                                                S/ <?= number_format(floatval($c->cuota_original ?? 0), 2) ?>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= $c->pago_descuento_monto > 0 ? '<span class="text-warning">-S/ ' . number_format($c->pago_descuento_monto, 2) . '</span>' : '<span class="text-muted">-</span>' ?></td>
                                         <td class="font-weight-bold text-success">S/ <?= number_format($monto_final, 2) ?></td>
                                         <td><?= !empty($c->pago_monto_recibido) ? 'S/ ' . number_format($monto_recibido, 2) : '<span class="text-muted">-</span>' ?></td>
@@ -228,7 +243,7 @@
                                     <?php
                                 }
                             } else {
-                                echo '<tr><td colspan="10" class="text-center text-muted">No hay pagos registrados aún.</td></tr>';
+                                echo '<tr><td colspan="11" class="text-center text-muted">No hay pagos registrados aún.</td></tr>';
                             }
                             ?>
                             </tbody>

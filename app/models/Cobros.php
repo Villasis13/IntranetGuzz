@@ -206,6 +206,20 @@ class Cobros
             return (object)['total' => 0];
         }
     }
+
+    public function amortizaciones_hoy($fecha){
+        try{
+            $sql = 'SELECT COALESCE(SUM(pago_monto), 0) AS total
+               FROM pagos
+               WHERE DATE(pago_fecha) = ? AND id_pago_diario IS NULL';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$fecha]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return (object)['total' => 0];
+        }
+    }
 	public function prestamos_hoy_fecha($fecha){
 		try{
 			$fecha = date('Y-m-d', strtotime($fecha));

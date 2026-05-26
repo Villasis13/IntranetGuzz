@@ -94,14 +94,8 @@
                     <div class="card shadow-sm h-100" style="border-left: 4px solid #1cc88a;">
                         <div class="card-body py-3">
                             <div class="text-xs fw-bold text-success text-uppercase mb-1">Próxima Cuota</div>
-                            <div class="h5 fw-bold text-gray-800 mb-0" id="texto_cuota_principal">
+                            <div class="h5 fw-bold text-gray-800 mb-0">
                                 S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
-                            </div>
-                            <div id="badge_descuento_visual" style="display:none;" class="mt-1">
-                                <span class="text-danger small" style="text-decoration:line-through;">
-                                    S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
-                                </span>
-                                <span class="badge bg-warning text-dark ms-1" id="texto_descuento_aplicado"></span>
                             </div>
                         </div>
                     </div>
@@ -139,8 +133,14 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="h4 mb-0 fw-bold text-gray-800">
+                                    <div class="h4 mb-0 fw-bold text-gray-800" id="texto_cuota_principal">
                                         S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
+                                    </div>
+                                    <div id="badge_descuento_visual" style="display:none;" class="mt-1">
+                                        <span class="text-danger small" style="text-decoration:line-through;">
+                                            S/ <?= number_format($cuota_a_pagar->pago_diario_monto, 2) ?>
+                                        </span>
+                                        <span class="badge bg-warning text-dark ms-1" id="texto_descuento_aplicado"></span>
                                     </div>
                                 </div>
 

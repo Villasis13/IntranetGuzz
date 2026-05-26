@@ -263,9 +263,16 @@ class CobrosController
 
                 // ==========================================
                 // 5. ACTUALIZAR DINERO EN CAJA
+                // Ingreso = Monto recibido - Vuelto (si hay efectivo)
+                // Si no hay monto_recibido (transferencia), usar monto_cobrado
                 // ==========================================
+                $monto_recibido_post = !empty($_POST['monto_recibido']) ? (float)$_POST['monto_recibido'] : 0;
+                $monto_vuelto_post   = !empty($_POST['monto_vuelto'])   ? (float)$_POST['monto_vuelto']   : 0;
+                $ingreso_caja = ($monto_recibido_post > 0)
+                    ? ($monto_recibido_post - $monto_vuelto_post)
+                    : $monto_cobrado;
                 $this->builder->update("caja", array(
-                    'monto_caja' => $caja_abierta->monto_caja + $monto_cobrado, // A la caja solo entra el efectivo real
+                    'monto_caja' => $caja_abierta->monto_caja + $ingreso_caja,
                 ), array(
                     'id_caja' => $caja_abierta->id_caja,
                 ));
@@ -434,8 +441,14 @@ class CobrosController
             ]);
 
             // Actualizar caja
+            // Ingreso = Monto recibido - Vuelto (si hay efectivo); si no, usar monto_amortizar
+            $monto_recibido_post = !empty($_POST['monto_recibido']) ? (float)$_POST['monto_recibido'] : 0;
+            $monto_vuelto_post   = !empty($_POST['monto_vuelto'])   ? (float)$_POST['monto_vuelto']   : 0;
+            $ingreso_caja = ($monto_recibido_post > 0)
+                ? ($monto_recibido_post - $monto_vuelto_post)
+                : $monto_amortizar;
             $this->builder->update('caja', [
-                'monto_caja' => $caja_abierta->monto_caja + $monto_amortizar,
+                'monto_caja' => $caja_abierta->monto_caja + $ingreso_caja,
             ], ['id_caja' => $caja_abierta->id_caja]);
 
             // Actualizar saldo del préstamo (amortización aplica sobre capital, el interés proporcional se limpia)

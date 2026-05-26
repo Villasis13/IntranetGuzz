@@ -93,11 +93,11 @@ class Prestamos
     public function prestamos_hoy($fecha){
         try{
             // Traemos la cantidad de préstamos y la suma de sus montos en 1 sola consulta
-            $sql = 'SELECT 
-                    COUNT(id_prestamos) as cantidad, 
-                    COALESCE(SUM(prestamo_monto), 0) as total 
-                FROM prestamos 
-                WHERE DATE(prestamo_fecha) = ? and prestamo_estado= 1 ';
+            $sql = 'SELECT
+                    COUNT(id_prestamos) as cantidad,
+                    COALESCE(SUM(prestamo_monto), 0) as total
+                FROM prestamos
+                WHERE DATE(prestamo_fecha_sistema) = ? and prestamo_estado= 1 ';
 
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$fecha]);
@@ -217,12 +217,39 @@ class Prestamos
 
     public function listar_pagos_desde($fecha_apertura) {
         try {
-            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno, mp.metodo_pago_nombre
+            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno, mp.metodo_pago_nombre,
+                CASE
+                    WHEN p.pago_monto_recibido IS NOT NULL AND p.pago_monto_recibido > 0
+                    THEN p.pago_monto_recibido - COALESCE(p.pago_monto_vuelto, 0)
+                    ELSE p.pago_monto
+                END AS ingreso_display
                 FROM pagos p
                 INNER JOIN prestamos pr ON p.id_prestamo = pr.id_prestamos
                 INNER JOIN clientes c ON pr.id_cliente = c.id_cliente
                 LEFT JOIN metodos_pago mp ON mp.id_metodo_pago = p.pago_metodo
-                WHERE p.pago_fecha >= ?";
+                WHERE p.pago_fecha >= ? AND p.id_pago_diario IS NOT NULL";
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$fecha_apertura]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    public function listar_amortizaciones_desde($fecha_apertura) {
+        try {
+            $sql = "SELECT p.*, c.cliente_nombre, c.cliente_apellido_paterno, mp.metodo_pago_nombre,
+                CASE
+                    WHEN p.pago_monto_recibido IS NOT NULL AND p.pago_monto_recibido > 0
+                    THEN p.pago_monto_recibido - COALESCE(p.pago_monto_vuelto, 0)
+                    ELSE p.pago_monto
+                END AS ingreso_display
+                FROM pagos p
+                INNER JOIN prestamos pr ON p.id_prestamo = pr.id_prestamos
+                INNER JOIN clientes c ON pr.id_cliente = c.id_cliente
+                LEFT JOIN metodos_pago mp ON mp.id_metodo_pago = p.pago_metodo
+                WHERE p.pago_fecha >= ? AND p.id_pago_diario IS NULL";
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$fecha_apertura]);
             return $stm->fetchAll();
