@@ -487,35 +487,66 @@ class CajaController
             $pdf->SetFont('Arial', 'B', 9);
             $pdf->Cell(180, 6, 'Prestamos Otorgados', 1, 1, 'L', true);
 
+            // anchos: 28+20+60+42+15+15 = 180
+            $cw = ['f' => 28, 'h' => 20, 'cl' => 60, 't' => 42, 'i' => 15, 'e' => 15];
+            $lh = 5; // alto de línea base
+
             $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(30, 5, 'Fecha',    1, 0, 'C', true);
-            $pdf->Cell(22, 5, 'Hora',     1, 0, 'C', true);
-            $pdf->Cell(68, 5, 'Cliente',  1, 0, 'C', true);
-            $pdf->Cell(30, 5, 'Tipo',     1, 0, 'C', true);
-            $pdf->Cell(15, 5, 'Ingreso',  1, 0, 'C', true);
-            $pdf->Cell(15, 5, 'Egreso',   1, 1, 'C', true);
+            $pdf->Cell($cw['f'],  5, 'Fecha',   1, 0, 'C', true);
+            $pdf->Cell($cw['h'],  5, 'Hora',    1, 0, 'C', true);
+            $pdf->Cell($cw['cl'], 5, 'Cliente', 1, 0, 'C', true);
+            $pdf->Cell($cw['t'],  5, 'Tipo',    1, 0, 'C', true);
+            $pdf->Cell($cw['i'],  5, 'Ingreso', 1, 0, 'C', true);
+            $pdf->Cell($cw['e'],  5, 'Egreso',  1, 1, 'C', true);
 
             $pdf->SetFont('Arial', '', 8);
             if (!empty($prestamos_caja) || !empty($anulaciones_prestamos)) {
                 foreach ((array)$prestamos_caja as $prestamo) {
                     $es_anulado = (intval($prestamo->prestamo_estado) === 5);
-                    $tipo_txt   = ($es_anulado ? '[ANULADO] ' : '') . 'Prestamo ' . ucfirst($prestamo->prestamo_tipo_pago);
+                    // Separar [ANULADO] en línea propia para que no desborde
+                    $tipo_txt   = ($es_anulado ? "[ANULADO]\n" : '') . 'Prestamo ' . ucfirst($prestamo->prestamo_tipo_pago);
                     $monto_txt  = $es_anulado ? '(Anulado)' : 'S/ ' . number_format($prestamo->prestamo_monto, 2);
-                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($prestamo->prestamo_fecha)), 1, 0, 'C');
-                    $pdf->Cell(22, 5, date('H:i:s', strtotime($prestamo->prestamo_fecha)), 1, 0, 'C');
-                    $pdf->Cell(68, 5, $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno, 1, 0, 'L');
-                    $pdf->Cell(30, 5, $tipo_txt, 1, 0, 'C');
-                    $pdf->Cell(15, 5, '', 1, 0, 'R');
-                    $pdf->Cell(15, 5, $monto_txt, 1, 1, 'R');
+                    $tipo_lines = substr_count($tipo_txt, "\n") + 1;
+                    $row_h      = $lh * $tipo_lines;
+
+                    if ($es_anulado) { $pdf->SetFillColor(255, 204, 204); $fill = true; }
+                    else             { $pdf->SetFillColor(255, 255, 255); $fill = false; }
+
+                    $y0 = $pdf->GetY();
+                    $x0 = $pdf->GetX();
+
+                    $pdf->Cell($cw['f'],  $row_h, date('d/m/Y', strtotime($prestamo->prestamo_fecha_sistema)), 1, 0, 'C', $fill);
+                    $pdf->Cell($cw['h'],  $row_h, date('H:i:s', strtotime($prestamo->prestamo_fecha_sistema)), 1, 0, 'C', $fill);
+                    $pdf->Cell($cw['cl'], $row_h, $prestamo->cliente_nombre . ' ' . $prestamo->cliente_apellido_paterno, 1, 0, 'L', $fill);
+
+                    $x_tipo = $pdf->GetX();
+                    $pdf->MultiCell($cw['t'], $lh, $tipo_txt, 1, 'C', $fill);
+
+                    $pdf->SetXY($x_tipo + $cw['t'], $y0);
+                    $pdf->Cell($cw['i'], $row_h, '',         1, 0, 'R', $fill);
+                    $pdf->Cell($cw['e'], $row_h, $monto_txt, 1, 0, 'R', $fill);
+
+                    $pdf->SetXY($x0, $y0 + $row_h);
                 }
                 foreach ((array)$anulaciones_prestamos as $an) {
-                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($an->caja_movimiento_fecha)), 1, 0, 'C');
-                    $pdf->Cell(22, 5, date('H:i:s', strtotime($an->caja_movimiento_fecha)), 1, 0, 'C');
-                    $pdf->Cell(68, 5, 'Devolucion por Anulacion (*)', 1, 0, 'L');
-                    $pdf->Cell(30, 5, 'Anulacion', 1, 0, 'C');
-                    $pdf->Cell(15, 5, 'S/ ' . number_format($an->caja_movimiento_monto, 2), 1, 0, 'R');
-                    $pdf->Cell(15, 5, '', 1, 1, 'R');
+                    $pdf->SetFillColor(255, 235, 156);
+                    $y0 = $pdf->GetY();
+                    $x0 = $pdf->GetX();
+
+                    $pdf->Cell($cw['f'],  $lh, date('d/m/Y', strtotime($an->caja_movimiento_fecha)), 1, 0, 'C', true);
+                    $pdf->Cell($cw['h'],  $lh, date('H:i:s', strtotime($an->caja_movimiento_fecha)), 1, 0, 'C', true);
+                    $pdf->Cell($cw['cl'], $lh, 'Devolucion por Anulacion (*)', 1, 0, 'L', true);
+
+                    $x_tipo = $pdf->GetX();
+                    $pdf->MultiCell($cw['t'], $lh, 'Anulacion', 1, 'C', true);
+
+                    $pdf->SetXY($x_tipo + $cw['t'], $y0);
+                    $pdf->Cell($cw['i'], $lh, 'S/ ' . number_format($an->caja_movimiento_monto, 2), 1, 0, 'R', true);
+                    $pdf->Cell($cw['e'], $lh, '', 1, 0, 'R', true);
+
+                    $pdf->SetXY($x0, $y0 + $lh);
                 }
+                $pdf->SetFillColor(200, 200, 200);
             } else {
                 $pdf->Cell(180, 5, 'No se han otorgado prestamos en este turno.', 1, 1, 'C');
             }

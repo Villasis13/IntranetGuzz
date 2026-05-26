@@ -148,10 +148,13 @@ class ReporteController
             $total_ingresos = 0;
             foreach ((array)$reporte as $rp) $total_ingresos += $rp->pago_monto;
 
-            $total_egresos = 0;
+            $total_egresos         = 0;
+            $total_capital_interes = 0;
             foreach ((array)$egresos as $eg) {
-                // CORRECCIÓN: Ahora suma estrictamente solo el capital
-                $total_egresos += $eg->prestamo_monto;
+                if (intval($eg->prestamo_estado) !== 5) {
+                    $total_egresos         += $eg->prestamo_monto;
+                    $total_capital_interes += $eg->prestamo_monto + $eg->prestamo_monto_interes;
+                }
             }
 
             $balance        = $total_ingresos - $total_egresos;
@@ -256,34 +259,60 @@ class ReporteController
             if (!empty($egresos)) {
                 $c = 1;
                 foreach ($egresos as $eg) {
-                    $monto_total = $eg->prestamo_monto + $eg->prestamo_monto_interes;
+                    $es_anulado     = (intval($eg->prestamo_estado) === 5);
+                    $monto_total    = $eg->prestamo_monto + $eg->prestamo_monto_interes;
                     $nombre_cliente = substr($eg->cliente_nombre . ' ' . $eg->cliente_apellido_paterno, 0, 25);
-                    $usuario = substr($eg->usuario_nickname, 0, 12);
-                    $tipo_pago = substr(ucfirst($eg->prestamo_tipo_pago), 0, 15);
+                    $usuario        = substr($eg->usuario_nickname, 0, 12);
+                    $cuotas         = $eg->prestamo_cuotas ?? '-';
+                    $tipo_pago      = substr(ucfirst($eg->prestamo_tipo_pago), 0, 10) . ' ' . $cuotas . 'c';
 
-                    $pdf->Cell(8,  5, $c++, 1, 0, 'C');
-                    // Al igual que en la vista, se usa prestamo_fecha que ahora trae la fecha de emisión
-                    $pdf->Cell(18, 5, date('d/m/Y', strtotime($eg->prestamo_fecha)), 1, 0, 'C');
-                    $pdf->Cell(18, 5, date('d/m/Y', strtotime($eg->prestamo_fecha_inicio)), 1, 0, 'C');
-                    $pdf->Cell(22, 5, $tipo_pago, 1, 0, 'C');
-                    $pdf->Cell(18, 5, $usuario, 1, 0, 'C');
-                    $pdf->Cell(44, 5, $nombre_cliente, 1, 0, 'L');
+                    if ($es_anulado) {
+                        $pdf->SetFillColor(255, 204, 204); // rojo claro
+                        $fill = true;
+                        $num_cell = $c++ . ' [A]';
+                    } else {
+                        $pdf->SetFillColor(255, 255, 255);
+                        $fill = false;
+                        $num_cell = $c++;
+                    }
 
-                    $pdf->Cell(20, 5, 'S/ ' . number_format($eg->prestamo_monto, 2), 1, 0, 'R');
-                    $pdf->Cell(20, 5, 'S/ ' . number_format($eg->prestamo_monto_interes, 2), 1, 0, 'R');
+                    $pdf->Cell(8,  5, $num_cell, 1, 0, 'C', $fill);
+                    $pdf->Cell(18, 5, date('d/m/Y', strtotime($eg->prestamo_fecha)), 1, 0, 'C', $fill);
+                    $pdf->Cell(18, 5, date('d/m/Y', strtotime($eg->prestamo_fecha_inicio)), 1, 0, 'C', $fill);
+                    $pdf->Cell(22, 5, $tipo_pago, 1, 0, 'C', $fill);
+                    $pdf->Cell(18, 5, $usuario, 1, 0, 'C', $fill);
+                    $pdf->Cell(44, 5, $nombre_cliente, 1, 0, 'L', $fill);
+
+                    $capital_txt = ($es_anulado ? '(' : '') . 'S/ ' . number_format($eg->prestamo_monto, 2) . ($es_anulado ? ')' : '');
+                    $interes_txt = ($es_anulado ? '(' : '') . 'S/ ' . number_format($eg->prestamo_monto_interes, 2) . ($es_anulado ? ')' : '');
+                    $total_txt   = ($es_anulado ? '(' : '') . 'S/ ' . number_format($monto_total, 2) . ($es_anulado ? ')' : '');
+
+                    $pdf->Cell(20, 5, $capital_txt, 1, 0, 'R', $fill);
+                    $pdf->Cell(20, 5, $interes_txt, 1, 0, 'R', $fill);
 
                     $pdf->SetFont('Arial', 'B', 7);
-                    $pdf->Cell(22, 5, 'S/ ' . number_format($monto_total, 2), 1, 1, 'R');
+                    $pdf->Cell(22, 5, $total_txt, 1, 1, 'R', $fill);
                     $pdf->SetFont('Arial', '', 7);
                 }
+                // Nota al pie de la tabla
+                $pdf->SetFillColor(245, 245, 245);
+                $pdf->SetFont('Arial', 'I', 6);
+                $pdf->Cell(190, 4, '(*) Filas marcadas con [A] y fondo rojo corresponden a prestamos anulados. No se incluyen en los totales.', 1, 1, 'L', true);
+                $pdf->SetFont('Arial', '', 7);
 
-                // CORRECCIÓN Fila de Total: Se calculan las posiciones para que caiga debajo de "Capital"
+                // Filas de totales: una bajo "Capital" y otra bajo "Total Deuda"
+                // Anchos acumulados: #(8)+F.Em(18)+F.In(18)+Per(22)+Usr(18)+Cli(44) = 128
                 $pdf->SetFillColor(255, 199, 206);
                 $pdf->SetFont('Arial', 'B', 8);
-
-                // 8+18+18+22+18+44 = 128mm (Todo hasta Cliente)
-                $pdf->Cell(168, 5, 'Total Egresos (Solo Capital):', 1, 0, 'R', true);                // 20mm (Columna de Capital)
-                $pdf->Cell(22,  5, 'S/ ' . number_format($total_egresos, 2), 1, 1, 'R', true);                // Celdas vacías para "Interés" (20mm) y "Total Deuda" (22mm)
+                // Fila 1 — Total Capital alineado bajo la columna Capital (20mm)
+                $pdf->Cell(128, 5, 'Total Capital:',                              1, 0, 'R', true);
+                $pdf->Cell(20,  5, 'S/ ' . number_format($total_egresos, 2),      1, 0, 'R', true);
+                $pdf->Cell(20,  5, '',                                             1, 0, 'C', true);
+                $pdf->Cell(22,  5, '',                                             1, 1, 'C', true);
+                // Fila 2 — Total Capital + Interés alineado bajo la columna Total Deuda (22mm)
+                $pdf->SetFillColor(255, 235, 156);
+                $pdf->Cell(168, 5, 'Total Capital + Interes:',                    1, 0, 'R', true);
+                $pdf->Cell(22,  5, 'S/ ' . number_format($total_capital_interes, 2), 1, 1, 'R', true);
 
             } else {
                 $pdf->Cell(190, 5, 'Egresos no registrados en este periodo.', 1, 1, 'C');
@@ -295,8 +324,10 @@ class ReporteController
             $pdf->SetFont('Arial', 'B', 9);
             $pdf->Cell(150, 6, 'Total Ingresos del Periodo:', 1, 0, 'R', true);
             $pdf->Cell(40,  6, 'S/ ' . number_format($total_ingresos, 2), 1, 1, 'R', true);
-            $pdf->Cell(150, 6, 'Total Egresos del Periodo:',  1, 0, 'R', true);
-            $pdf->Cell(40,  6, 'S/ ' . number_format($total_egresos, 2),  1, 1, 'R', true);
+            $pdf->Cell(150, 6, 'Total Egresos del Periodo (Capital):',  1, 0, 'R', true);
+            $pdf->Cell(40,  6, 'S/ ' . number_format($total_egresos, 2), 1, 1, 'R', true);
+            $pdf->Cell(150, 6, 'Total Egresos del Periodo (Capital + Interes):', 1, 0, 'R', true);
+            $pdf->Cell(40,  6, 'S/ ' . number_format($total_capital_interes, 2), 1, 1, 'R', true);
 
             if ($balance >= 0) {
                 $pdf->SetFillColor(197, 224, 180);
