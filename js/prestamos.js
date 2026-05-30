@@ -541,61 +541,55 @@ function actualizar_mensaje_inicio() {
 }
 
 function cambiar_metodo_pago() {
-    // CAMBIO AQUÍ: Ahora leemos el 'data-tipo' (efectivo, yape, etc.)
     let metodo = $('#pago_metodo').find(':selected').data('tipo');
 
-    // 1. Ocultamos todos los grupos
-    $('#grupo_efectivo').hide();
+    // Ocultamos secciones dinámicas
     $('#grupo_transferencia').hide();
     $('#grupo_operacion_titular').hide();
 
-    // 2. Limpiamos los valores por seguridad
-    $('#monto_recibido').val('');
-    $('#monto_vuelto').val('0.00');
+    // Limpiamos campos auxiliares
     $('#num_operacion').val('');
     $('#nombre_titular').val('');
     $('#banco_entidad').val('');
-    $('#no_vuelto').prop('checked', false);
-    $('#grupo_no_vuelto').hide();
+    $('#monto_vuelto').val('0.00');
+    $('#dar_vuelto').prop('checked', false);
+    $('#grupo_dar_vuelto').hide();
 
-    // 3. Mostramos lo que corresponde
-    $('#grupo_efectivo').show(200);
+    // Pre-llenamos monto_recibido con el monto a pagar (para cualquier método)
+    $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
+
+    // Mostramos campos específicos según método
     if (metodo === 'transferencia') {
         $('#grupo_transferencia').show(200);
         $('#grupo_operacion_titular').show(200);
-        // Pre-llenamos con el monto a pagar como valor sugerido
-        $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
     } else if (metodo === 'yape' || metodo === 'plin') {
         $('#grupo_operacion_titular').show(200);
-        $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
     }
 
-    // 4. Forzamos el cálculo
     calcular_vuelto();
 }
 
 function calcular_vuelto() {
     let monto_pagar    = parseFloat($('#monto_pagar').val()) || 0;
     let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
-    let metodo         = $('#pago_metodo').find(':selected').data('tipo');
 
     let diferencia = monto_pagar > 0 ? monto_recibido - monto_pagar : 0;
 
-    // "No vuelto" solo aplica para efectivo con diferencia positiva
-    if (metodo === 'efectivo' && diferencia > 0) {
-        $('#grupo_no_vuelto').show(150);
+    // "Dar vuelto" se muestra para CUALQUIER método cuando hay excedente
+    if (diferencia > 0) {
+        $('#grupo_dar_vuelto').show(150);
     } else {
-        $('#grupo_no_vuelto').hide(100);
-        $('#no_vuelto').prop('checked', false);
+        $('#grupo_dar_vuelto').hide(100);
+        $('#dar_vuelto').prop('checked', false);
     }
 
-    let no_vuelto = $('#no_vuelto').is(':checked');
+    let dar_vuelto = $('#dar_vuelto').is(':checked');
 
-    // Valor real a guardar en DB: solo vuelto en efectivo (sin "no vuelto")
-    let vuelto_db = (metodo === 'efectivo' && diferencia > 0 && !no_vuelto) ? diferencia : 0;
+    // Guardar en DB: solo cuando el usuario elige dar vuelto
+    let vuelto_db = (diferencia > 0 && dar_vuelto) ? diferencia : 0;
     $('#monto_vuelto_db').val(vuelto_db.toFixed(2));
 
-    // El campo visual siempre muestra la diferencia real
+    // Campo visual: siempre muestra la diferencia real
     $('#monto_vuelto').val(diferencia.toFixed(2));
 
     let $campo = $('#monto_vuelto');
@@ -607,14 +601,12 @@ function calcular_vuelto() {
         $label.text('Diferencia / Vuelto (S/)');
     } else if (diferencia < 0) {
         $campo.addClass('text-danger');
-        $label.text('Diferencia (S/)');
+        $label.text('Diferencia pendiente (S/)');
     } else {
-        // diferencia > 0
-        if (metodo === 'efectivo' && !no_vuelto) {
+        if (dar_vuelto) {
             $campo.addClass('text-success');
-            $label.text('Vuelto (S/)');
+            $label.text('Vuelto a entregar (S/)');
         } else {
-            // Yape/Plin/Transferencia con exceso, o Efectivo con "No vuelto"
             $campo.addClass('text-primary');
             $label.text('Diferencia (S/)');
         }
@@ -624,29 +616,19 @@ function calcular_vuelto() {
 }
 
 function aplicar_descuento() {
-    var opcionSeleccionada = $('input[name="desc"]:checked').attr('id');
-
-    if (opcionSeleccionada === 'descSi') {
-        $('#div_descontar').show(200);
-    } else {
-        // SI ELIGEN "NO"
+    // Mantiene compatibilidad; la lógica principal está en los handlers del switch
+    let activoEs = $('#disc_switch_si').hasClass('active');
+    if (!activoEs) {
         $('#div_descontar').hide(200);
-        $('#descontar_cantidad').val(''); // Limpiamos el descuento
-
+        $('#descontar_cantidad').val('');
         let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
-
-        if(cuota_original) {
+        if (cuota_original) {
             $('#monto_pagar').val(cuota_original.toFixed(2));
-
-            // Restauramos la tarjeta azul a la normalidad
-            $('#texto_cuota_principal').html('S/ ' + cuota_original.toFixed(2));
-            $('#texto_cuota_principal').removeClass('text-success').addClass('text-gray-800');
-            $('#badge_descuento_visual').fadeOut(150);
-
-            // OCULTAMOS LA ETIQUETA DEL INPUT (Porque dijeron que NO)
+            $('#monto_recibido').val(cuota_original.toFixed(2));
+            $('#cuota_monto_display').text('S/ ' + cuota_original.toFixed(2)).removeClass('discounted');
+            $('#quota_discount_detail').hide();
             $('#etiqueta_descuento').hide();
         }
-
         calcular_vuelto();
     }
 }
@@ -680,35 +662,40 @@ $(document).ready(function() {
         calcular_cuota();
     }
 
-    // Lógica para la vista de Cobros (Descuentos y Pagos)
+    // Lógica para la vista de Cobros (Pago de cuotas)
     if ($('#pago_metodo').length > 0) {
         cambiar_metodo_pago();
-        aplicar_descuento();
 
-        $('#descontar_cantidad').on('keyup', function() {
-            let descuento_ingresado = parseFloat($(this).val()) || 0;
-            let cuota_original = parseFloat($('#monto_cuota_actual').val());
+        // Toggle switch "Sí"
+        $('#disc_switch_si').on('click', function() {
+            if ($(this).hasClass('active')) return;
+            $(this).addClass('active');
+            $('#disc_switch_no').removeClass('active');
+            $('#div_descontar').show(200);
+        });
 
-            if (descuento_ingresado > cuota_original) {
-                respuesta('El descuento no puede ser mayor a la cuota (S/ ' + cuota_original.toFixed(2) + ')', 'warning');
-                $(this).val(cuota_original.toFixed(2));
-                descuento_ingresado = cuota_original;
+        // Toggle switch "No"
+        $('#disc_switch_no').on('click', function() {
+            if ($(this).hasClass('active')) return;
+            $(this).addClass('active');
+            $('#disc_switch_si').removeClass('active');
+            $('#div_descontar').hide(200);
+            $('#descontar_cantidad').val('');
+            let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
+            if (cuota_original) {
+                $('#monto_pagar').val(cuota_original.toFixed(2));
+                $('#monto_recibido').val(cuota_original.toFixed(2));
+                $('#cuota_monto_display').text('S/ ' + cuota_original.toFixed(2)).removeClass('discounted');
+                $('#quota_discount_detail').hide();
+                $('#etiqueta_descuento').hide();
             }
-
-            let nuevo_monto_a_pagar = cuota_original - descuento_ingresado;
-            $('#monto_pagar').val(nuevo_monto_a_pagar.toFixed(2));
-
             calcular_vuelto();
         });
-    }
-    if ($('#pago_metodo').length > 0) {
-        cambiar_metodo_pago();
-        aplicar_descuento();
 
-        // AQUÍ ES DONDE ESTÁ EL EVENTO QUE DEBES REEMPLAZAR:
+        // Cambio en el campo de descuento
         $('#descontar_cantidad').on('keyup', function() {
             let descuento_ingresado = parseFloat($(this).val()) || 0;
-            let cuota_original = parseFloat($('#monto_cuota_actual').val());
+            let cuota_original      = parseFloat($('#monto_cuota_actual').val()) || 0;
 
             if (descuento_ingresado > cuota_original) {
                 respuesta('El descuento no puede ser mayor a la cuota (S/ ' + cuota_original.toFixed(2) + ')', 'warning');
@@ -716,26 +703,19 @@ $(document).ready(function() {
                 descuento_ingresado = cuota_original;
             }
 
-            let nuevo_monto_a_pagar = cuota_original - descuento_ingresado;
-            $('#monto_pagar').val(nuevo_monto_a_pagar.toFixed(2));
+            let nuevo_monto = cuota_original - descuento_ingresado;
+            $('#monto_pagar').val(nuevo_monto.toFixed(2));
+            $('#monto_recibido').val(nuevo_monto.toFixed(2));
 
-            // ==========================================
-            // MAGIA VISUAL: TARJETA Y ETIQUETA DEL INPUT
-            // ==========================================
             if (descuento_ingresado > 0) {
-                $('#texto_cuota_principal').html('S/ ' + nuevo_monto_a_pagar.toFixed(2));
-                $('#texto_cuota_principal').addClass('text-success').removeClass('text-gray-800');
-                $('#texto_descuento_aplicado').text('- S/ ' + descuento_ingresado.toFixed(2));
-                $('#badge_descuento_visual').fadeIn(150);
-
-                // MOSTRAMOS LA ETIQUETA "Con Descuento" EN EL INPUT
+                $('#cuota_monto_display').text('S/ ' + nuevo_monto.toFixed(2)).addClass('discounted');
+                $('#quota_original_amount').text('S/ ' + cuota_original.toFixed(2));
+                $('#quota_discount_badge').text('- S/ ' + descuento_ingresado.toFixed(2));
+                $('#quota_discount_detail').show();
                 $('#etiqueta_descuento').fadeIn(150);
             } else {
-                $('#texto_cuota_principal').html('S/ ' + cuota_original.toFixed(2));
-                $('#texto_cuota_principal').removeClass('text-success').addClass('text-gray-800');
-                $('#badge_descuento_visual').fadeOut(150);
-
-                // OCULTAMOS LA ETIQUETA SI EL DESCUENTO ES CERO
+                $('#cuota_monto_display').text('S/ ' + cuota_original.toFixed(2)).removeClass('discounted');
+                $('#quota_discount_detail').hide();
                 $('#etiqueta_descuento').fadeOut(150);
             }
 
@@ -749,9 +729,9 @@ function actualizar_resumen() {
     let descuento      = parseFloat($('#descontar_cantidad').val()) || 0;
     let total_pagar    = parseFloat($('#monto_pagar').val()) || 0;
     let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
-    let diferencia     = parseFloat($('#monto_vuelto').val()) || 0; // Siempre es la diferencia real
+    let diferencia     = parseFloat($('#monto_vuelto').val()) || 0;
     let metodo         = $('#pago_metodo').find(':selected').data('tipo');
-    let no_vuelto      = $('#no_vuelto').is(':checked');
+    let dar_vuelto     = $('#dar_vuelto').is(':checked');
 
     if (metodo) {
         let nombre = metodo.charAt(0).toUpperCase() + metodo.slice(1);
@@ -778,24 +758,19 @@ function actualizar_resumen() {
     $valor.removeClass('text-success text-danger text-warning text-primary text-muted');
 
     if (diferencia === 0) {
-        // Monto exacto
         $li.attr('style', 'display: flex;');
         $label.html('<i class="fa fa-check-circle me-1"></i> Diferencia / Vuelto');
         $valor.addClass('text-muted').text('S/ 0.00');
     } else if (diferencia < 0) {
-        // Pago parcial
         $li.attr('style', 'display: flex; background-color: #fde8e8;');
-        $label.html('<i class="fa fa-exclamation-circle me-1"></i> Diferencia');
+        $label.html('<i class="fa fa-exclamation-circle me-1"></i> Diferencia pendiente');
         $valor.addClass('text-danger').text('-S/ ' + Math.abs(diferencia).toFixed(2));
     } else {
-        // diferencia > 0
-        if (metodo === 'efectivo' && !no_vuelto) {
-            // Vuelto en efectivo
+        if (dar_vuelto) {
             $li.attr('style', 'display: flex; background-color: #fff3cd;');
             $label.html('<i class="fa fa-reply me-1"></i> Vuelto a Entregar');
             $valor.addClass('text-success').text('S/ ' + diferencia.toFixed(2));
         } else {
-            // No-efectivo con exceso, o efectivo con "No vuelto"
             $li.attr('style', 'display: flex; background-color: #e8f4fd;');
             $label.html('<i class="fa fa-arrow-up me-1"></i> Diferencia');
             $valor.addClass('text-primary').text('+S/ ' + diferencia.toFixed(2));

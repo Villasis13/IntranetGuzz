@@ -95,10 +95,10 @@
                 <!-- Monto a amortizar -->
                 <div class="col-md-6">
                     <div class="form-floating">
-                        <input type="number" step="0.01" min="0.01"
+                        <input type="text" inputmode="decimal"
                                id="monto_pagar" name="monto_pagar"
                                class="form-control fw-bold"
-                               onkeyup="validar_amortizacion(); calcular_vuelto();"
+                               onkeyup="validar_numeros_decimales_dos(this.id); validar_amortizacion(); calcular_vuelto();"
                                oninput="validar_amortizacion(); calcular_vuelto();"
                                placeholder=" ">
                         <label>Monto a Amortizar (S/) <span class="text-danger">*</span></label>
@@ -131,8 +131,8 @@
                     <div class="row g-3 border p-3 rounded bg-light mx-0">
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" step="0.01" id="monto_recibido" name="monto_recibido"
-                                       class="form-control" onkeyup="calcular_vuelto()" placeholder=" ">
+                                <input type="text" inputmode="decimal" id="monto_recibido" name="monto_recibido"
+                                       class="form-control" onkeyup="validar_numeros_decimales_dos(this.id); calcular_vuelto()" placeholder=" ">
                                 <label>Monto Recibido (S/)</label>
                             </div>
                         </div>

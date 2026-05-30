@@ -315,35 +315,13 @@
                                     <tr class="arqueo-empty"><td colspan="6">No se han registrado pagos en este turno.</td></tr>
                                 <?php endif; ?>
 
-                                <!-- Amortizaciones -->
-                                <tr>
-                                    <td colspan="6" class="arqueo-sec-header amortizaciones">
-                                        <i class="fa fa-compress-alt mr-1"></i> Amortizaciones
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="arqueo-col-header" style="width:160px;">Fecha y Hora</th>
-                                    <th class="arqueo-col-header">Cliente</th>
-                                    <th class="arqueo-col-header" style="width:160px;">Método de Pago</th>
-                                    <th class="arqueo-col-header ing text-right" style="width:160px;">Monto Amortizado</th>
-                                    <th class="arqueo-col-header" colspan="2"></th>
-                                </tr>
                                 <?php
+                                // AMORTIZACIONES ocultas temporalmente — solo se suma para los totales
                                 $suma_amortizaciones = 0;
-                                if(!empty($amortizaciones_caja)):
-                                    foreach($amortizaciones_caja as $am):
-                                        $suma_amortizaciones += $am->ingreso_display;
-                                        ?>
-                                        <tr class="data-row">
-                                            <td><?= date('d/m/Y H:i:s', strtotime($am->pago_fecha)) ?></td>
-                                            <td><?= $am->cliente_nombre . ' ' . $am->cliente_apellido_paterno ?></td>
-                                            <td><?= ucfirst($am->metodo_pago_nombre ?? $am->pago_metodo) ?></td>
-                                            <td class="text-right m-ing">S/ <?= number_format($am->ingreso_display, 2) ?></td>
-                                            <td colspan="2"></td>
-                                        </tr>
-                                    <?php endforeach; else: ?>
-                                    <tr class="arqueo-empty"><td colspan="6">No se han registrado amortizaciones en este turno.</td></tr>
-                                <?php endif; ?>
+                                foreach ((array)$amortizaciones_caja as $am) {
+                                    $suma_amortizaciones += $am->ingreso_display;
+                                }
+                                ?>
 
                                 <!-- Préstamos -->
                                 <tr>

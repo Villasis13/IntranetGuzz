@@ -279,8 +279,10 @@ class PrestamosController
                                 $tipo_pago = strtolower($_POST['prestamo_tipo_pago']);
                                 $incluir_domingos = strtolower($_POST['select_domingos']);
 
-                                $monto_total_deuda = $_POST['prestamo_monto'] + ceil($_POST['prestamo_monto'] * $_POST['prestamo_interes'] / 100);
-                                $monto_cuota = round($monto_total_deuda / $num_cuotas, 1);
+                                // Total = capital + interés (sin ceil sobre el interés para coincidir con el JS)
+                                $monto_total_deuda = (float)$_POST['prestamo_monto'] + ((float)$_POST['prestamo_monto'] * (float)$_POST['prestamo_interes'] / 100);
+                                // Cuota base: redondeo hacia arriba al primer decimal (igual que Math.ceil(x*10)/10 en JS)
+                                $monto_cuota = ceil($monto_total_deuda / $num_cuotas * 10) / 10;
 
                                 $fecha_iterador = new DateTime($_POST['prestamo_prox_cobro']);
 
@@ -288,7 +290,8 @@ class PrestamosController
 
                                 for ($i = 1; $i <= $num_cuotas; $i++) {
                                     if ($i == $num_cuotas) {
-                                        $monto_esta_cuota = $monto_total_deuda - $suma_cuotas_acumuladas;
+                                        // Última cuota absorbe la diferencia; round a 2 decimales para evitar residuo flotante
+                                        $monto_esta_cuota = round($monto_total_deuda - $suma_cuotas_acumuladas, 2);
                                     } else {
                                         $monto_esta_cuota = $monto_cuota;
                                         $suma_cuotas_acumuladas += $monto_esta_cuota;
@@ -296,7 +299,7 @@ class PrestamosController
 
                                     $this->builder->save("pagos_diarios", array(
                                         'id_prestamos' => $id_generado,
-                                        'pago_diario_monto' => round($monto_esta_cuota, 1),
+                                        'pago_diario_monto' => $monto_esta_cuota,
                                         'pago_diario_fecha' => $fecha_iterador->format('Y-m-d'),
                                         'pago_diario_estado' => 1
                                     ));
@@ -507,10 +510,12 @@ class PrestamosController
             }
 
             // --- PÁGINA 3: CRONOGRAMA ---
+            // Total exacto = suma de las cuotas almacenadas en DB
+            $monto_total_cronograma = array_sum(array_column((array)$cuotas_reales, 'pago_diario_monto'));
+
             $pdf->AddPage();
             $pdf->SetFillColor(232,232,232);
             $pdf->Cell(180,6,'CRONOGRAMA DE PAGOS - ' . strtoupper($data_prestamo->prestamo_tipo_pago),0,1,'C',0);
-            $pdf->Cell(25,6,'Monto sin redondear: S/. ' . number_format($monto_total, 2),0,1,'L',0);
 
             $pdf->SetFont('Arial','',10);
             $pdf->Ln();
@@ -541,7 +546,7 @@ class PrestamosController
             $pdf->SetFont('Arial','B',10);
             $pdf->SetX(10);
             $pdf->Cell(45,6,'Total General',1,0,'L',1);
-            $pdf->Cell(25,6,'S/. '. number_format($monto_total, 2),1,1,'R',1);
+            $pdf->Cell(25,6,'S/. '. number_format($monto_total_cronograma, 2),1,1,'R',1);
 
             // COLUMNA DERECHA: DATOS DEL CLIENTE
             $posX = 110;

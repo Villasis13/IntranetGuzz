@@ -153,6 +153,7 @@
                     </div>
                 </div>
 
+                <?php /* CARD AMORTIZACIONES HOY oculta temporalmente
                 <div class="col-xl col-md-6 mb-4" style="border-left: 4px solid #f6a821;">
                     <div class="card shadow h-100 py-2" style="border-left: 4px solid #f6a821 !important;">
                         <div class="card-body">
@@ -170,7 +171,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                */ ?>
 
                 <div class="col-xl col-md-6 mb-4">
                     <div class="card border-left-info shadow h-100 py-2">

@@ -304,6 +304,11 @@ class CobrosController
                     'id_prestamos' => $id_prestamo
                 ));
 
+                // Si no quedan cuotas pendientes, el préstamo quedó cancelado: restaurar línea de crédito
+                if (count($cuotas_pendientes) === 0) {
+                    $this->cobros->restaurar_linea_credito($prestamo->id_cliente, $prestamo->prestamo_monto);
+                }
+
                 $result = 1;
                 $message = 'OK';
             } else {
@@ -457,6 +462,8 @@ class CobrosController
             $datos_prestamo = ['prestamo_saldo_pagar' => $nuevo_saldo];
             if ($nuevo_saldo <= 0) {
                 $datos_prestamo['prestamo_estado'] = 2;
+                // Préstamo cancelado por amortización total: restaurar línea de crédito
+                $this->cobros->restaurar_linea_credito($prestamo->id_cliente, $prestamo->prestamo_monto);
             }
             $this->builder->update('prestamos', $datos_prestamo, ['id_prestamos' => $id_prestamo]);
 
@@ -614,14 +621,14 @@ class CobrosController
                 $pdf->Cell(5,  3, '', 0, 0);
                 $pdf->Cell(65, 3, $SEP_INT, 0, 1, 'C');
                 $pdf->Cell(5,  4, '', 0, 0);
-                $pdf->Cell(35, 4, 'Cuota Final:', 0, 0, 'L');
+                $pdf->Cell(35, 4, 'Monto final a pagar:', 0, 0, 'L');
                 $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto), 2), 0, 1, 'R');
             }
 
             // Pago
             $pdf->Cell($W, 4, 'Pago:', 0, 1, 'L');
             $pdf->Cell(5,  4, '', 0, 0);
-            $pdf->Cell(35, 4, 'Monto Pagado:', 0, 0, 'L');
+            $pdf->Cell(35, 4, 'Monto final pagado:', 0, 0, 'L');
             $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($data->pago_monto), 2), 0, 1, 'R');
             if (!empty($data->pago_monto_recibido)) {
                 $monto_recibido = floatval($data->pago_monto_recibido);
