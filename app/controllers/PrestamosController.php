@@ -177,28 +177,51 @@ class PrestamosController
 		$result = 2;
 		$message = 'OK';
 		try {
-			if($_POST['clave_validacion'] == 'joseolaya324'){
-				if($_POST['incremento'] > 0){
-					$result = $this->builder->save("clientes_linea_credito",array(
-						'id_cliente' => $_POST['id_cliente'],
-						'cliente_linea_monto' => $_POST['incremento'],
-						'cliente_linea_motivo' => $_POST['motivo_aumento'],
-						'cliente_linea_estado' => 1
+			if ($_POST['clave_validacion'] == 'joseolaya324') {
+				$monto = floatval($_POST['incremento']);
+				$tipo  = $_POST['tipo_ajuste'] ?? 'incremento';
+
+				if ($monto <= 0) {
+					$result = 4;
+				} else {
+					$monto_anterior = floatval($this->clientes->listar_x_id($_POST['id_cliente'])->cliente_credito);
+
+					if ($tipo === 'incremento') {
+						$monto_nuevo = $monto_anterior + $monto;
+					} elseif ($tipo === 'disminucion') {
+						$monto_nuevo = $monto_anterior - $monto;
+						if ($monto_nuevo < 0) {
+							$result = 5;
+							echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+							return;
+						}
+					} else {
+						$monto_nuevo = $monto;
+					}
+
+					$usuario = $this->encriptar->desencriptar($_SESSION['c_u'], _FULL_KEY_);
+
+					$result = $this->builder->save("clientes_linea_credito", array(
+						'id_cliente'                     => $_POST['id_cliente'],
+						'cliente_linea_monto'            => $monto,
+						'cliente_linea_motivo'           => $_POST['motivo_aumento'],
+						'cliente_linea_tipo'             => $tipo,
+						'cliente_linea_credito_anterior' => $monto_anterior,
+						'cliente_linea_credito_nuevo'    => $monto_nuevo,
+						'cliente_linea_usuario'          => $usuario,
+						'cliente_linea_fecha'            => date('Y-m-d H:i:s'),
+						'cliente_linea_estado'           => 1
 					));
-					
-					if($result == 1){
-						$monto_anterior = $this->clientes->listar_x_id($_POST['id_cliente'])->cliente_credito;
-						$monto_actual = $monto_anterior + $_POST['incremento'];
-						$result = $this->builder->update("clientes",array(
-							'cliente_credito' => $monto_actual,
-						),array(
+
+					if ($result == 1) {
+						$result = $this->builder->update("clientes", array(
+							'cliente_credito' => $monto_nuevo,
+						), array(
 							'id_cliente' => $_POST['id_cliente'],
 						));
 					}
-				}else{
-					$result = 4;
 				}
-			}else{
+			} else {
 				$result = 3;
 			}
 		} catch (Exception $e) {

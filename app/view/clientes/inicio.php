@@ -52,15 +52,28 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Referencia</label>
-                                <input type="text" class="form-control" id="cliente_referencia" name="cliente_referencia">
+                                <textarea class="form-control" id="cliente_referencia" name="cliente_referencia" rows="2" style="resize:vertical;"></textarea>
                             </div>
 
                             <div class="row g-2 mb-3">
                                 <div class="col-md-12">
                                     <label class="form-label fw-bold">Celular <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="cliente_celular" name="cliente_celular" required>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="cliente_celular" name="cliente_celular"
+                                               inputmode="numeric" maxlength="15"
+                                               oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+                                        <button type="button" class="btn btn-outline-secondary" id="btn_add_celular2"
+                                                onclick="toggle_celular2()" title="Agregar segundo celular">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
-
+                                <div class="col-md-12" id="div_celular2" style="display:none;">
+                                    <label class="form-label">Celular 2</label>
+                                    <input type="text" class="form-control" id="cliente_celular2" name="cliente_celular2"
+                                           inputmode="numeric" maxlength="15" placeholder="Segundo número de contacto"
+                                           oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                </div>
                             </div>
 
                             <div class="row g-2 mb-3" style="display: none">
@@ -189,6 +202,9 @@
                                     </td>
                                     <td class="align-middle">
                                         <div><?=$c->cliente_celular?></div>
+                                        <?php if(!empty($c->cliente_celular2)): ?>
+                                            <div class="text-muted"><small><?=$c->cliente_celular2?></small></div>
+                                        <?php endif; ?>
                                         <small class="text-info"><?=$c->cliente_correo ?: ''?></small>
                                     </td>
                                     <td class="align-middle">

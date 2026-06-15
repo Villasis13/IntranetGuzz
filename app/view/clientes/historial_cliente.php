@@ -99,19 +99,14 @@
                                     <td><?= $pc->prestamo_garantia ?></td>
                                     <td>
 										<?php
-										if($pc->prestamo_estado == 1){
-											$estado = 'Activo';
-										}else if($pc->prestamo_estado == 2){
-											$estado = 'Cancelado';
-										}else if($pc->prestamo_estado == 3){
-                                            $estado = 'Préstamo Antiguo';
-										}else if($pc->prestamo_estado == 4){
-                                            $estado = 'Cancelado';
-										}
-										if($pc->prestamo_estado == 1){
-											echo '<span class="badge bg-success">'.$estado.'</span>';
-										}else if($pc->prestamo_estado == 2 || $pc->prestamo_estado == 4 || $pc->prestamo_estado == 3){
-											echo '<span class="badge bg-danger">'.$estado.'</span>';
+										if ($pc->prestamo_estado == 1) {
+											echo '<span class="badge bg-success">Activo</span>';
+										} elseif ($pc->prestamo_estado == 2 || $pc->prestamo_estado == 4) {
+											echo '<span class="badge bg-primary">Cancelado</span>';
+										} elseif ($pc->prestamo_estado == 3) {
+											echo '<span class="badge bg-warning text-dark">P. Antiguo</span>';
+										} elseif ($pc->prestamo_estado == 5) {
+											echo '<span class="badge bg-danger">Anulado</span>';
 										}
 										?>
                                     </td>
@@ -120,16 +115,18 @@
                                     <i class="fa fa-eye me-1"></i>Detalles
                                 </a>-->
 										<?php
-										if($pc->prestamo_estado == 1 || $pc->prestamo_estado == 3){
+										if ($pc->prestamo_estado == 1 || $pc->prestamo_estado == 3) {
 											?>
                                             <a href="<?= _SERVER_ ?>Cobros/pagar/<?= $pc->id_prestamos ?>" class="btn btn-sm btn-primary">
                                                 <i class="fa fa-money me-1"></i>Pagar
                                             </a>
 											<?php
+										} elseif ($pc->prestamo_estado == 5) {
+											echo '<span class="text-muted"><i class="fa fa-ban me-1"></i>Préstamo Anulado</span>';
 										} else {
+											echo '<span class="text-success fw-bold"><i class="fa fa-check-circle me-1"></i>Deuda Pagada</span>';
+										}
 										?>
-                                               <b>Deuda Pagada</b>
-                                        <?php }?>
                                     </td>
                                 </tr>
 								<?php
@@ -243,6 +240,87 @@
             </div>
         </div>
     </div>
-    
-    
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h5 class="m-0 font-weight-bold">
+                        <i class="fa fa-credit-card me-2"></i>Historial de ajustes de línea de crédito
+                    </h5>
+                </div>
+                <hr>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover m-0">
+                            <thead class="bg-light">
+                            <tr>
+                                <th class="align-middle">Fecha y hora</th>
+                                <th class="align-middle">Tipo de ajuste</th>
+                                <th class="align-middle">Crédito anterior</th>
+                                <th class="align-middle">Monto de ajuste</th>
+                                <th class="align-middle">Nuevo crédito</th>
+                                <th class="align-middle">Motivo</th>
+                                <th class="align-middle">Usuario</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php if (empty($historial_linea_credito)): ?>
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-3">
+                                        <i class="fa fa-info-circle me-1"></i>Sin ajustes registrados
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($historial_linea_credito as $h):
+                                    $tiene_campos_nuevos = isset($h->cliente_linea_tipo) && $h->cliente_linea_tipo;
+                                    $tipo = $tiene_campos_nuevos ? $h->cliente_linea_tipo : 'incremento';
+                                    $credito_anterior = isset($h->cliente_linea_credito_anterior) ? floatval($h->cliente_linea_credito_anterior) : null;
+                                    $credito_nuevo    = isset($h->cliente_linea_credito_nuevo)    ? floatval($h->cliente_linea_credito_nuevo)    : null;
+                                    $monto_ajuste     = floatval($h->cliente_linea_monto);
+                                    $fecha            = isset($h->cliente_linea_fecha) && $h->cliente_linea_fecha
+                                                        ? date('d/m/Y H:i', strtotime($h->cliente_linea_fecha))
+                                                        : '—';
+                                    $usuario          = isset($h->cliente_linea_usuario) && $h->cliente_linea_usuario
+                                                        ? $h->cliente_linea_usuario : '—';
+
+                                    if ($tipo === 'incremento') {
+                                        $badge_tipo    = '<span class="badge bg-success">Incremento</span>';
+                                        $monto_texto   = '<span class="text-success fw-bold">+ S/. ' . number_format($monto_ajuste, 2) . '</span>';
+                                    } elseif ($tipo === 'disminucion') {
+                                        $badge_tipo    = '<span class="badge bg-danger">Disminución</span>';
+                                        $monto_texto   = '<span class="text-danger fw-bold">- S/. ' . number_format($monto_ajuste, 2) . '</span>';
+                                    } else {
+                                        $badge_tipo    = '<span class="badge bg-secondary">Corrección</span>';
+                                        $monto_texto   = '<span class="text-secondary fw-bold">S/. ' . number_format($monto_ajuste, 2) . '</span>';
+                                    }
+                                ?>
+                                <tr>
+                                    <td class="align-middle text-nowrap"><?= $fecha ?></td>
+                                    <td class="align-middle"><?= $badge_tipo ?></td>
+                                    <td class="align-middle">
+                                        <?= $credito_anterior !== null ? 'S/. ' . number_format($credito_anterior, 2) : '—' ?>
+                                    </td>
+                                    <td class="align-middle"><?= $monto_texto ?></td>
+                                    <td class="align-middle fw-bold">
+                                        <?= $credito_nuevo !== null ? 'S/. ' . number_format($credito_nuevo, 2) : '—' ?>
+                                    </td>
+                                    <td class="align-middle">
+                                        <small><?= htmlspecialchars($h->cliente_linea_motivo) ?></small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-light text-dark border"><?= htmlspecialchars($usuario) ?></span>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>

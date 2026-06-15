@@ -280,8 +280,8 @@ class CobrosController
                 // ==========================================
                 // 6. EVALUAR EL ESTADO GLOBAL DEL PRÉSTAMO
                 // ==========================================
-                // Descontamos la cuota ORIGINAL de la deuda global
-                $nuevo_saldo = max(0, $prestamo->prestamo_saldo_pagar - $monto_cuota_original);
+                // Descontamos el monto realmente cobrado (no el nominal de la cuota)
+                $nuevo_saldo = max(0, $prestamo->prestamo_saldo_pagar - $monto_cobrado);
 
                 $todas_las_cuotas = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
                 $cuotas_pendientes = array_filter($todas_las_cuotas, function($c) {
@@ -540,11 +540,14 @@ class CobrosController
 
             // Totales del prestamo
             $debe_pagar      = floatval($data->prestamo_monto) + (floatval($data->prestamo_monto) * floatval($data->prestamo_interes) / 100);
-            $ya_pago_result  = $this->prestamos->listar_total_pagos_x_prestamo($data->id_prestamos);
+            // Suma de dinero real recibido (pagos.pago_monto), no del nominal de las cuotas
+            $ya_pago_result  = $this->cobros->listar_total_pagos_reales_x_prestamo($data->id_prestamos);
             $ya_pago         = floatval($ya_pago_result->total ?? 0);
+            // Descuentos manuales globales (tabla descuentos, independiente de los descuentos inline por cuota)
             $descuentos_raw  = $this->cobros->listar_decuentos_x_prestamo($data->id_prestamos);
             $descuento       = (!empty($descuentos_raw) && !empty($descuentos_raw[0]->total)) ? floatval($descuentos_raw[0]->total) : 0;
             $saldo_final     = max(0, $debe_pagar - $ya_pago - $descuento);
+            // saldo_anterior: lo que había antes de ESTE pago específico
             $saldo_anterior  = $saldo_final + floatval($data->pago_monto);
 
             // Cuota original desde pagos_diarios

@@ -153,6 +153,20 @@ class Clientes
         }
     }
 
+    public function listar_historial_linea_credito($id_cliente){
+        try{
+            $sql = 'SELECT * FROM clientes_linea_credito
+                    WHERE id_cliente = ?
+                    ORDER BY id_clientes_linea_credito DESC';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_cliente]);
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
     public function listar_primera_cuota($id){
         try{
             // Añadimos ORDER BY para asegurar que sea el primero y LIMIT 1

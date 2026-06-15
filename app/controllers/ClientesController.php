@@ -77,6 +77,7 @@ class ClientesController
 			$data_cliente_h = $this->clientes->listar_x_id_h($id_cliente);
 			$prestamos_cliente = $this->prestamos->listar_prestamos_cliente($id_cliente);
 			$morosos_motivos = $this->clientes->motivos_morosos($id_cliente);
+			$historial_linea_credito = $this->clientes->listar_historial_linea_credito($id_cliente);
 
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -114,6 +115,7 @@ class ClientesController
                             "cliente_direccion" => $_POST['cliente_direccion'],
                             "cliente_referencia" => $_POST['cliente_referencia'] ?? null,
                             "cliente_celular" => $_POST['cliente_celular'],
+                            "cliente_celular2" => $_POST['cliente_celular2'] ?: null,
                             "cliente_correo" => $_POST['cliente_correo'] ?? null,
                             "cliente_nro_tarjeta" => $_POST['cliente_nro_tarjeta'] ?? null,
                             "cliente_lugar_trabajo" => $_POST['cliente_lugar_trabajo'] ?? null,
@@ -140,6 +142,7 @@ class ClientesController
 							"cliente_referencia" => $datos_x_id->cliente_referencia,
 							"cliente_telefono" => $datos_x_id->cliente_telefono,
 							"cliente_celular" => $datos_x_id->cliente_celular,
+							"cliente_celular2" => $datos_x_id->cliente_celular2 ?? null,
 							"cliente_correo" => $datos_x_id->cliente_correo,
 							"cliente_nro_tarjeta" => $datos_x_id->cliente_nro_tarjeta,
 							"cliente_motivo_ad" => $datos_x_id->cliente_motivo_ad,
@@ -160,11 +163,12 @@ class ClientesController
 							"cliente_direccion" => $_POST['cliente_direccion'],
 							"cliente_referencia" => $_POST['cliente_referencia'] ?? null,
 							"cliente_celular" => $_POST['cliente_celular'],
+							"cliente_celular2" => $_POST['cliente_celular2'] ?: null,
 							"cliente_correo" => $_POST['cliente_correo'] ?? null,
 							"cliente_nro_tarjeta" => $_POST['cliente_nro_tarjeta'] ?? null,
 							"cliente_lugar_trabajo" => $_POST['cliente_lugar_trabajo'] ?? null,
-							"cliente_otro" => $_POST['cliente_otro'] ?? null, 	
-							"cliente_fecha" => date('Y-m-d'), 	
+							"cliente_otro" => $_POST['cliente_otro'] ?? null,
+							"cliente_fecha" => date('Y-m-d'),
                         ), array("id_cliente" => $id));
                     }
                 }

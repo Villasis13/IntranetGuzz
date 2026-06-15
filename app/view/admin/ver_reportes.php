@@ -47,9 +47,14 @@
                         <tbody>
                         <?php
                         $c = 1;
-                        $total_cuotas = 0;
+                        $total_nominal    = 0;
+                        $total_descuentos = 0;
+                        $total_cobrado    = 0;
                         foreach ($reporte_cuotas as $rp):
-                            $total_cuotas += $rp->pago_monto;
+                            $descuento_fila    = ($rp->pago_descuento_estado == 1) ? floatval($rp->pago_descuento_monto ?? 0) : 0;
+                            $total_nominal    += floatval($rp->pago_diario_monto);
+                            $total_descuentos += $descuento_fila;
+                            $total_cobrado    += floatval($rp->pago_monto);
                             ?>
                             <tr class="text-center">
                                 <td><?= $c++ ?></td>
@@ -60,19 +65,25 @@
                                 <td><small><?= htmlspecialchars($rp->metodo_pago_nombre) ?></small></td>
                                 <td><small>S/ <?= number_format($rp->pago_diario_monto, 2) ?></small></td>
                                 <?php if ($rp->pago_descuento_estado == 1): ?>
-                                    <td class="text-danger"><small>S/ <?= number_format($rp->pago_descuento_monto ?? 0, 2) ?></small></td>
+                                    <td class="text-danger"><small>- S/ <?= number_format($descuento_fila, 2) ?></small></td>
                                     <td class="text-success fw-bold"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
                                 <?php else: ?>
-                                    <td><small class="text-muted">No aplica</small></td>
+                                    <td><small class="text-muted">—</small></td>
                                     <td class="text-success fw-bold"><small>S/ <?= number_format($rp->pago_monto, 2) ?></small></td>
                                 <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
                         <tfoot>
+                        <tr class="text-end table-light">
+                            <td colspan="6"></td>
+                            <td class="fw-bold text-muted"><small>Total nominal:</small></td>
+                            <td class="text-danger fw-bold"><small>- S/ <?= number_format($total_descuentos, 2) ?></small></td>
+                            <td class="text-muted fw-bold text-center"><small>S/ <?= number_format($total_nominal, 2) ?></small></td>
+                        </tr>
                         <tr class="text-end table-success fw-bold">
-                            <td colspan="8">Total Cuotas:</td>
-                            <td class="text-center">S/ <?= number_format($total_cuotas, 2) ?></td>
+                            <td colspan="8">Total Cobrado:</td>
+                            <td class="text-center">S/ <?= number_format($total_cobrado, 2) ?></td>
                         </tr>
                         </tfoot>
                     </table>

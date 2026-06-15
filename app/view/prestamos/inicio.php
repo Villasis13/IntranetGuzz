@@ -64,7 +64,7 @@
                     <div class="col-md-3">
                         <?php if($data_cliente){ ?>
                             <a href="<?= _SERVER_ ?>Prestamos/aumentarLineaCredito/<?= $data_cliente->id_cliente ?>" class="btn btn-primary w-100" style="margin-top: 29px;">
-                                <i class="fas fa-chart-line"></i> Aumentar Crédito
+                                <i class="fas fa-chart-line"></i> Ajustar línea de crédito
                             </a>
                         <?php } ?>
                     </div>

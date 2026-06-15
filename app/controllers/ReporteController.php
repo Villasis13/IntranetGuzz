@@ -205,8 +205,14 @@ class ReporteController
                 (array)$reporte, fn($r) => ($r->tipo_pago ?? 'Cuota') === 'Amortización'
             )));
 
-            $total_cuotas         = 0;
-            foreach ($reporte_cuotas as $rp) $total_cuotas += $rp->pago_monto;
+            $total_cuotas         = 0; // cobrado real
+            $total_nominal_cuotas = 0; // suma de montos nominales de cuota
+            $total_descuentos_cuotas = 0; // suma de descuentos aplicados
+            foreach ($reporte_cuotas as $rp) {
+                $total_cuotas            += floatval($rp->pago_monto);
+                $total_nominal_cuotas    += floatval($rp->pago_diario_monto);
+                $total_descuentos_cuotas += ($rp->pago_descuento_estado == 1) ? floatval($rp->pago_descuento_monto ?? 0) : 0;
+            }
 
             $total_amortizaciones = 0;
             foreach ($reporte_amortizaciones as $rp) $total_amortizaciones += $rp->pago_monto;
@@ -292,9 +298,14 @@ class ReporteController
                     $pdf->Cell(22, 5, 'S/ ' . number_format($rp->pago_monto, 2), 1, 1, 'R');
                     $pdf->SetFont('Arial', '', 7);
                 }
+                $pdf->SetFillColor(240, 240, 240);
+                $pdf->SetFont('Arial', '', 7);
+                $pdf->Cell(146, 5, 'Total Nominal de Cuotas:', 1, 0, 'R', true);
+                $pdf->Cell(22,  5, 'S/ ' . number_format($total_nominal_cuotas, 2), 1, 0, 'R', true);
+                $pdf->Cell(22,  5, '- S/ ' . number_format($total_descuentos_cuotas, 2), 1, 1, 'R', true);
                 $pdf->SetFillColor(213, 232, 212);
                 $pdf->SetFont('Arial', 'B', 8);
-                $pdf->Cell(168, 5, 'Total Cuotas', 1, 0, 'R', true);
+                $pdf->Cell(168, 5, 'Total Cobrado:', 1, 0, 'R', true);
                 $pdf->Cell(22,  5, 'S/ ' . number_format($total_cuotas, 2), 1, 1, 'R', true);
             } else {
                 $pdf->Cell(190, 5, 'No hay cuotas registradas en este periodo.', 1, 1, 'C');

@@ -1,3 +1,17 @@
+function toggle_celular2() {
+    var $div = $('#div_celular2');
+    var visible = $div.is(':visible');
+    if (visible) {
+        $div.slideUp(150);
+        $('#cliente_celular2').val('');
+        $('#btn_add_celular2').html('<i class="fa fa-plus"></i>').attr('title', 'Agregar segundo celular');
+    } else {
+        $div.slideDown(150);
+        $('#btn_add_celular2').html('<i class="fa fa-minus"></i>').attr('title', 'Quitar segundo celular');
+        $('#cliente_celular2').focus();
+    }
+}
+
 function guardar_editar_clientes(){
     var valor = true;
     var boton = "btn-agregar-cliente";
@@ -11,6 +25,7 @@ function guardar_editar_clientes(){
     var cliente_direccion = $('#cliente_direccion').val();
     var cliente_referencia = $('#cliente_referencia').val();
     var cliente_celular = $('#cliente_celular').val();
+    var cliente_celular2 = $('#cliente_celular2').val();
     var cliente_correo = $('#cliente_correo').val();
     var cliente_nro_tarjeta = $('#cliente_nro_tarjeta').val();
     var cliente_clave = $('#cliente_clave').val();
@@ -24,22 +39,34 @@ function guardar_editar_clientes(){
     valor = validar_campo_vacio('cliente_direccion', cliente_direccion, valor);
     valor = validar_campo_vacio('cliente_celular', cliente_celular, valor);
 
+    if (valor && cliente_celular && !/^[0-9]+$/.test(cliente_celular)) {
+        respuesta('El celular solo debe contener números', 'error');
+        $('#cliente_celular').css('border', 'solid red');
+        valor = false;
+    }
+    if (valor && cliente_celular2 && !/^[0-9]+$/.test(cliente_celular2)) {
+        respuesta('El Celular 2 solo debe contener números', 'error');
+        $('#cliente_celular2').css('border', 'solid red');
+        valor = false;
+    }
+
     if(valor){
         var cadena =
             "id_cliente=" + id_cliente +
-            "&cliente_dni=" + cliente_dni +
-            "&cliente_nombre=" + cliente_nombre +
-            "&cliente_apellido_paterno=" + cliente_apellido_paterno +
-            "&cliente_apellido_materno=" + cliente_apellido_materno +
+            "&cliente_dni=" + encodeURIComponent(cliente_dni) +
+            "&cliente_nombre=" + encodeURIComponent(cliente_nombre) +
+            "&cliente_apellido_paterno=" + encodeURIComponent(cliente_apellido_paterno) +
+            "&cliente_apellido_materno=" + encodeURIComponent(cliente_apellido_materno) +
             "&cliente_fecha_nacimiento=" + cliente_fecha_nacimiento +
-            "&cliente_direccion=" + cliente_direccion +
-            "&cliente_referencia=" + cliente_referencia +
+            "&cliente_direccion=" + encodeURIComponent(cliente_direccion) +
+            "&cliente_referencia=" + encodeURIComponent(cliente_referencia) +
             "&cliente_celular=" + cliente_celular +
-            "&cliente_correo=" + cliente_correo +
+            "&cliente_celular2=" + cliente_celular2 +
+            "&cliente_correo=" + encodeURIComponent(cliente_correo) +
             "&cliente_nro_tarjeta=" + cliente_nro_tarjeta +
             "&cliente_clave=" + cliente_clave +
-            "&cliente_lugar_trabajo=" + cliente_lugar_trabajo +
-            "&cliente_otro=" + cliente_otro;
+            "&cliente_lugar_trabajo=" + encodeURIComponent(cliente_lugar_trabajo) +
+            "&cliente_otro=" + encodeURIComponent(cliente_otro);
 
         $.ajax({
             type: "POST",
@@ -219,6 +246,15 @@ function editar_clientes(id_cliente){
         $('#cliente_direccion').val(almacenar.cliente_direccion);
         $('#cliente_referencia').val(almacenar.cliente_referencia);
         $('#cliente_celular').val(almacenar.cliente_celular);
+        var cel2 = almacenar.cliente_celular2 || '';
+        $('#cliente_celular2').val(cel2);
+        if (cel2) {
+            $('#div_celular2').show();
+            $('#btn_add_celular2').html('<i class="fa fa-minus"></i>').attr('title', 'Quitar segundo celular');
+        } else {
+            $('#div_celular2').hide();
+            $('#btn_add_celular2').html('<i class="fa fa-plus"></i>').attr('title', 'Agregar segundo celular');
+        }
         $('#cliente_correo').val(almacenar.cliente_correo);
         $('#cliente_nro_tarjeta').val(almacenar.cliente_nro_tarjeta);
         $('#cliente_clave').val(almacenar.cliente_clave);
@@ -269,6 +305,9 @@ function limpiar_clientes(){
     $('#cliente_direccion').val('');
     $('#cliente_referencia').val('');
     $('#cliente_celular').val('');
+    $('#cliente_celular2').val('');
+    $('#div_celular2').hide();
+    $('#btn_add_celular2').html('<i class="fa fa-plus"></i>').attr('title', 'Agregar segundo celular');
     $('#cliente_correo').val('');
     $('#cliente_nro_tarjeta').val('');
     $('#cliente_clave').val('');

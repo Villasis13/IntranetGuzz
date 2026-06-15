@@ -48,58 +48,143 @@ function cambiar_proximo_cobro(tipo){
     $('#prestamo_num_cuotas').val(num_cuotas);
 }
 
-function guardar_nuevo_linea_credito(){
-    var valor = true;
-    var boton = "btn_alc";
-    var id_cliente = $('#id_cliente').val();
-    var incremento = $('#incremento').val();
-    var clave_validacion = $('#clave_validacion').val();
-    var motivo_aumento = $('#motivo_aumento').val();
+function calcular_nuevo_credito() {
+    var tipo      = $('#tipo_ajuste').val();
+    var monto     = parseFloat($('#incremento').val()) || 0;
+    var actual    = parseFloat($('#credito_actual_hidden').val()) || 0;
+    var labels    = {
+        incremento: 'Monto de Incremento (S/.)',
+        disminucion: 'Monto de Disminución (S/.)',
+        correccion: 'Monto de Corrección / Nuevo Crédito (S/.)'
+    };
 
-    valor = validar_campo_vacio('id_cliente', id_cliente, valor);
-    valor = validar_campo_vacio('incremento', incremento, valor);
-    valor = validar_campo_vacio('clave_validacion', clave_validacion, valor);
-    valor = validar_campo_vacio('motivo_aumento', motivo_aumento, valor);
+    $('#label_monto_ajuste').text(labels[tipo] || labels['incremento']);
 
-    if(valor){
-        $.ajax({
-            type: "POST",
-            url: urlweb + "api/prestamos/guardar_nueva_linea_credito",
-            data: {
-                id_cliente: id_cliente,
-                incremento: incremento,
-                clave_validacion: clave_validacion,
-                motivo_aumento: motivo_aumento
-            },
-            dataType: 'json',
-            beforeSend: function () {
-                cambiar_estado_boton(boton, 'Guardando...', true);
-            },
-            success:function (r) {
-                cambiar_estado_boton(boton, "<i class=\"fa fa-save \"></i> Guardar", false);
-                switch (r.result.code) {
-                    case 1:
-                        respuesta('¡Línea de crédito Guardada!', 'success');
-                        setTimeout(function () {
-                            window.location.href = urlweb + 'Prestamos/inicio';
-                        }, 1000);
-                        break;
-                    case 2:
-                        respuesta('Error al guardar', 'error');
-                        break;
-                    case 3:
-                        respuesta('Contraseña Incorrecta', 'error');
-                        break;
-                    case 4:
-                        respuesta('El monto debe ser mayor que cero', 'error');
-                        break;
-                    default:
-                        respuesta('¡Algo catastrofico ha ocurrido!', 'error');
-                        break;
-                }
-            }
-        });
+    if (monto <= 0) {
+        $('#nuevo_credito').val('').removeClass('text-success text-danger');
+        return;
     }
+
+    var nuevo;
+    if (tipo === 'incremento') {
+        nuevo = actual + monto;
+    } else if (tipo === 'disminucion') {
+        nuevo = actual - monto;
+    } else {
+        nuevo = monto;
+    }
+
+    $('#nuevo_credito').val(nuevo.toFixed(2));
+    $('#nuevo_credito').removeClass('text-success text-danger')
+                       .addClass(nuevo < 0 ? 'text-danger' : 'text-success');
+}
+
+function ajustar_linea_credito() {
+    var tipo             = $('#tipo_ajuste').val();
+    var monto            = parseFloat($('#incremento').val()) || 0;
+    var actual           = parseFloat($('#credito_actual_hidden').val()) || 0;
+    var clave_validacion = $('#clave_validacion').val();
+    var motivo_aumento   = $('#motivo_aumento').val();
+
+    if (!$('#incremento').val() || monto <= 0) {
+        respuesta('Ingrese un monto válido mayor a cero', 'error');
+        return;
+    }
+    if (!clave_validacion) {
+        respuesta('Ingrese la clave de validación', 'error');
+        return;
+    }
+    if (!motivo_aumento) {
+        respuesta('Ingrese el motivo del ajuste', 'error');
+        return;
+    }
+
+    var nuevo;
+    if (tipo === 'incremento') {
+        nuevo = actual + monto;
+    } else if (tipo === 'disminucion') {
+        nuevo = actual - monto;
+        if (nuevo < 0) {
+            respuesta('El monto de disminución supera el crédito actual (S/. ' + actual.toFixed(2) + ')', 'error');
+            return;
+        }
+    } else {
+        nuevo = monto;
+    }
+
+    var tipoTexto = { incremento: 'Incremento', disminucion: 'Disminución', correccion: 'Corrección' };
+    var colorNuevo = nuevo >= actual ? '#28a745' : '#dc3545';
+
+    Swal.fire({
+        title: 'Confirmar ajuste de crédito',
+        html: '<table class="table table-sm text-start mt-2">' +
+              '<tr><td><b>Tipo:</b></td><td>' + tipoTexto[tipo] + '</td></tr>' +
+              '<tr><td><b>Crédito anterior:</b></td><td>S/. ' + actual.toFixed(2) + '</td></tr>' +
+              '<tr><td><b>Nuevo crédito:</b></td>' +
+              '<td style="color:' + colorNuevo + ';font-weight:bold;">S/. ' + nuevo.toFixed(2) + '</td></tr>' +
+              '</table>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            guardar_nuevo_linea_credito();
+        }
+    });
+}
+
+function guardar_nuevo_linea_credito(){
+    var boton            = "btn_alc";
+    var id_cliente       = $('#id_cliente').val();
+    var incremento       = $('#incremento').val();
+    var tipo_ajuste      = $('#tipo_ajuste').val();
+    var clave_validacion = $('#clave_validacion').val();
+    var motivo_aumento   = $('#motivo_aumento').val();
+
+    $.ajax({
+        type: "POST",
+        url: urlweb + "api/prestamos/guardar_nueva_linea_credito",
+        data: {
+            id_cliente:       id_cliente,
+            incremento:       incremento,
+            tipo_ajuste:      tipo_ajuste,
+            clave_validacion: clave_validacion,
+            motivo_aumento:   motivo_aumento
+        },
+        dataType: 'json',
+        beforeSend: function () {
+            cambiar_estado_boton(boton, 'Guardando...', true);
+        },
+        success: function (r) {
+            cambiar_estado_boton(boton, "<i class=\"fa fa-save\"></i> Guardar", false);
+            switch (r.result.code) {
+                case 1:
+                    respuesta('¡Línea de crédito actualizada!', 'success');
+                    setTimeout(function () {
+                        window.location.href = urlweb + 'Prestamos/inicio';
+                    }, 1000);
+                    break;
+                case 2:
+                    respuesta('Error al guardar', 'error');
+                    break;
+                case 3:
+                    respuesta('Contraseña Incorrecta', 'error');
+                    break;
+                case 4:
+                    respuesta('El monto debe ser mayor que cero', 'error');
+                    break;
+                case 5:
+                    respuesta('El monto de disminución supera el crédito actual', 'error');
+                    break;
+                default:
+                    respuesta('¡Algo catastrófico ha ocurrido!', 'error');
+                    break;
+            }
+        }
+    });
 }
 
 function validar_monto_linea(){
@@ -555,8 +640,11 @@ function cambiar_metodo_pago() {
     $('#dar_vuelto').prop('checked', false);
     $('#grupo_dar_vuelto').hide();
 
-    // Pre-llenamos monto_recibido con el monto a pagar (para cualquier método)
-    $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
+    // Pre-llenamos monto_recibido SOLO si aún no tiene un valor ingresado por el usuario
+    var montoRecibidoActual = parseFloat($('#monto_recibido').val()) || 0;
+    if (montoRecibidoActual === 0) {
+        $('#monto_recibido').val(parseFloat($('#monto_pagar').val() || 0).toFixed(2));
+    }
 
     // Mostramos campos específicos según método
     if (metodo === 'transferencia') {

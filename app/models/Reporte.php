@@ -12,7 +12,7 @@ class Reporte
         try{
             $sql = 'SELECT p.*, pr.*, cl.*, u.usuario_nickname,
                         COALESCE(pg.pago_diario_fecha, DATE(p.pago_fecha)) AS pago_diario_fecha,
-                        COALESCE(pg.pago_diario_monto, p.pago_monto)       AS pago_diario_monto,
+                        COALESCE(p.pago_monto + COALESCE(p.pago_descuento_monto, 0), pg.pago_diario_monto, p.pago_monto) AS pago_diario_monto,
                         mp.metodo_pago_nombre,
                         CASE WHEN p.id_pago_diario IS NULL THEN "Amortización" ELSE "Cuota" END AS tipo_pago
                     FROM pagos p
@@ -49,7 +49,7 @@ class Reporte
         try{
             $sql = 'SELECT p.*, pr.*, cl.*, u.usuario_nickname,
                         COALESCE(pg.pago_diario_fecha, DATE(p.pago_fecha)) AS pago_diario_fecha,
-                        COALESCE(pg.pago_diario_monto, p.pago_monto)       AS pago_diario_monto,
+                        COALESCE(p.pago_monto + COALESCE(p.pago_descuento_monto, 0), pg.pago_diario_monto, p.pago_monto) AS pago_diario_monto,
                         mp.metodo_pago_nombre,
                         CASE WHEN p.id_pago_diario IS NULL THEN "Amortización" ELSE "Cuota" END AS tipo_pago
                     FROM pagos p
@@ -88,7 +88,7 @@ class Reporte
         try{
             $sql = 'SELECT p.*, pr.*, cl.*, u.usuario_nickname,
                         COALESCE(pg.pago_diario_fecha, DATE(p.pago_fecha)) AS pago_diario_fecha,
-                        COALESCE(pg.pago_diario_monto, p.pago_monto)       AS pago_diario_monto,
+                        COALESCE(p.pago_monto + COALESCE(p.pago_descuento_monto, 0), pg.pago_diario_monto, p.pago_monto) AS pago_diario_monto,
                         mp.metodo_pago_nombre,
                         CASE WHEN p.id_pago_diario IS NULL THEN "Amortización" ELSE "Cuota" END AS tipo_pago
                     FROM pagos p

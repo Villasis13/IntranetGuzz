@@ -34,6 +34,18 @@ class Cobros
 			return 0;
 		}
 	}
+
+    public function listar_total_pagos_reales_x_prestamo($id_prestamo){
+        try{
+            $sql = 'SELECT SUM(pago_monto) AS total FROM pagos WHERE id_prestamo = ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_prestamo]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
 	public function listar_decuentos_x_prestamo($id){
 		try{
 			$sql = 'SELECT SUM(descuento_monto) AS total FROM descuentos WHERE id_prestamo = ?';
