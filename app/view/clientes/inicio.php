@@ -52,7 +52,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Referencia</label>
-                                <textarea class="form-control" id="cliente_referencia" name="cliente_referencia" rows="2" style="resize:vertical;"></textarea>
+                                <textarea class="form-control" id="cliente_referencia" name="cliente_referencia" rows="4" style="resize:vertical;"></textarea>
                             </div>
 
                             <div class="row g-2 mb-3">

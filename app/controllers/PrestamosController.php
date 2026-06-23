@@ -594,7 +594,7 @@ class PrestamosController
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Fecha de Emisión: ' . $fecha_emision,0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Inicio de Préstamo: ' . $fecha_inicio,0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Primer Pago: ' . $fecha_primer_pago,0,'L');
-            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Último Pago: ' . $fecha_ultimo_pago,0,'L');
+            $pdf->SetX($posX); $pdf->MultiCell(80,5,'Fecha de Vencimiento del Préstamo: ' . $fecha_ultimo_pago,0,'L');
 
             // CLÁUSULAS DERECHAS
             $pdf->Ln();

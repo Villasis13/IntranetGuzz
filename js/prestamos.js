@@ -546,13 +546,8 @@ function cambiar_proximo_cobro() {
     let tipoPago = $('input[name="tipo_pago2"]:checked').val()?.toLowerCase();
     let incluirDomingos = $('#select_domingos').val();
 
-    if (tipoPago === 'diario') {
-        fecha.setDate(fecha.getDate() + 1);
-    } else if (tipoPago === 'semanal') {
-        fecha.setDate(fecha.getDate() + 7);
-    } else if (tipoPago === 'mensual') {
-        fecha.setMonth(fecha.getMonth() + 1);
-    }
+    // Todos los tipos: primer pago = fecha de inicio = emisión + 1 día (sin espera adicional)
+    // La frecuencia (diario/semanal/mensual) aplica a los pagos siguientes, no al primero
 
     if (incluirDomingos === 'no' && fecha.getDay() === 0) {
         fecha.setDate(fecha.getDate() + 1);
