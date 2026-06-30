@@ -47,12 +47,13 @@
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Dirección <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="cliente_direccion" name="cliente_direccion" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Referencia</label>
-                                <textarea class="form-control" id="cliente_referencia" name="cliente_referencia" rows="4" style="resize:vertical;"></textarea>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label fw-bold mb-0">Direcciones <span class="text-danger">*</span></label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="agregarDireccion()">
+                                        <i class="fa fa-plus me-1"></i>Agregar
+                                    </button>
+                                </div>
+                                <div id="direcciones_container" style="max-height:290px; overflow-y:auto; padding-right:2px;"></div>
                             </div>
 
                             <div class="row g-2 mb-3">

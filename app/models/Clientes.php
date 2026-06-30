@@ -153,6 +153,34 @@ class Clientes
         }
     }
 
+    public function listar_direcciones_x_id($id_cliente) {
+        try {
+            $sql = 'SELECT * FROM clientes_direcciones WHERE id_cliente = ? ORDER BY cldir_orden ASC';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_cliente]);
+            return $stm->fetchAll();
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    public function guardar_direcciones($id_cliente, $direcciones) {
+        try {
+            $this->pdo->prepare('DELETE FROM clientes_direcciones WHERE id_cliente = ?')->execute([$id_cliente]);
+            $stmt = $this->pdo->prepare('INSERT INTO clientes_direcciones (id_cliente, cldir_direccion, cldir_referencia, cldir_orden) VALUES (?, ?, ?, ?)');
+            foreach ($direcciones as $i => $d) {
+                $dir = trim($d['direccion'] ?? '');
+                if ($dir === '') continue;
+                $stmt->execute([$id_cliente, $dir, ($d['referencia'] ?: null), $i + 1]);
+            }
+            return true;
+        } catch (Throwable $e) {
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return false;
+        }
+    }
+
     public function listar_historial_linea_credito($id_cliente){
         try{
             $sql = 'SELECT * FROM clientes_linea_credito

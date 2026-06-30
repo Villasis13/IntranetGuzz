@@ -189,7 +189,7 @@
                                 <th>Descuento</th>
                                 <th>Monto Final</th>
                                 <th>Monto Recibido</th>
-                                <th>Diferencia / Vuelto</th>
+                                <th>Vuelto</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -203,16 +203,10 @@
                                     $monto_vuelto   = floatval($c->pago_monto_vuelto ?? 0);
                                     $diferencia     = round($monto_recibido - $monto_final, 2);
 
-                                    if (empty($c->pago_monto_recibido)) {
-                                        $dif_html = '<span class="text-muted">-</span>';
-                                    } elseif ($diferencia == 0) {
-                                        $dif_html = '<span class="text-muted">S/ 0.00</span>';
-                                    } elseif ($diferencia < 0) {
-                                        $dif_html = '<span class="text-danger">-S/ ' . number_format(abs($diferencia), 2) . '</span>';
-                                    } elseif ($monto_vuelto > 0) {
+                                    if ($monto_vuelto > 0) {
                                         $dif_html = '<span class="text-success">S/ ' . number_format($monto_vuelto, 2) . '</span>';
                                     } else {
-                                        $dif_html = '<span class="text-primary">+S/ ' . number_format($diferencia, 2) . '</span>';
+                                        $dif_html = '<span class="text-muted">-</span>';
                                     }
                                     ?>
                                     <tr class="text-center">

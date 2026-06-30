@@ -118,6 +118,10 @@ class Builder
             return 2;
         }
     }
+    public function lastInsertId() {
+        return $this->pdo->lastInsertId();
+    }
+
     public function delete($table , $condiciones){
         try{
             $campos = '';

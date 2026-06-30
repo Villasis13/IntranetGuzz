@@ -1,3 +1,32 @@
+function agregarDireccion(dir, ref) {
+    var container = $('#direcciones_container');
+    var idx = container.find('.dir-row').length + 1;
+    var $row = $('<div class="dir-row border rounded p-2 mb-2 bg-white">' +
+        '<div class="d-flex justify-content-between align-items-center mb-1">' +
+        '<small class="fw-bold text-secondary dir-num">Dirección #' + idx + '</small>' +
+        '<button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="eliminarDireccion(this)" title="Eliminar">' +
+        '<i class="fa fa-times"></i></button>' +
+        '</div>' +
+        '<input type="text" class="form-control form-control-sm mb-1 dir-input" placeholder="Dirección *">' +
+        '<textarea class="form-control form-control-sm ref-input" rows="2" placeholder="Referencia (opcional)" style="resize:vertical"></textarea>' +
+        '</div>');
+    if (dir) $row.find('.dir-input').val(dir);
+    if (ref) $row.find('.ref-input').val(ref);
+    container.append($row);
+}
+
+function eliminarDireccion(btn) {
+    var rows = $('#direcciones_container .dir-row');
+    if (rows.length <= 1) {
+        respuesta('Debe haber al menos una dirección', 'error');
+        return;
+    }
+    $(btn).closest('.dir-row').remove();
+    $('#direcciones_container .dir-row').each(function(i) {
+        $(this).find('.dir-num').text('Dirección #' + (i + 1));
+    });
+}
+
 function toggle_celular2() {
     var $div = $('#div_celular2');
     var visible = $div.is(':visible');
@@ -22,8 +51,6 @@ function guardar_editar_clientes(){
     var cliente_apellido_paterno = $('#cliente_apellido_paterno').val();
     var cliente_apellido_materno = $('#cliente_apellido_materno').val();
     var cliente_fecha_nacimiento = $('#cliente_fecha_nacimiento').val();
-    var cliente_direccion = $('#cliente_direccion').val();
-    var cliente_referencia = $('#cliente_referencia').val();
     var cliente_celular = $('#cliente_celular').val();
     var cliente_celular2 = $('#cliente_celular2').val();
     var cliente_correo = $('#cliente_correo').val();
@@ -32,12 +59,25 @@ function guardar_editar_clientes(){
     var cliente_lugar_trabajo = $('#cliente_lugar_trabajo').val();
     var cliente_otro = $('#cliente_otro').val();
 
+    var cliente_direcciones = [];
+    $('#direcciones_container .dir-row').each(function() {
+        cliente_direcciones.push({
+            direccion: $(this).find('.dir-input').val().trim(),
+            referencia: $(this).find('.ref-input').val().trim()
+        });
+    });
+
     valor = validar_campo_vacio('cliente_dni', cliente_dni, valor);
     valor = validar_campo_vacio('cliente_nombre', cliente_nombre, valor);
     valor = validar_campo_vacio('cliente_apellido_paterno', cliente_apellido_paterno, valor);
     valor = validar_campo_vacio('cliente_apellido_materno', cliente_apellido_materno, valor);
-    valor = validar_campo_vacio('cliente_direccion', cliente_direccion, valor);
     valor = validar_campo_vacio('cliente_celular', cliente_celular, valor);
+
+    if (valor && (!cliente_direcciones.length || !cliente_direcciones[0].direccion)) {
+        respuesta('La dirección es obligatoria', 'error');
+        $('#direcciones_container .dir-row:first .dir-input').css('border', 'solid red');
+        valor = false;
+    }
 
     if (valor && cliente_celular && !/^[0-9]+$/.test(cliente_celular)) {
         respuesta('El celular solo debe contener números', 'error');
@@ -58,8 +98,7 @@ function guardar_editar_clientes(){
             "&cliente_apellido_paterno=" + encodeURIComponent(cliente_apellido_paterno) +
             "&cliente_apellido_materno=" + encodeURIComponent(cliente_apellido_materno) +
             "&cliente_fecha_nacimiento=" + cliente_fecha_nacimiento +
-            "&cliente_direccion=" + encodeURIComponent(cliente_direccion) +
-            "&cliente_referencia=" + encodeURIComponent(cliente_referencia) +
+            "&cliente_direcciones=" + encodeURIComponent(JSON.stringify(cliente_direcciones)) +
             "&cliente_celular=" + cliente_celular +
             "&cliente_celular2=" + cliente_celular2 +
             "&cliente_correo=" + encodeURIComponent(cliente_correo) +
@@ -243,8 +282,15 @@ function editar_clientes(id_cliente){
         $('#cliente_apellido_paterno').val(almacenar.cliente_apellido_paterno);
         $('#cliente_apellido_materno').val(almacenar.cliente_apellido_materno);
         $('#cliente_fecha_nacimiento').val(almacenar.cliente_fecha_nacimiento);
-        $('#cliente_direccion').val(almacenar.cliente_direccion);
-        $('#cliente_referencia').val(almacenar.cliente_referencia);
+        var dirs = almacenar.direcciones || [];
+        $('#direcciones_container').empty();
+        if (dirs.length > 0) {
+            dirs.forEach(function(d) {
+                agregarDireccion(d.cldir_direccion, d.cldir_referencia || '');
+            });
+        } else {
+            agregarDireccion(almacenar.cliente_direccion || '', almacenar.cliente_referencia || '');
+        }
         $('#cliente_celular').val(almacenar.cliente_celular);
         var cel2 = almacenar.cliente_celular2 || '';
         $('#cliente_celular2').val(cel2);
@@ -302,8 +348,8 @@ function limpiar_clientes(){
     $('#cliente_apellido_paterno').val('');
     $('#cliente_apellido_materno').val('');
     $('#cliente_fecha_nacimiento').val('');
-    $('#cliente_direccion').val('');
-    $('#cliente_referencia').val('');
+    $('#direcciones_container').empty();
+    agregarDireccion();
     $('#cliente_celular').val('');
     $('#cliente_celular2').val('');
     $('#div_celular2').hide();

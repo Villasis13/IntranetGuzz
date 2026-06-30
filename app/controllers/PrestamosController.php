@@ -307,7 +307,23 @@ class PrestamosController
                                 // Cuota base: redondeo hacia arriba al primer decimal (igual que Math.ceil(x*10)/10 en JS)
                                 $monto_cuota = ceil($monto_total_deuda / $num_cuotas * 10) / 10;
 
-                                $fecha_iterador = new DateTime($_POST['prestamo_prox_cobro']);
+                                // Calcular primer cobro desde la fecha de emisión para garantizar consistencia
+                                $fecha_emision_base = new DateTime($_POST['prestamo_fecha']);
+                                if ($tipo_pago == 'semanal') {
+                                    $fecha_iterador = clone $fecha_emision_base;
+                                    $fecha_iterador->add(new DateInterval('P7D'));
+                                    if ($fecha_iterador->format('w') == 0) {
+                                        $fecha_iterador->add(new DateInterval('P1D'));
+                                    }
+                                } elseif ($tipo_pago == 'mensual') {
+                                    $fecha_iterador = clone $fecha_emision_base;
+                                    $fecha_iterador->add(new DateInterval('P1M'));
+                                    if ($fecha_iterador->format('w') == 0) {
+                                        $fecha_iterador->add(new DateInterval('P1D'));
+                                    }
+                                } else {
+                                    $fecha_iterador = new DateTime($_POST['prestamo_prox_cobro']);
+                                }
 
                                 $suma_cuotas_acumuladas = 0;
 

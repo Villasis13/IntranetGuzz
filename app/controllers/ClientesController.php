@@ -101,6 +101,11 @@ class ClientesController
             $id_usuario_edicion = $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
 
             if ($ok_data) {
+                $dirs_json = $_POST['cliente_direcciones'] ?? '[]';
+                $dirs = json_decode($dirs_json, true) ?: [];
+                $primera_dir = trim($dirs[0]['direccion'] ?? '');
+                $primera_ref = $dirs[0]['referencia'] ?? null;
+
                 if ($id == null) {
                     $validar_dni = $this->clientes->validar_x_id($id, $cliente_dni);
                     if ($validar_dni) {
@@ -112,8 +117,8 @@ class ClientesController
                             "cliente_apellido_paterno" => $_POST['cliente_apellido_paterno'],
                             "cliente_apellido_materno" => $_POST['cliente_apellido_materno'],
                             "cliente_fecha_nacimiento" => $_POST['cliente_fecha_nacimiento'] ?? null,
-                            "cliente_direccion" => $_POST['cliente_direccion'],
-                            "cliente_referencia" => $_POST['cliente_referencia'] ?? null,
+                            "cliente_direccion" => $primera_dir,
+                            "cliente_referencia" => $primera_ref ?: null,
                             "cliente_celular" => $_POST['cliente_celular'],
                             "cliente_celular2" => $_POST['cliente_celular2'] ?: null,
                             "cliente_correo" => $_POST['cliente_correo'] ?? null,
@@ -124,6 +129,10 @@ class ClientesController
                             "cliente_credito" => 0,
                             "cliente_fecha" => date("Y-m-d H:i:s")
                         ));
+                        if ($result == 1) {
+                            $nuevo_id = $this->builder->lastInsertId();
+                            $this->clientes->guardar_direcciones($nuevo_id, $dirs);
+                        }
                     }
                 } else {
 					$validar_dni = $this->clientes->validar_x_id($id,$cliente_dni);
@@ -151,17 +160,15 @@ class ClientesController
 							"cliente_fecha" => date("Y-m-d"),
 							"usuario_edicion" => $id_usuario_edicion ?? null
 						));
-						
-						
-						
+
                         $result = $this->builder->update("clientes", array(
 							"cliente_dni" => $cliente_dni,
 							"cliente_nombre" => $_POST['cliente_nombre'],
 							"cliente_apellido_paterno" => $_POST['cliente_apellido_paterno'],
 							"cliente_apellido_materno" => $_POST['cliente_apellido_materno'],
 							"cliente_fecha_nacimiento" => $_POST['cliente_fecha_nacimiento'] ?? null,
-							"cliente_direccion" => $_POST['cliente_direccion'],
-							"cliente_referencia" => $_POST['cliente_referencia'] ?? null,
+							"cliente_direccion" => $primera_dir,
+							"cliente_referencia" => $primera_ref ?: null,
 							"cliente_celular" => $_POST['cliente_celular'],
 							"cliente_celular2" => $_POST['cliente_celular2'] ?: null,
 							"cliente_correo" => $_POST['cliente_correo'] ?? null,
@@ -170,6 +177,9 @@ class ClientesController
 							"cliente_otro" => $_POST['cliente_otro'] ?? null,
 							"cliente_fecha" => date('Y-m-d'),
                         ), array("id_cliente" => $id));
+                        if ($result == 1) {
+                            $this->clientes->guardar_direcciones($id, $dirs);
+                        }
                     }
                 }
             } else {
@@ -258,6 +268,7 @@ class ClientesController
             if($ok_data){
                 $id = $_POST['guardarid'];
                 $result = $this->clientes->listar_x_id($id);
+                $result->direcciones = $this->clientes->listar_direcciones_x_id($id);
             } else {
                 $result = 6;
             }

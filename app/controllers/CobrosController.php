@@ -230,32 +230,35 @@ class CobrosController
                 $mt = microtime(true);
                 $estado_descuento = ($descuento_monto > 0) ? 1 : 0;
 
-                // Armamos el arreglo de datos con los NUEVOS campos y validamos nulos
-                $datos_pago = array(
-                    'id_prestamo'              => $id_prestamo,
-                    'id_pago_diario'           => $id_pago_cuota, // <-- RELACIÓN DIRECTA CON LA CUOTA
-                    'pago_monto'               => $monto_cobrado, // Ticket sale por lo que realmente pagó
-                    'pago_metodo'              => $_POST['pago_metodo'] ?? '',
-                    'pago_fecha'               => date('Y-m-d H:i:s'),
-                    'pago_estado'              => 1,
-                    'pago_mt'                  => $mt,
-                    'id_cliente'                  => $prestamo->id_cliente,
-                    'id_usuario'                  => $usuario,
-                    // --- NUEVOS CAMPOS DE DESCUENTO ---
-                    'pago_descuento_estado'    => $estado_descuento,
-                    'pago_descuento_monto'           => $descuento_monto,
+                $monto_recibido_post = !empty($_POST['monto_recibido']) ? (float)$_POST['monto_recibido'] : 0;
+                $monto_vuelto_post   = !empty($_POST['monto_vuelto'])   ? (float)$_POST['monto_vuelto']   : 0;
 
-                    // --- NUEVOS CAMPOS DINÁMICOS ---
-                    'pago_monto_recibido'      => !empty($_POST['monto_recibido']) ? (float)$_POST['monto_recibido'] : null,
-                    'pago_monto_vuelto'        => !empty($_POST['monto_vuelto']) ? (float)$_POST['monto_vuelto'] : null,
-                    'pago_operacion'       => !empty($_POST['num_operacion']) ? trim($_POST['num_operacion']) : null,
-                    'pago_oper_titular'      => !empty($_POST['nombre_titular']) ? trim($_POST['nombre_titular']) : null,
-                    'id_banco'                 => !empty($_POST['banco_entidad']) ? (int)$_POST['banco_entidad'] : null,
-                    'pago_fecha_operacion' => !empty($_POST['fecha_transferencia']) ? $_POST['fecha_transferencia'] : null,
-                    'pago_observacion'         => !empty($_POST['pago_observacion']) ? trim($_POST['pago_observacion']) : null
+                // Si el cliente entrega más de la cuota sin recibir vuelto, aplicar el monto real al saldo
+                $monto_aplicado = ($monto_recibido_post > $monto_cobrado && $monto_vuelto_post == 0)
+                    ? $monto_recibido_post
+                    : $monto_cobrado;
+
+                $datos_pago = array(
+                    'id_prestamo'          => $id_prestamo,
+                    'id_pago_diario'       => $id_pago_cuota,
+                    'pago_monto'           => $monto_aplicado,
+                    'pago_metodo'          => $_POST['pago_metodo'] ?? '',
+                    'pago_fecha'           => date('Y-m-d H:i:s'),
+                    'pago_estado'          => 1,
+                    'pago_mt'              => $mt,
+                    'id_cliente'           => $prestamo->id_cliente,
+                    'id_usuario'           => $usuario,
+                    'pago_descuento_estado'=> $estado_descuento,
+                    'pago_descuento_monto' => $descuento_monto,
+                    'pago_monto_recibido'  => $monto_recibido_post > 0 ? $monto_recibido_post : null,
+                    'pago_monto_vuelto'    => $monto_vuelto_post   > 0 ? $monto_vuelto_post   : null,
+                    'pago_operacion'       => !empty($_POST['num_operacion'])       ? trim($_POST['num_operacion'])       : null,
+                    'pago_oper_titular'    => !empty($_POST['nombre_titular'])      ? trim($_POST['nombre_titular'])      : null,
+                    'id_banco'             => !empty($_POST['banco_entidad'])       ? (int)$_POST['banco_entidad']        : null,
+                    'pago_fecha_operacion' => !empty($_POST['fecha_transferencia']) ? $_POST['fecha_transferencia']       : null,
+                    'pago_observacion'     => !empty($_POST['pago_observacion'])    ? trim($_POST['pago_observacion'])    : null
                 );
 
-                // Guardamos el historial del pago
                 $this->builder->save("pagos", $datos_pago);
 
                 $pago_guardado = $this->cobros->listar_pago_guardado_x_mt($mt);
@@ -263,11 +266,7 @@ class CobrosController
 
                 // ==========================================
                 // 5. ACTUALIZAR DINERO EN CAJA
-                // Ingreso = Monto recibido - Vuelto (si hay efectivo)
-                // Si no hay monto_recibido (transferencia), usar monto_cobrado
                 // ==========================================
-                $monto_recibido_post = !empty($_POST['monto_recibido']) ? (float)$_POST['monto_recibido'] : 0;
-                $monto_vuelto_post   = !empty($_POST['monto_vuelto'])   ? (float)$_POST['monto_vuelto']   : 0;
                 $ingreso_caja = ($monto_recibido_post > 0)
                     ? ($monto_recibido_post - $monto_vuelto_post)
                     : $monto_cobrado;
@@ -280,8 +279,7 @@ class CobrosController
                 // ==========================================
                 // 6. EVALUAR EL ESTADO GLOBAL DEL PRÉSTAMO
                 // ==========================================
-                // Descontamos el monto realmente cobrado (no el nominal de la cuota)
-                $nuevo_saldo = max(0, $prestamo->prestamo_saldo_pagar - $monto_cobrado);
+                $nuevo_saldo = max(0, $prestamo->prestamo_saldo_pagar - $monto_aplicado);
 
                 $todas_las_cuotas = $this->cobros->listar_cuotas_x_prestamo($id_prestamo);
                 $cuotas_pendientes = array_filter($todas_las_cuotas, function($c) {
@@ -644,18 +642,9 @@ class CobrosController
                 $pdf->Cell(30, 4, 'S/ ' . number_format($monto_recibido, 2), 0, 1, 'R');
                 $pdf->Cell(5,  4, '', 0, 0);
 
-                if ($diferencia == 0) {
-                    $pdf->Cell(35, 4, 'Diferencia / Vuelto:', 0, 0, 'L');
-                    $pdf->Cell(30, 4, 'S/ 0.00', 0, 1, 'R');
-                } elseif ($diferencia < 0) {
-                    $pdf->Cell(35, 4, 'Diferencia:', 0, 0, 'L');
-                    $pdf->Cell(30, 4, '-S/ ' . number_format(abs($diferencia), 2), 0, 1, 'R');
-                } elseif ($monto_vuelto > 0) {
+                if ($monto_vuelto > 0) {
                     $pdf->Cell(35, 4, 'Vuelto:', 0, 0, 'L');
                     $pdf->Cell(30, 4, 'S/ ' . number_format($monto_vuelto, 2), 0, 1, 'R');
-                } else {
-                    $pdf->Cell(35, 4, 'Diferencia:', 0, 0, 'L');
-                    $pdf->Cell(30, 4, '+S/ ' . number_format($diferencia, 2), 0, 1, 'R');
                 }
             }
             $pdf->Cell($W, 3, $SEP, 0, 1, 'C');

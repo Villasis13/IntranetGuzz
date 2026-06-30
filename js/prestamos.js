@@ -497,6 +497,8 @@ function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
         $('#div_diario_domingos').hide();
     }
 
+    cambiar_proximo_cobro(tipoPago);
+
     if (!conservar_cuotas) {
         let nuevasCuotas = 1;
         if (tipoPago === 'diario') {
@@ -509,7 +511,6 @@ function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
         }
         $('#prestamo_num_cuotas').val(nuevasCuotas);
     }
-    cambiar_proximo_cobro();
     calcular_cuota();
 }
 
@@ -840,23 +841,11 @@ function actualizar_resumen() {
     let $valor = $('#resumen_vuelto');
     $valor.removeClass('text-success text-danger text-warning text-primary text-muted');
 
-    if (diferencia === 0) {
-        $li.attr('style', 'display: flex;');
-        $label.html('<i class="fa fa-check-circle me-1"></i> Diferencia / Vuelto');
-        $valor.addClass('text-muted').text('S/ 0.00');
-    } else if (diferencia < 0) {
-        $li.attr('style', 'display: flex; background-color: #fde8e8;');
-        $label.html('<i class="fa fa-exclamation-circle me-1"></i> Diferencia pendiente');
-        $valor.addClass('text-danger').text('-S/ ' + Math.abs(diferencia).toFixed(2));
+    if (diferencia > 0 && dar_vuelto) {
+        $li.attr('style', 'display: flex; background-color: #fff3cd;');
+        $label.html('<i class="fa fa-reply me-1"></i> Vuelto a Entregar');
+        $valor.addClass('text-success').text('S/ ' + diferencia.toFixed(2));
     } else {
-        if (dar_vuelto) {
-            $li.attr('style', 'display: flex; background-color: #fff3cd;');
-            $label.html('<i class="fa fa-reply me-1"></i> Vuelto a Entregar');
-            $valor.addClass('text-success').text('S/ ' + diferencia.toFixed(2));
-        } else {
-            $li.attr('style', 'display: flex; background-color: #e8f4fd;');
-            $label.html('<i class="fa fa-arrow-up me-1"></i> Diferencia');
-            $valor.addClass('text-primary').text('+S/ ' + diferencia.toFixed(2));
-        }
+        $li.attr('style', 'display: none;');
     }
 }
