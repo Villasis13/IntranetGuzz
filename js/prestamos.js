@@ -32,7 +32,7 @@ function cambiar_proximo_cobro(tipo){
         fecha_nueva = fecha.toISOString().split('T')[0];
 
     } else {
-        $('#div_diario_domingos').show(200);
+        $('#div_diario_domingos').hide(200);
         var fecha = new Date(fecha_prestamo);
         fecha.setDate(fecha.getDate() + 1);
 
@@ -491,7 +491,7 @@ function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
     $('#div_cuota_diaria').show();
     if (tipoPago === 'diario') {
         $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
-        $('#div_diario_domingos').show();
+        $('#div_diario_domingos').hide();
     } else {
         $('#label_cuotas_dias').html('Número de Cuotas <span class="text-danger">*</span>');
         $('#div_diario_domingos').hide();
@@ -525,14 +525,19 @@ function calcular_cuota() {
 
     let cuota_redondeada = 0;
     let cuota_real_sin_redondear = 0;
+    let total_prestamo = 0;
+
+    if (monto > 0) {
+        let monto_interes = monto * (porcentajeInteres / 100);
+        total_prestamo = monto + monto_interes;
+    }
 
     if (monto > 0 && cuotas > 0) {
-        let monto_interes = monto * (porcentajeInteres / 100);
-        let total_prestamo = monto + monto_interes;
         cuota_real_sin_redondear = total_prestamo / cuotas;
         cuota_redondeada = Math.ceil(cuota_real_sin_redondear * 10) / 10;
     }
 
+    $('#total_pagar_visual').val(total_prestamo.toFixed(2));
     $('#cuota_diaria_visual').val(cuota_redondeada.toFixed(2));
     $('#cuota_calculada_hidden').val(cuota_redondeada.toFixed(2));
 }

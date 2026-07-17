@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="monto_prestamo" class="form-label">Monto del Préstamo <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text">S/</span>
@@ -80,7 +80,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Tasa de Interés <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input onkeyup="validar_numeros_decimales_dos(this.id)" oninput="calcular_cuota()"
@@ -89,7 +89,15 @@
                         </div>
                     </div>
 
-                    <div id="div_cuotas" class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label text-primary fw-bold">Total a Pagar</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white">S/</span>
+                            <input type="text" class="form-control bg-light text-primary fw-bold" id="total_pagar_visual" readonly value="0.00">
+                        </div>
+                    </div>
+
+                    <div id="div_cuotas" class="col-md-3">
                         <label id="label_cuotas_dias" class="form-label">Días a Pagar <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" name="prestamo_num_cuotas" id="prestamo_num_cuotas" min="1"
                                max="31" value="1" onkeyup="validar_numeros(this.id)" oninput="calcular_cuota()">
@@ -138,10 +146,10 @@
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div id="div_diario_domingos" class="col-md-3">
+                    <div id="div_diario_domingos" class="col-md-3" style="display: none;">
                         <label for="select_domingos" class="form-label">¿Incluir domingos?</label>
                         <select onchange="ajustar_interfaz_tipo_pago();" class="form-control" id="select_domingos" name="select_domingos">
-                            <option value="si">Sí</option>
+                            <option value="si" selected>Sí</option>
                             <option value="no">No</option>
                         </select>
                     </div>
