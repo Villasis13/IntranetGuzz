@@ -108,6 +108,9 @@ class PrestamosController
 			$data_prestamo = $this->prestamos->listar_x_id($id_prestamos);
 			$data_cliente  = $this->clientes->listar_x_id($data_prestamo->id_cliente);
 
+			// Datos del cronograma para la sección "Fechas del crédito"
+			$info_credito = $this->cobros->resumen_credito($id_prestamos);
+
             // Reconstruct amortization history retroactively (no schema change required)
             $tasa        = floatval($data_prestamo->prestamo_interes ?? 0);
             $todos_pagos = (array)$this->cobros->listar_pagos_x_prestamo($id_prestamos);
@@ -161,6 +164,10 @@ class PrestamosController
 
 			$id_cliente = $_GET['id'];
 			$data_cliente = $this->clientes->listar_x_id($id_cliente);
+
+			// Trazabilidad: ajustes manuales y restauraciones automáticas de la línea
+			$historial_linea_credito = $this->clientes->listar_historial_linea_credito($id_cliente);
+
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'prestamos/aumentar_linea_credito.php';
@@ -230,6 +237,31 @@ class PrestamosController
 		}
 		echo json_encode(array("result" => array("code" => $result, "message" => $message)));
 	}
+    /**
+     * Número de cuotas permitido según la modalidad de pago.
+     *
+     * Semanal = 4 y Mensual = 1 son fijos: la pantalla los bloquea y aquí se vuelven
+     * a forzar, para que un POST manipulado no pueda crear un préstamo con otro valor.
+     * Diario acepta los días que indique el usuario.
+     *
+     * Debe coincidir con CUOTAS_POR_MODALIDAD en js/prestamos.js.
+     */
+    private function cuotas_segun_modalidad($tipo_pago, $cuotas_solicitadas)
+    {
+        $fijas = array(
+            'semanal' => 4,
+            'mensual' => 1
+        );
+
+        $tipo = strtolower(trim((string)$tipo_pago));
+        if (isset($fijas[$tipo])) {
+            return $fijas[$tipo];
+        }
+
+        $cuotas = (int)$cuotas_solicitadas;
+        return $cuotas > 0 ? $cuotas : 1;
+    }
+
     public function guardar_prestamo()
     {
         $result = 2;
@@ -237,6 +269,17 @@ class PrestamosController
         $id_generado = 0;
         $usuario= $this->encriptar->desencriptar($_SESSION['c_u'],_FULL_KEY_);
         try {
+            // ==========================================
+            // CUOTAS BLOQUEADAS SEGÚN MODALIDAD
+            // Semanal y Mensual tienen un número de cuotas fijo, sin importar lo que
+            // llegue del formulario. Diario sigue siendo flexible. Se normaliza aquí
+            // para que tanto el préstamo como su cronograma usen el mismo valor.
+            // ==========================================
+            $_POST['prestamo_num_cuotas'] = $this->cuotas_segun_modalidad(
+                $_POST['prestamo_tipo_pago'] ?? '',
+                $_POST['prestamo_num_cuotas'] ?? 1
+            );
+
             // Aseguramos que ambos valores sean enteros para una comparación exacta
             $id_cliente = !empty($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : 0;
             $garante = !empty($_POST['prestamo_garante']) ? (int)$_POST['prestamo_garante'] : 0;

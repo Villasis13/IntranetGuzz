@@ -101,6 +101,11 @@
                         <label id="label_cuotas_dias" class="form-label">Días a Pagar <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" name="prestamo_num_cuotas" id="prestamo_num_cuotas" min="1"
                                max="31" value="1" onkeyup="validar_numeros(this.id)" oninput="calcular_cuota()">
+                        <!-- Semanal y Mensual fijan el número de cuotas: el campo queda de solo lectura -->
+                        <small id="aviso_cuotas_fijas" class="text-muted d-block mt-1" style="display:none; font-size:0.75rem;">
+                            <i class="fa fa-lock me-1"></i>
+                            Fijado por la modalidad: <b id="texto_cuotas_fijas">4 cuotas</b>
+                        </small>
                     </div>
                 </div>
 
@@ -246,6 +251,13 @@
 
     .animacion-cambio {
         animation: efectoActualizacion 0.5s ease-out !important;
+    }
+
+    /* Campo de cuotas bloqueado por la modalidad (Semanal / Mensual) */
+    .cuotas-bloqueadas {
+        cursor: not-allowed;
+        font-weight: 700;
+        color: #566a7f !important;
     }
 
     <style>

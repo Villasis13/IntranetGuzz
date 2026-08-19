@@ -47,6 +47,7 @@
                                     <th>Fecha Cuota</th>
                                     <th>Fecha Registro</th>
                                     <th>Usuario</th>
+                                    <th>Cuenta receptora</th>
                                     <th>Cuota Original</th>
                                     <th>Descuento</th>
                                     <th>Monto Final</th>
@@ -68,7 +69,16 @@
                                     <td class="fw-semibold"><?= str_pad($cg->id_pago, 6, '0', STR_PAD_LEFT) ?></td>
                                     <td><?= !empty($cg->pago_diario_fecha) ? date('d/m/Y', strtotime($cg->pago_diario_fecha)) : '—' ?></td>
                                     <td><?= date('d/m/Y H:i', strtotime($cg->pago_fecha)) ?></td>
-                                    <td><?= htmlspecialchars($cg->usuario_nickname ?? $cg->pago_recepcion) ?></td>
+                                    <td><?= htmlspecialchars($cg->usuario_nickname ?? ($cg->pago_recepcion ?? '—')) ?></td>
+                                    <td>
+                                        <?php if (!empty($cg->pago_cuenta_receptora)): ?>
+                                            <span class="badge bg-warning text-dark">
+                                                <?= htmlspecialchars($cg->pago_cuenta_receptora) ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-muted">—</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>S/ <?= number_format($cg->pago_diario_monto ?? 0, 2) ?></td>
                                     <td class="<?= $tiene_descuento ? 'text-danger' : 'text-muted' ?>">
                                         <?= $tiene_descuento ? '- S/ ' . number_format($cg->pago_descuento_monto, 2) : '—' ?>
@@ -100,7 +110,7 @@
                                 </tr>
 
                                 <tr class="collapse" id="detalle-<?= $cg->id_pago ?>">
-                                    <td colspan="11" class="p-0">
+                                    <td colspan="12" class="p-0">
                                         <div class="px-4 py-3 bg-light border-top border-bottom">
                                             <div class="row g-3">
                                                 <div class="col-md-6">
@@ -111,6 +121,17 @@
                                                         <tr>
                                                             <td class="text-muted" style="width:40%">Método</td>
                                                             <td class="fw-semibold"><?= htmlspecialchars($cg->metodo_pago_nombre ?? '—') ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted">Cuenta receptora</td>
+                                                            <td class="fw-semibold">
+                                                                <?php if (!empty($cg->pago_cuenta_receptora)): ?>
+                                                                    <?= htmlspecialchars($cg->pago_cuenta_receptora) ?>
+                                                                    <small class="text-muted">(interno)</small>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted">No registrada</span>
+                                                                <?php endif; ?>
+                                                            </td>
                                                         </tr>
                                                         <?php if (!empty($cg->pago_operacion)): ?>
                                                         <tr>

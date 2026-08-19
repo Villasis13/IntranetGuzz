@@ -115,7 +115,15 @@ class Caja
 
     public function listar_reportes_de_caja_pagos($inicio,$fin){
         try{
-            $sql = 'select * from pagos where pago_fecha between ? and ?';
+            // Se traen el nombre del método y el cajero para el reporte interno de conciliación
+            $sql = 'SELECT p.*,
+                        mp.metodo_pago_nombre,
+                        u.usuario_nickname
+                    FROM pagos p
+                    LEFT JOIN metodos_pago mp ON mp.id_metodo_pago = p.pago_metodo
+                    LEFT JOIN usuarios     u  ON u.id_usuario      = p.id_usuario
+                    WHERE p.pago_fecha BETWEEN ? AND ?
+                    ORDER BY p.pago_fecha ASC';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$inicio,$fin]);
             return $stm->fetchAll();

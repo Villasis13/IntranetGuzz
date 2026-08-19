@@ -93,7 +93,11 @@ $info_estado = $estados_info[$estado] ?? ['label' => 'Desconocido', 'badge' => '
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="fw-bold">Fecha de Préstamo:</label>
-                    <span><?= $data_prestamo->prestamo_fecha ?> </span>
+                    <span>
+                        <?= !empty($data_prestamo->prestamo_fecha_emision)
+                            ? date('d/m/Y', strtotime($data_prestamo->prestamo_fecha_emision))
+                            : '—' ?>
+                    </span>
                 </div>
                 <div class="col-md-4">
                     <label class="fw-bold">Tipo de Pago:</label>
@@ -117,6 +121,99 @@ $info_estado = $estados_info[$estado] ?? ['label' => 'Desconocido', 'badge' => '
             </div>
         </div>
     </div>
+
+    <!-- ===== FECHAS DEL CRÉDITO ===== -->
+    <?php
+    // Respaldo en pantalla de todo el calendario del crédito, para revisarlo
+    // sin depender del cronograma impreso.
+    $fc = $info_credito ?? null;
+
+    $fc_fecha = function ($valor, $con_hora = false) {
+        if (empty($valor) || $valor === '0000-00-00' || !strtotime($valor)) return null;
+        return date($con_hora ? 'd/m/Y H:i' : 'd/m/Y', strtotime($valor));
+    };
+
+    $fc_items = array(
+        array('icono' => 'fa-tags',          'etq' => 'Modalidad',
+              'val'   => $fc ? ucfirst($fc->tipo_pago) : ucfirst($data_prestamo->prestamo_tipo_pago)),
+        array('icono' => 'fa-file-text-o',   'etq' => 'Fecha de emisión',
+              'val'   => $fc_fecha($fc->fecha_emision ?? $data_prestamo->prestamo_fecha_emision, true)),
+        array('icono' => 'fa-play-circle-o', 'etq' => 'Fecha de inicio',
+              'val'   => $fc_fecha($fc->fecha_inicio ?? $data_prestamo->prestamo_fecha_inicio)),
+        array('icono' => 'fa-hand-o-right',  'etq' => 'Primer cobro',
+              'val'   => $fc_fecha($fc->primer_cobro ?? null)),
+        array('icono' => 'fa-calendar-o',    'etq' => 'Próximo cobro',
+              'val'   => ($fc && ($fc->esta_cancelado || $fc->esta_anulado))
+                            ? 'Sin cobros pendientes'
+                            : $fc_fecha($fc->proximo_pago ?? $data_prestamo->prestamo_prox_cobro)),
+        array('icono' => 'fa-flag-checkered', 'etq' => 'Vencimiento / finalización',
+              'val'   => $fc_fecha($fc->fecha_vencimiento ?? null),
+              'alerta' => ($fc && $fc->esta_vencido)),
+        array('icono' => 'fa-list-ol',       'etq' => 'Número de cuotas',
+              'val'   => $fc
+                            ? $fc->cuotas_total . ' (' . $fc->cuotas_pagadas . ' pagadas / ' . $fc->cuotas_pendientes . ' pendientes)'
+                            : $data_prestamo->prestamo_num_cuotas),
+    );
+    ?>
+    <div class="card shadow mb-4">
+        <div class="card-header bg-info py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0 font-weight-bold text-white">
+                <i class="fa fa-calendar me-2"></i>Fechas del Crédito
+            </h5>
+            <?php if ($fc): ?>
+                <span class="badge bg-light text-dark"><?= $fc->estado_etiqueta ?></span>
+            <?php endif; ?>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <?php foreach ($fc_items as $item): ?>
+                    <div class="col-md-4 col-sm-6">
+                        <div class="fc-item">
+                            <span class="fc-etq">
+                                <i class="fa <?= $item['icono'] ?> me-1"></i><?= $item['etq'] ?>
+                            </span>
+                            <span class="fc-val<?= !empty($item['alerta']) ? ' text-danger' : '' ?>">
+                                <?php if (!empty($item['val'])): ?>
+                                    <?= htmlspecialchars($item['val']) ?>
+                                <?php else: ?>
+                                    <em class="text-muted">No definida</em>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <?php if ($fc && $fc->esta_vencido && !$fc->esta_cancelado): ?>
+                <p class="alert alert-danger mt-3 mb-0 py-2 small">
+                    <i class="fa fa-exclamation-triangle me-1"></i>
+                    El plazo del crédito terminó el
+                    <strong><?= $fc_fecha($fc->fecha_vencimiento) ?></strong>
+                    y aún registra saldo pendiente.
+                </p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <style>
+        .fc-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            height: 100%;
+            padding: 8px 12px;
+            border: 1px solid #eef2f7;
+            border-radius: 8px;
+            background: #fbfdff;
+        }
+        .fc-etq {
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+        .fc-val { font-size: 14px; font-weight: 700; color: #212529; }
+    </style>
 
     <div class="card shadow mb-4">
         <div class="card-header bg-success text-white py-3">

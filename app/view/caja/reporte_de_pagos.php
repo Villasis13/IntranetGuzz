@@ -12,6 +12,7 @@
                                 <th>Pago Monto</th>
                                 <th>Fecha/Hora</th>
                                 <th>Metodo de Pago</th>
+                                <th>Cuenta receptora</th>
                                 <th>Recepción (Cajero/a)</th>
                             </tr>
                             </thead>
@@ -26,8 +27,17 @@
                                     <td><?= date('Y-m-d',strtotime($cg->pago_fecha)) ?>
                                     <small><?= date('H:i',strtotime($cg->pago_fecha)) ?></small>
                                     </td>
-                                    <td><?= $cg->pago_metodo ?> </td>
-                                    <td><?= $cg->pago_recepcion ?> </td>
+                                    <td><?= htmlspecialchars($cg->metodo_pago_nombre ?? '—') ?></td>
+                                    <td>
+                                        <?php if (!empty($cg->pago_cuenta_receptora)): ?>
+                                            <span class="badge bg-warning text-dark">
+                                                <?= htmlspecialchars($cg->pago_cuenta_receptora) ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-muted">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($cg->usuario_nickname ?? '—') ?></td>
                                 </tr>
 								<?php
 								$con++;

@@ -126,6 +126,24 @@
                     </div>
                 </div>
 
+                <!-- Cuenta receptora: dato INTERNO de conciliación -->
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" id="cuenta_receptora" name="cuenta_receptora"
+                               class="form-control" placeholder=" " maxlength="120"
+                               list="lista_cuentas_receptoras">
+                        <label>Cuenta / titular receptor (uso interno)</label>
+                        <datalist id="lista_cuentas_receptoras">
+                            <?php foreach (($cuentas_receptoras ?? []) as $cuenta_r): ?>
+                                <option value="<?= htmlspecialchars($cuenta_r->cuenta) ?>"></option>
+                            <?php endforeach; ?>
+                        </datalist>
+                    </div>
+                    <small class="text-muted" style="font-size:0.75rem;">
+                        Ej. Plin Guzmán, Yape Ana, Transferencia BCP. No se imprime en el voucher del cliente.
+                    </small>
+                </div>
+
                 <!-- Monto recibido y diferencia -->
                 <div class="col-md-12" id="grupo_efectivo">
                     <div class="row g-3 border p-3 rounded bg-light mx-0">
@@ -337,6 +355,7 @@ function confirmar_amortizacion() {
             monto_vuelto:       $('#monto_vuelto_db').val(),
             num_operacion:      $('#num_operacion').val(),
             nombre_titular:     $('#nombre_titular').val(),
+            cuenta_receptora:   $('#cuenta_receptora').val(),
             banco_entidad:      $('#banco_entidad').val(),
             fecha_transferencia:$('#fecha_transferencia').val(),
             pago_observacion:   $('#pago_observacion').val(),

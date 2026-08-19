@@ -203,6 +203,12 @@ function guardar_prestamo() {
     var prestamo_monto = $('#monto_prestamo').val();
     var prestamo_interes = $('#interes').val();
     var prestamo_tipo_pago = $('input[name="tipo_pago2"]:checked').val();
+
+    // Semanal y Mensual llevan cuotas fijas: se normaliza antes de enviar
+    var cuotas_fijas = cuotas_fijas_de(prestamo_tipo_pago);
+    if (cuotas_fijas !== null) {
+        $('#prestamo_num_cuotas').val(cuotas_fijas);
+    }
     var prestamo_num_cuotas = $('#prestamo_num_cuotas').val();
     var prestamo_fecha = $('#fecha_prestamo2').val();
     var prestamo_prox_cobro = $('#fecha_prox_cobro2').val();
@@ -327,6 +333,13 @@ function guardar_pago_prestamo(){
     var prestamo_prox_cobro = $('#prestamo_prox_cobro').val();
     var pago_metodo = $('#pago_metodo').val();
 
+    // CUOTAS SELECCIONADAS (una o varias en la misma operación)
+    var id_pagos = cuotas_seleccionadas().map(function (c) { return c.id; });
+    if (id_pagos.length === 0) {
+        respuesta('Debe seleccionar al menos una cuota para registrar el pago.', 'error');
+        return false;
+    }
+
     // NUEVOS CAMPOS DINÁMICOS
     var monto_pagar = $('#monto_pagar').val();
     var monto_recibido = $('#monto_recibido').val();
@@ -336,17 +349,19 @@ function guardar_pago_prestamo(){
     var banco_entidad = $('#banco_entidad').val();
     var fecha_transferencia = $('#fecha_transferencia').val();
     var pago_observacion = $('#pago_observacion').val();
+    // Cuenta receptora: dato interno de conciliación, no sale en el voucher
+    var cuenta_receptora = $('#cuenta_receptora').val();
 
     // CAPTURAMOS EL DESCUENTO DINÁMICAMENTE
     var descuento = $('#descontar_cantidad').val();
-    var tope_cuota = $('#monto_cuota_actual').val();
+    var tope_cuota = $('#total_cuotas_sel').val() || $('#monto_cuota_actual').val();
 
     if(descuento === "" || isNaN(descuento)) {
         descuento = 0;
     }
 
     if(parseFloat(descuento) > parseFloat(tope_cuota)) {
-        respuesta('Error: El descuento supera el monto de la cuota actual.', 'error');
+        respuesta('Error: El descuento supera el total de las cuotas seleccionadas.', 'error');
         return false;
     }
 
@@ -362,6 +377,7 @@ function guardar_pago_prestamo(){
             data: {
                 id_prestamo : id_prestamo,
                 id_pago: id_pago,
+                id_pagos: id_pagos,
                 prestamo_prox_cobro: prestamo_prox_cobro,
                 pago_metodo: pago_metodo,
                 monto_pagar: monto_pagar,
@@ -372,6 +388,7 @@ function guardar_pago_prestamo(){
                 banco_entidad: banco_entidad,
                 fecha_transferencia: fecha_transferencia,
                 pago_observacion: pago_observacion,
+                cuenta_receptora: cuenta_receptora,
                 descuento: descuento
             },
             dataType: 'json',
@@ -393,6 +410,11 @@ function guardar_pago_prestamo(){
                         break;
                     case 3:
                         respuesta('El monto supera a lo que falta pagar', 'error');
+                        cambiar_estado_boton(boton, 'Confirmar Pago', false);
+                        break;
+                    case 6:
+                    case 7:
+                        respuesta(r.result.message, 'error');
                         cambiar_estado_boton(boton, 'Confirmar Pago', false);
                         break;
                     default:
@@ -484,33 +506,51 @@ function obtenerDiasDelMes() {
     return new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
 }
 
+// ==========================================
+// CUOTAS BLOQUEADAS SEGÚN MODALIDAD
+// Semanal y Mensual tienen un número de cuotas fijo; Diario sigue siendo flexible.
+// Debe coincidir con PrestamosController::cuotas_segun_modalidad().
+// ==========================================
+const CUOTAS_POR_MODALIDAD = { semanal: 4, mensual: 1 };
+
+/** Cuotas que corresponden a la modalidad, o null si es libre (diario). */
+function cuotas_fijas_de(tipoPago) {
+    let fijas = CUOTAS_POR_MODALIDAD[String(tipoPago).toLowerCase()];
+    return (typeof fijas === 'undefined') ? null : fijas;
+}
+
 function ajustar_interfaz_tipo_pago(conservar_cuotas = false) {
     let tipoPago = $('input[name="tipo_pago2"]:checked').val()?.toLowerCase();
     if(!tipoPago) return;
 
     $('#div_cuota_diaria').show();
-    if (tipoPago === 'diario') {
+    $('#div_diario_domingos').hide();
+
+    let cuotasFijas = cuotas_fijas_de(tipoPago);
+    let $campo      = $('#prestamo_num_cuotas');
+
+    if (cuotasFijas === null) {
+        // DIARIO: el usuario define los días a pagar
         $('#label_cuotas_dias').html('Días a Pagar <span class="text-danger">*</span>');
-        $('#div_diario_domingos').hide();
+        $campo.prop('readonly', false).removeClass('bg-light cuotas-bloqueadas');
+        $('#aviso_cuotas_fijas').hide();
+
+        if (!conservar_cuotas) {
+            let incluirDom = $('#select_domingos').val();
+            $campo.val((incluirDom === 'si') ? obtenerDiasDelMes() : 26);
+        }
     } else {
+        // SEMANAL / MENSUAL: número de cuotas fijo, no editable.
+        // Se fuerza siempre (incluso con conservar_cuotas) porque lo define la modalidad.
         $('#label_cuotas_dias').html('Número de Cuotas <span class="text-danger">*</span>');
-        $('#div_diario_domingos').hide();
+        $campo.val(cuotasFijas).prop('readonly', true).addClass('bg-light cuotas-bloqueadas');
+        $('#texto_cuotas_fijas').text(
+            cuotasFijas + (cuotasFijas === 1 ? ' cuota' : ' cuotas')
+        );
+        $('#aviso_cuotas_fijas').show();
     }
 
     cambiar_proximo_cobro(tipoPago);
-
-    if (!conservar_cuotas) {
-        let nuevasCuotas = 1;
-        if (tipoPago === 'diario') {
-            let incluirDom = $('#select_domingos').val();
-            nuevasCuotas = (incluirDom === 'si') ? obtenerDiasDelMes() : 26;
-        } else if (tipoPago === 'semanal') {
-            nuevasCuotas = 4;
-        } else if (tipoPago === 'mensual') {
-            nuevasCuotas = 1;
-        }
-        $('#prestamo_num_cuotas').val(nuevasCuotas);
-    }
     calcular_cuota();
 }
 
@@ -710,16 +750,98 @@ function aplicar_descuento() {
     if (!activoEs) {
         $('#div_descontar').hide(200);
         $('#descontar_cantidad').val('');
-        let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
-        if (cuota_original) {
-            $('#monto_pagar').val(cuota_original.toFixed(2));
-            $('#monto_recibido').val(cuota_original.toFixed(2));
-            $('#cuota_monto_display').text('S/ ' + cuota_original.toFixed(2)).removeClass('discounted');
-            $('#quota_discount_detail').hide();
-            $('#etiqueta_descuento').hide();
-        }
-        calcular_vuelto();
+        recalcular_pago(true);
     }
+}
+
+// ==========================================
+// PAGO DE UNA O VARIAS CUOTAS EN LA MISMA OPERACIÓN
+// ==========================================
+
+/** Cuotas marcadas en la lista de cuotas pendientes, en orden cronológico. */
+function cuotas_seleccionadas() {
+    let seleccion = [];
+    $('.cuota-check:checked').each(function () {
+        seleccion.push({
+            id:     $(this).val(),
+            monto:  parseFloat($(this).data('monto')) || 0,
+            numero: $(this).data('numero'),
+            fecha:  $(this).data('fecha')
+        });
+    });
+    return seleccion;
+}
+
+function formatear_fecha_iso(fecha_iso) {
+    if (!fecha_iso) return '-';
+    let p = String(fecha_iso).split('-');
+    return (p.length === 3) ? (p[2] + '/' + p[1] + '/' + p[0]) : fecha_iso;
+}
+
+/**
+ * Recalcula el total de la operación a partir de las cuotas marcadas y del descuento.
+ * sincronizar_recibido = true reescribe "Monto recibido" con el nuevo total.
+ */
+function recalcular_pago(sincronizar_recibido) {
+    let seleccion    = cuotas_seleccionadas();
+    let total_cuotas = 0;
+    seleccion.forEach(function (c) { total_cuotas += c.monto; });
+    total_cuotas = Math.round(total_cuotas * 100) / 100;
+
+    $('#total_cuotas_sel').val(total_cuotas.toFixed(2));
+
+    // Marca visual de las cuotas elegidas
+    $('.cuota-check').each(function () {
+        $(this).closest('.pagar-quota-chip').toggleClass('is-selected', this.checked);
+    });
+
+    // Etiquetas de conteo
+    let plural = (seleccion.length === 1) ? ' cuota' : ' cuotas';
+    $('#picker_resumen').text(seleccion.length + plural + (seleccion.length === 1 ? ' seleccionada' : ' seleccionadas'));
+    $('#label_total_pagar').text('Total a pagar (' + seleccion.length + plural + ')');
+
+    // Próxima cuota = primera pendiente que NO se está cobrando ahora
+    let $siguiente = $('.cuota-check').not(':checked').first();
+    if ($siguiente.length) {
+        $('#next_quota_monto').text('S/ ' + (parseFloat($siguiente.data('monto')) || 0).toFixed(2));
+        $('#next_quota_fecha').text(formatear_fecha_iso($siguiente.data('fecha')));
+        $('#prestamo_prox_cobro').val($siguiente.data('fecha'));
+        $('#next_quota_pending').show();
+        $('#next_quota_done').hide();
+    } else {
+        $('#prestamo_prox_cobro').val('Préstamo Finalizado');
+        $('#next_quota_pending').hide();
+        $('#next_quota_done').show();
+    }
+
+    // Descuento (tope: total de las cuotas seleccionadas)
+    let descuento = parseFloat($('#descontar_cantidad').val()) || 0;
+    if (!$('#disc_switch_si').hasClass('active')) descuento = 0;
+    if (descuento > total_cuotas) {
+        descuento = total_cuotas;
+        $('#descontar_cantidad').val(descuento.toFixed(2));
+    }
+
+    let total_final = Math.max(0, Math.round((total_cuotas - descuento) * 100) / 100);
+    $('#monto_pagar').val(total_final.toFixed(2));
+
+    if (sincronizar_recibido !== false) {
+        $('#monto_recibido').val(total_final.toFixed(2));
+    }
+
+    if (descuento > 0) {
+        $('#cuota_monto_display').text('S/ ' + total_final.toFixed(2)).addClass('discounted');
+        $('#quota_original_amount').text('S/ ' + total_cuotas.toFixed(2));
+        $('#quota_discount_badge').text('- S/ ' + descuento.toFixed(2));
+        $('#quota_discount_detail').show();
+        $('#etiqueta_descuento').fadeIn(150);
+    } else {
+        $('#cuota_monto_display').text('S/ ' + total_final.toFixed(2)).removeClass('discounted');
+        $('#quota_discount_detail').hide();
+        $('#etiqueta_descuento').fadeOut(150);
+    }
+
+    calcular_vuelto();
 }
 // ==========================================
 // UN SOLO BLOQUE DE INICIALIZACIÓN
@@ -755,6 +877,16 @@ $(document).ready(function() {
     if ($('#pago_metodo').length > 0) {
         cambiar_metodo_pago();
 
+        // Selección de cuotas: nunca puede quedar vacía
+        $(document).on('change', '.cuota-check', function () {
+            if (!this.checked && $('.cuota-check:checked').length === 0) {
+                this.checked = true;
+                respuesta('Debe mantener al menos una cuota seleccionada.', 'warning');
+                return;
+            }
+            recalcular_pago(true);
+        });
+
         // Toggle switch "Sí"
         $('#disc_switch_si').on('click', function() {
             if ($(this).hasClass('active')) return;
@@ -770,51 +902,33 @@ $(document).ready(function() {
             $('#disc_switch_si').removeClass('active');
             $('#div_descontar').hide(200);
             $('#descontar_cantidad').val('');
-            let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
-            if (cuota_original) {
-                $('#monto_pagar').val(cuota_original.toFixed(2));
-                $('#monto_recibido').val(cuota_original.toFixed(2));
-                $('#cuota_monto_display').text('S/ ' + cuota_original.toFixed(2)).removeClass('discounted');
-                $('#quota_discount_detail').hide();
-                $('#etiqueta_descuento').hide();
-            }
-            calcular_vuelto();
+            recalcular_pago(true);
         });
 
         // Cambio en el campo de descuento
         $('#descontar_cantidad').on('keyup', function() {
             let descuento_ingresado = parseFloat($(this).val()) || 0;
-            let cuota_original      = parseFloat($('#monto_cuota_actual').val()) || 0;
+            let total_cuotas        = parseFloat($('#total_cuotas_sel').val()) || 0;
 
-            if (descuento_ingresado > cuota_original) {
-                respuesta('El descuento no puede ser mayor a la cuota (S/ ' + cuota_original.toFixed(2) + ')', 'warning');
-                $(this).val(cuota_original.toFixed(2));
-                descuento_ingresado = cuota_original;
+            if (descuento_ingresado > total_cuotas) {
+                respuesta('El descuento no puede ser mayor al total seleccionado (S/ ' + total_cuotas.toFixed(2) + ')', 'warning');
+                $(this).val(total_cuotas.toFixed(2));
             }
 
-            let nuevo_monto = cuota_original - descuento_ingresado;
-            $('#monto_pagar').val(nuevo_monto.toFixed(2));
-            $('#monto_recibido').val(nuevo_monto.toFixed(2));
-
-            if (descuento_ingresado > 0) {
-                $('#cuota_monto_display').text('S/ ' + nuevo_monto.toFixed(2)).addClass('discounted');
-                $('#quota_original_amount').text('S/ ' + cuota_original.toFixed(2));
-                $('#quota_discount_badge').text('- S/ ' + descuento_ingresado.toFixed(2));
-                $('#quota_discount_detail').show();
-                $('#etiqueta_descuento').fadeIn(150);
-            } else {
-                $('#cuota_monto_display').text('S/ ' + cuota_original.toFixed(2)).removeClass('discounted');
-                $('#quota_discount_detail').hide();
-                $('#etiqueta_descuento').fadeOut(150);
-            }
-
-            calcular_vuelto();
+            recalcular_pago(true);
         });
+
+        // Estado inicial de la pantalla según la cuota marcada por defecto
+        if ($('.cuota-check').length > 0) {
+            recalcular_pago(true);
+        }
     }
 });
 
 function actualizar_resumen() {
-    let cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
+    let seleccion      = cuotas_seleccionadas();
+    let cuota_original = parseFloat($('#total_cuotas_sel').val());
+    if (isNaN(cuota_original)) cuota_original = parseFloat($('#monto_cuota_actual').val()) || 0;
     let descuento      = parseFloat($('#descontar_cantidad').val()) || 0;
     let total_pagar    = parseFloat($('#monto_pagar').val()) || 0;
     let monto_recibido = parseFloat($('#monto_recibido').val()) || 0;
@@ -827,6 +941,17 @@ function actualizar_resumen() {
         $('#label_monto_recibido').text('Monto Recibido (' + nombre + ')');
     } else {
         $('#label_monto_recibido').text('Monto Recibido');
+    }
+
+    // Detalle de las cuotas incluidas en la operación
+    if (seleccion.length > 0) {
+        $('#label_resumen_cuotas').text('Cuotas seleccionadas (' + seleccion.length + ')');
+        let detalle = '';
+        seleccion.forEach(function (c) {
+            detalle += '<span><em>Cuota ' + c.numero + ' &middot; ' + formatear_fecha_iso(c.fecha) + '</em>'
+                    +  '<em>S/ ' + c.monto.toFixed(2) + '</em></span>';
+        });
+        $('#resumen_cuotas_detalle').html(seleccion.length > 1 ? detalle : '');
     }
 
     $('#resumen_cuota').text('S/ ' + cuota_original.toFixed(2));

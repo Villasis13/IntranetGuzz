@@ -290,6 +290,10 @@
                                     } elseif ($tipo === 'disminucion') {
                                         $badge_tipo    = '<span class="badge bg-danger">Disminución</span>';
                                         $monto_texto   = '<span class="text-danger fw-bold">- S/. ' . number_format($monto_ajuste, 2) . '</span>';
+                                    } elseif ($tipo === 'restauracion') {
+                                        // Devolución automática del capital al cancelarse o anularse un préstamo
+                                        $badge_tipo    = '<span class="badge bg-info text-dark">Restauración</span>';
+                                        $monto_texto   = '<span class="text-success fw-bold">+ S/. ' . number_format($monto_ajuste, 2) . '</span>';
                                     } else {
                                         $badge_tipo    = '<span class="badge bg-secondary">Corrección</span>';
                                         $monto_texto   = '<span class="text-secondary fw-bold">S/. ' . number_format($monto_ajuste, 2) . '</span>';

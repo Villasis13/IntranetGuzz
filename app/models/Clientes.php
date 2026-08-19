@@ -185,7 +185,7 @@ class Clientes
         try{
             $sql = 'SELECT * FROM clientes_linea_credito
                     WHERE id_cliente = ?
-                    ORDER BY id_clientes_linea_credito DESC';
+                    ORDER BY id_cliente_linea_credito DESC';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$id_cliente]);
             return $stm->fetchAll();

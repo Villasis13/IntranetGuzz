@@ -60,56 +60,31 @@
                 </button>
             <?php endif; ?>
 
+            <a target="_blank" href="<?= _SERVER_ ?>Cobros/generar_constancia/<?= $id_prestamo ?>"
+               class="btn btn-primary shadow-sm mr-2">
+                <i class="fa fa-file-pdf-o me-1"></i> Descargar constancia del crédito
+            </a>
+
             <a href="<?= _SERVER_ ?>prestamos/prestamos" class="btn btn-success shadow-sm">
                 <i class="fa fa-arrow-left me-2"></i>Volver
             </a>
         </div>
     </div>
 
+    <!-- ===== INFORMACIÓN DEL CRÉDITO (sección compartida con cobros/pagar.php) ===== -->
+    <?php require _VIEW_PATH_ . 'cobros/informacion_credito.php'; ?>
+
     <div class="row">
         <div class="col-lg-12 mb-4">
             <div class="card shadow border-left-info">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-5 border-right">
+                        <div class="col-md-12">
                             <h5 class="font-weight-bold text-primary mb-3">
                                 Cliente: <?= $listar_cliente_x_prestamo->cliente_nombre . ' ' . $listar_cliente_x_prestamo->cliente_apellido_paterno ?>
                             </h5>
+                            <!-- Los importes del crédito se muestran arriba, en "Información del crédito" -->
 
-                            <div class="mb-1 text-muted">
-                                <span>Capital Prestado:</span>
-                                <span class="float-right">S/. <?= number_format($monto_capital, 2) ?></span>
-                            </div>
-                            <div class="mb-2 text-muted border-bottom pb-2">
-                                <span>Interés Generado:</span>
-                                <span class="float-right">+ S/. <?= number_format($monto_interes, 2) ?></span>
-                            </div>
-
-                            <div class="mb-2 mt-2">
-                                <span class="font-weight-bold text-dark">Deuda Total Inicial:</span>
-                                <span class="float-right font-weight-bold">S/. <?= number_format($total_prestamo, 2) ?></span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="font-weight-bold text-success">Total Pagado:</span>
-                                <span class="float-right text-success">- S/. <?= number_format($total_pagado, 2) ?></span>
-                            </div>
-
-                            <?php if($hay_descuentos): ?>
-                                <div class="mb-2">
-                                    <span class="font-weight-bold text-warning">Descuentos Aplicados:</span>
-                                    <span class="float-right text-warning">- S/. <?= number_format($total_descuento, 2) ?></span>
-                                </div>
-                            <?php endif; ?>
-
-                            <hr>
-
-                            <div class="mb-0">
-                                <span class="font-weight-bold text-danger">Saldo Pendiente:</span>
-                                <span class="float-right font-weight-bold text-danger" style="font-size: 1.1em;">S/. <?= number_format($saldo_pendiente, 2) ?></span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-7">
                             <h6 class="font-weight-bold text-secondary mb-3">
                                 <i class="fa fa-info-circle me-1"></i> Detalles Adicionales del Préstamo
                             </h6>

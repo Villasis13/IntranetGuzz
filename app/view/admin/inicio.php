@@ -233,18 +233,48 @@
                                         $hoy = date('Y-m-d');
                                         $hoy_time = strtotime($hoy); // Convertimos hoy a tiempo numérico para operar
 
+                                        // Fecha válida = existe y no es un marcador vacío de la BD
+                                        $fecha_valida = function ($valor) {
+                                            return !empty($valor)
+                                                && $valor !== '0000-00-00'
+                                                && strtotime($valor) !== false;
+                                        };
+
                                         foreach ($proximos_cobros as $pc){
-                                            $fecha_cobro = date('Y-m-d', strtotime($pc->prestamo_prox_cobro));
-                                            $cobro_time = strtotime($fecha_cobro); // Convertimos el cobro a tiempo numérico
+                                            // Datos del cronograma (vienen ya resueltos en listar_proximos_cobros)
+                                            $cuotas_restantes = intval($pc->cuotas_pendientes ?? 0);
+                                            $saldo_pc         = floatval($pc->prestamo_saldo_pagar ?? 0);
 
-                                            // Calculamos la diferencia exacta en días (86400 segundos tiene un día)
-                                            $diferencia_dias = ($cobro_time - $hoy_time) / 86400;
+                                            // Un crédito cancelado (saldo en cero o sin cuotas abiertas) sale de
+                                            // próximos cobros: queda solo como historial en el listado de préstamos.
+                                            if ($saldo_pc <= 0 || $cuotas_restantes <= 0 || intval($pc->prestamo_estado) !== 1) {
+                                                continue;
+                                            }
 
-                                            // Contamos cuántas cuotas le faltan a este préstamo
-                                            $cuotas_restantes = $this->cobros->contar_cuotas_pendientes($pc->id_prestamos);
+                                            // Fecha de referencia del cobro: la cuota pendiente más antigua.
+                                            // prestamo_prox_cobro solo se usa como respaldo porque puede quedar desfasado.
+                                            $fecha_cobro = $fecha_valida($pc->proxima_cuota_fecha)
+                                                ? date('Y-m-d', strtotime($pc->proxima_cuota_fecha))
+                                                : ($fecha_valida($pc->prestamo_prox_cobro)
+                                                    ? date('Y-m-d', strtotime($pc->prestamo_prox_cobro))
+                                                    : null);
+
+                                            // Fecha final real del préstamo = última cuota programada
+                                            $fecha_fin_pc = $fecha_valida($pc->fecha_fin_prestamo)
+                                                ? date('Y-m-d', strtotime($pc->fecha_fin_prestamo))
+                                                : null;
+
+                                            $sin_fecha       = ($fecha_cobro === null);
+                                            $diferencia_dias = $sin_fecha ? null : ((strtotime($fecha_cobro) - $hoy_time) / 86400);
+
+                                            // El préstamo solo está VENCIDO si hoy pasó su fecha final real.
+                                            // Una cuota atrasada dentro del plazo es mora, no vencimiento.
+                                            $prestamo_vencido = ($fecha_fin_pc !== null) && ($hoy_time > strtotime($fecha_fin_pc));
 
                                             // ── 1. DEFINIR COLOR DEL TEXTO DE LA FILA ──
-                                            if ($diferencia_dias < 0) {
+                                            if ($sin_fecha) {
+                                                $style = '#6b7280'; // Gris: sin fecha registrada
+                                            } elseif ($diferencia_dias < 0) {
                                                 $style = 'red'; // Ya pasó la fecha
                                             } elseif ($diferencia_dias == 0) {
                                                 $style = '#C9A227'; // Vence hoy (Dorado)
@@ -257,42 +287,56 @@
                                                     <?= htmlspecialchars($pc->cliente_nombre . ' ' . $pc->cliente_apellido_paterno) ?>
                                                 </td>
 
-                                                <?php $cuota_cercana = $this->cobros->listar_proximo_pago_diario($pc->id_prestamos); ?>
-
                                                 <td style="color: <?= $style ?>; font-weight: bold;">
-                                                    <?= $cuota_cercana ? 'S/ ' . number_format($cuota_cercana->pago_diario_monto, 2) : 'Deuda no acordada' ?>
+                                                    <?= isset($pc->proxima_cuota_monto)
+                                                        ? 'S/ ' . number_format($pc->proxima_cuota_monto, 2)
+                                                        : 'Deuda no acordada' ?>
                                                 </td>
                                                 <td style="color: <?= $style ?>">
-                                                    <?= date('d/m/Y', strtotime($fecha_cobro)) ?>
+                                                    <?= $sin_fecha ? 'Fecha no definida' : date('d/m/Y', strtotime($fecha_cobro)) ?>
                                                 </td>
 
                                                 <td>
                                                     <?php
                                                     // ── 2. LÓGICA DE BOTONES SEGÚN DÍAS Y CUOTAS ──
 
-                                                    if ($diferencia_dias < 0) {
-                                                        // 🔴 A) FECHA VENCIDA (Pasado)
-                                                        if ($cuotas_restantes <= 1) {
-                                                            // Es la ÚLTIMA cuota de todo el préstamo
-                                                            ?>
-                                                            <button onclick="preguntar('¿El préstamo ya venció, desea convertirlo a un préstamo antiguo?', 'cambiar_prestamo_a_antiguo', 'Sí, convertir', 'Cancelar', <?= $pc->id_prestamos ?>)"
-                                                                    class="btn btn-sm btn-danger font-weight-bold shadow-sm"
-                                                                    title="La última cuota venció. Préstamo finalizado sin pago total.">
-                                                                <i class="fa fa-ban"></i> Préstamo Vencido
-                                                            </button>
-                                                            <?php
-                                                        } else {
-                                                            // Le quedan más cuotas por delante (Mora regular)
-                                                            ?>
-                                                            <button onclick="window.location.href='<?= _SERVER_ ?>cobros/pagar/<?= $pc->id_prestamos ?>'"
-                                                                    class="btn btn-sm text-white font-weight-bold shadow-sm" style="background-color: #fd7e14; border-color: #fd7e14;"
-                                                                    title="El cliente tiene una cuota atrasada. Debe regularizar.">
-                                                                <i class="fa fa-exclamation-circle"></i> Regularizar (Mora)
-                                                            </button>
-                                                            <br>
-                                                            <small class="text-muted" style="font-size: 0.75rem;">Faltan <?= $cuotas_restantes ?> cuotas</small>
-                                                            <?php
-                                                        }
+                                                    if ($sin_fecha) {
+                                                        // ⚪ SIN CRONOGRAMA VÁLIDO: no se puede clasificar el estado
+                                                        ?>
+                                                        <span class="badge bg-secondary text-white p-2" style="font-size: 0.85em;">
+                                                            <i class="fa fa-calendar-times-o"></i> Fecha no definida
+                                                        </span>
+                                                        <br>
+                                                        <small class="text-muted" style="font-size: 0.75rem;">Revisar cronograma del préstamo</small>
+                                                        <?php
+
+                                                    } elseif ($prestamo_vencido) {
+                                                        // 🔴 A) PRÉSTAMO VENCIDO: hoy pasó la fecha final real (última cuota programada)
+                                                        ?>
+                                                        <button onclick="preguntar('¿El préstamo ya venció, desea convertirlo a un préstamo antiguo?', 'cambiar_prestamo_a_antiguo', 'Sí, convertir', 'Cancelar', <?= $pc->id_prestamos ?>)"
+                                                                class="btn btn-sm btn-danger font-weight-bold shadow-sm"
+                                                                title="El plazo del préstamo terminó el <?= date('d/m/Y', strtotime($fecha_fin_pc)) ?> y aún tiene saldo.">
+                                                            <i class="fa fa-ban"></i> Préstamo Vencido
+                                                        </button>
+                                                        <br>
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            Venció el <?= date('d/m/Y', strtotime($fecha_fin_pc)) ?>
+                                                        </small>
+                                                        <?php
+
+                                                    } elseif ($diferencia_dias < 0) {
+                                                        // 🟠 B) CUOTA ATRASADA DENTRO DEL PLAZO: es mora, no vencimiento
+                                                        ?>
+                                                        <button onclick="window.location.href='<?= _SERVER_ ?>cobros/pagar/<?= $pc->id_prestamos ?>'"
+                                                                class="btn btn-sm text-white font-weight-bold shadow-sm" style="background-color: #fd7e14; border-color: #fd7e14;"
+                                                                title="El cliente tiene una cuota atrasada. Debe regularizar.">
+                                                            <i class="fa fa-exclamation-circle"></i> Regularizar (Mora)
+                                                        </button>
+                                                        <br>
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            <?= $cuotas_restantes ?> cuota<?= $cuotas_restantes == 1 ? '' : 's' ?> pendiente<?= $cuotas_restantes == 1 ? '' : 's' ?>
+                                                        </small>
+                                                        <?php
 
                                                     } elseif ($diferencia_dias >= 0 && $diferencia_dias <= 2) {
                                                         // 🔵 B) COBRO PRÓXIMO (Vence Hoy, Mañana o Pasado Mañana)

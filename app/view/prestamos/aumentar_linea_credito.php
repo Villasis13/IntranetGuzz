@@ -64,6 +64,77 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ===== HISTORIAL DE LA LÍNEA DE CRÉDITO ===== -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-light d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fa fa-history me-1"></i> Historial de la línea de crédito
+                        </h6>
+                        <small class="text-muted">
+                            <?= isset($historial_linea_credito) ? count($historial_linea_credito) : 0 ?> movimiento(s)
+                        </small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 340px; overflow-y: auto;">
+                            <table class="table table-hover table-sm small m-0">
+                                <thead class="bg-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th class="text-end">Anterior</th>
+                                    <th class="text-end">Ajuste</th>
+                                    <th class="text-end">Nuevo</th>
+                                    <th>Motivo</th>
+                                    <th>Usuario</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php if (empty($historial_linea_credito)): ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-3">
+                                            <i class="fa fa-info-circle me-1"></i>Sin movimientos registrados
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($historial_linea_credito as $h):
+                                        $tipo_h  = $h->cliente_linea_tipo ?: 'incremento';
+                                        $monto_h = floatval($h->cliente_linea_monto);
+                                        $ant_h   = floatval($h->cliente_linea_credito_anterior);
+                                        $nue_h   = floatval($h->cliente_linea_credito_nuevo);
+                                        $fecha_h = !empty($h->cliente_linea_fecha)
+                                            ? date('d/m/Y H:i', strtotime($h->cliente_linea_fecha)) : '—';
+
+                                        if ($tipo_h === 'incremento') {
+                                            $badge_h = '<span class="badge bg-success">Incremento</span>';
+                                            $monto_txt_h = '<span class="text-success fw-bold">+ S/. ' . number_format($monto_h, 2) . '</span>';
+                                        } elseif ($tipo_h === 'disminucion') {
+                                            $badge_h = '<span class="badge bg-danger">Disminución</span>';
+                                            $monto_txt_h = '<span class="text-danger fw-bold">- S/. ' . number_format($monto_h, 2) . '</span>';
+                                        } elseif ($tipo_h === 'restauracion') {
+                                            $badge_h = '<span class="badge bg-info text-dark">Restauración</span>';
+                                            $monto_txt_h = '<span class="text-success fw-bold">+ S/. ' . number_format($monto_h, 2) . '</span>';
+                                        } else {
+                                            $badge_h = '<span class="badge bg-secondary">Corrección</span>';
+                                            $monto_txt_h = '<span class="text-secondary fw-bold">S/. ' . number_format($monto_h, 2) . '</span>';
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td class="text-nowrap"><?= $fecha_h ?></td>
+                                            <td><?= $badge_h ?></td>
+                                            <td class="text-end">S/. <?= number_format($ant_h, 2) ?></td>
+                                            <td class="text-end"><?= $monto_txt_h ?></td>
+                                            <td class="text-end fw-bold">S/. <?= number_format($nue_h, 2) ?></td>
+                                            <td><small><?= htmlspecialchars($h->cliente_linea_motivo) ?></small></td>
+                                            <td><small><?= htmlspecialchars($h->cliente_linea_usuario ?: '—') ?></small></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

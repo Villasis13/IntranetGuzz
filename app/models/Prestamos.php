@@ -181,7 +181,18 @@ class Prestamos
 
 	public function listar_prestamos(){
 		try{
-			$sql = 'select * from prestamos as p 
+			// Se agregan los datos del cronograma que la tabla necesita para el bloque
+			// de fechas: fin real del préstamo y próxima cuota realmente pendiente.
+			$sql = 'select p.*, c.*,
+						(select max(pd.pago_diario_fecha) from pagos_diarios pd
+							where pd.id_prestamos = p.id_prestamos) as fecha_fin_prestamo,
+						(select min(pd.pago_diario_fecha) from pagos_diarios pd
+							where pd.id_prestamos = p.id_prestamos and pd.pago_diario_estado = 1) as proxima_cuota_fecha,
+						(select count(*) from pagos_diarios pd
+							where pd.id_prestamos = p.id_prestamos and pd.pago_diario_estado = 1) as cuotas_pendientes,
+						(select count(*) from pagos_diarios pd
+							where pd.id_prestamos = p.id_prestamos) as cuotas_total
+					from prestamos as p
 					inner join clientes as c on p.id_cliente = c.id_cliente';
 			$stm = $this->pdo->prepare($sql);
 			$stm->execute();
