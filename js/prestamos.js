@@ -197,6 +197,16 @@ function validar_monto_linea(){
     }
 }
 
+// Muestra los campos propios de vehículo solo cuando el tipo de garantía es "Vehículo"
+function ajustar_campos_garantia() {
+    if ($('#garantia_tipo').val() === 'Vehículo') {
+        $('#div_garantia_vehiculo').show();
+    } else {
+        $('#div_garantia_vehiculo').hide();
+        $('#garantia_placa, #garantia_chasis, #garantia_anho, #garantia_color').val('').css('border', '');
+    }
+}
+
 function guardar_prestamo() {
     var valor = true;
     var id_cliente = $('#id_cliente').val();
@@ -213,7 +223,17 @@ function guardar_prestamo() {
     var prestamo_fecha = $('#fecha_prestamo2').val();
     var prestamo_prox_cobro = $('#fecha_prox_cobro2').val();
     var prestamo_fecha_inicio = $('#prestamo_fecha_inicio').val();
-    var prestamo_garantia = $('#prestamo_garantia').val();
+    var garantia_tipo = $('#garantia_tipo').val();
+    var garantia_nombre = $.trim($('#garantia_nombre').val());
+    var garantia_descripcion = $.trim($('#garantia_descripcion').val());
+    var garantia_estado = $('#garantia_estado').val();
+    var garantia_valor_real = $('#garantia_valor_real').val();
+    var garantia_valor_asignado = $('#garantia_valor_asignado').val();
+    var es_vehiculo = garantia_tipo === 'Vehículo';
+    var garantia_placa = es_vehiculo ? $.trim($('#garantia_placa').val()).toUpperCase() : '';
+    var garantia_chasis = es_vehiculo ? $.trim($('#garantia_chasis').val()).toUpperCase() : '';
+    var garantia_anho = es_vehiculo ? $('#garantia_anho').val() : '';
+    var garantia_color = es_vehiculo ? $.trim($('#garantia_color').val()) : '';
     var prestamo_garante = $('#prestamo_garante').val();
     var prestamo_motivo = $('#prestamo_motivo').val();
     var prestamo_comentario = $('#prestamo_comentario').val();
@@ -227,10 +247,32 @@ function guardar_prestamo() {
     valor = validar_campo_vacio('prestamo_num_cuotas', prestamo_num_cuotas, valor);
     valor = validar_campo_vacio('fecha_prestamo2', prestamo_fecha, valor);
     valor = validar_campo_vacio('fecha_prox_cobro2', prestamo_prox_cobro, valor);
-    valor = validar_campo_vacio('prestamo_garantia', prestamo_garantia, valor);
+    valor = validar_campo_vacio('garantia_tipo', garantia_tipo, valor);
+    valor = validar_campo_vacio('garantia_nombre', garantia_nombre, valor);
+    valor = validar_campo_vacio('garantia_estado', garantia_estado, valor);
+    valor = validar_campo_vacio('garantia_valor_real', garantia_valor_real, valor);
+    valor = validar_campo_vacio('garantia_valor_asignado', garantia_valor_asignado, valor);
+    if (es_vehiculo) {
+        valor = validar_campo_vacio('garantia_placa', garantia_placa, valor);
+        valor = validar_campo_vacio('garantia_chasis', garantia_chasis, valor);
+        valor = validar_campo_vacio('garantia_anho', garantia_anho, valor);
+        valor = validar_campo_vacio('garantia_color', garantia_color, valor);
+    }
     valor = validar_campo_vacio('prestamo_motivo', prestamo_motivo, valor);
     valor = validar_campo_vacio('prestamo_comentario', prestamo_comentario, valor);
     valor = validar_campo_vacio('prestamo_fecha_inicio', prestamo_fecha_inicio, valor);
+
+    if (valor && parseFloat(garantia_valor_asignado) > parseFloat(garantia_valor_real)) {
+        respuesta('El valor asignado como garantía no puede ser mayor al valor real del bien', 'error');
+        $('#garantia_valor_asignado').css('border', 'solid #ff4d4d');
+        valor = false;
+    }
+    var anho_actual = new Date().getFullYear() + 1;
+    if (valor && es_vehiculo && (garantia_anho.length !== 4 || garantia_anho < 1950 || garantia_anho > anho_actual)) {
+        respuesta('Ingrese un año de vehículo válido (1950 - ' + anho_actual + ')', 'error');
+        $('#garantia_anho').css('border', 'solid #ff4d4d');
+        valor = false;
+    }
 
     if(valor){
         $.ajax({
@@ -245,7 +287,16 @@ function guardar_prestamo() {
                 prestamo_fecha: prestamo_fecha,
                 prestamo_prox_cobro: prestamo_prox_cobro,
                 prestamo_fecha_inicio: prestamo_fecha_inicio,
-                prestamo_garantia: prestamo_garantia,
+                garantia_tipo: garantia_tipo,
+                garantia_nombre: garantia_nombre,
+                garantia_descripcion: garantia_descripcion,
+                garantia_estado: garantia_estado,
+                garantia_valor_real: garantia_valor_real,
+                garantia_valor_asignado: garantia_valor_asignado,
+                garantia_placa: garantia_placa,
+                garantia_chasis: garantia_chasis,
+                garantia_anho: garantia_anho,
+                garantia_color: garantia_color,
                 prestamo_garante: prestamo_garante,
                 prestamo_motivo: prestamo_motivo,
                 prestamo_comentario: prestamo_comentario,
@@ -287,6 +338,9 @@ function guardar_prestamo() {
                         break;
                     case 5:
                         respuesta('El garante no puede ser el mismo titular del préstamo.', 'error');
+                        break;
+                    case 6:
+                        respuesta('Revise los datos de la garantía: hay campos obligatorios vacíos o valores no válidos.', 'error');
                         break;
                     default:
                         respuesta('¡Algo catastrofico ha ocurrido!', 'error');
@@ -425,6 +479,31 @@ function guardar_pago_prestamo(){
             }
         });
     }
+}
+
+function pasar_a_recuperacion(id_prestamo){
+    $.ajax({
+        type: "POST",
+        url: urlweb + "api/Prestamos/pasar_a_recuperacion",
+        data: { id_prestamo: id_prestamo },
+        dataType: 'json',
+        success: function (r) {
+            switch (r.result.code) {
+                case 1:
+                    respuesta('Préstamo pasado a recuperación', 'success');
+                    setTimeout(function () {
+                        window.location.href = urlweb + 'Prestamos/recuperacion/' + id_prestamo;
+                    }, 1000);
+                    break;
+                case 4:
+                    respuesta('Solo se pueden pasar préstamos activos con saldo pendiente', 'error');
+                    break;
+                default:
+                    respuesta('Error al pasar el préstamo a recuperación', 'error');
+                    break;
+            }
+        }
+    });
 }
 
 function cambiar_prestamo_a_antiguo(id_prestamo){

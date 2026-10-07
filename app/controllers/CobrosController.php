@@ -45,6 +45,8 @@ class CobrosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+            // Aplica el interés de los préstamos cuyo plazo venció con saldo (una vez por periodo)
+            $this->cobros->aplicar_intereses_vencidos();
 
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -64,7 +66,15 @@ class CobrosController
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
 
             $id_prestamo = $_GET['id'];
+            // Si el plazo ya venció con saldo, primero se suma el interés del periodo vencido
+            $this->cobros->aplicar_intereses_vencidos((int)$id_prestamo);
             $prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
+
+            // En recuperación (3) o recuperado (4): se gestiona con acuerdo y abonos parciales
+            if ($prestamos_data && in_array(intval($prestamos_data->prestamo_estado), [3, 4])) {
+                echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."Prestamos/recuperacion/" . intval($id_prestamo) . "\";</script>";
+                return;
+            }
             $garante = $this->prestamos->listar_garante_prestamo($id_prestamo);
             $cliente_data = $this->clientes->listar_x_id($prestamos_data->id_cliente);
             $resta_pagar = $this->cobros->listar_total_pagos_x_prestamo($id_prestamo);
@@ -136,9 +146,7 @@ class CobrosController
             }
 
             $tasa                  = floatval($prestamos_data->prestamo_interes ?? 0);
-            $capital_pendiente     = $tasa > 0
-                ? round($saldo_total_pendiente / (1 + $tasa / 100), 2)
-                : $saldo_total_pendiente;
+            $capital_pendiente     = $this->cobros->capital_pendiente($prestamos_data);
             $valor_resta_por_pagar = $saldo_total_pendiente;
 
             // Condición de amortización: activo + capital pendiente + antes del vencimiento + no cancelado
@@ -165,6 +173,7 @@ class CobrosController
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
             $id_prestamo = $_GET['id'];
+            $this->cobros->aplicar_intereses_vencidos((int)$id_prestamo);
 
             $pagos_p = $this->cobros->listar_pagos_x_prestamo($id_prestamo);
             $descuentos_prestamos = $this->cobros->listar_datos_decuentos_x_prestamo($id_prestamo);
@@ -189,6 +198,7 @@ class CobrosController
 
             // Sección compartida "Información del crédito"
             $info_credito = $this->cobros->resumen_credito($id_prestamo);
+            $movimientos_prestamo = $this->cobros->listar_movimientos_x_prestamo($id_prestamo);
 
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -241,6 +251,7 @@ class CobrosController
                 return;
             }
 
+            $this->cobros->aplicar_intereses_vencidos($id_prestamo);
             $prestamo     = $this->prestamos->listar_x_id($id_prestamo);
             $caja_abierta = $this->caja->traer_datos_caja();
 
@@ -342,7 +353,7 @@ class CobrosController
                 // La cuota queda marcada como pagada
                 $this->cobros->cambiar_estado_cuota($id_pago_cuota);
 
-                $this->builder->save("pagos", array(
+                $guardado_fila = $this->builder->save("pagos", array(
                     'id_prestamo'           => $id_prestamo,
                     'id_pago_diario'        => $id_pago_cuota,
                     'pago_monto'            => $montos_fila[$idx],
@@ -365,6 +376,10 @@ class CobrosController
                     'pago_fecha_operacion'  => !empty($_POST['fecha_transferencia']) ? $_POST['fecha_transferencia']    : null,
                     'pago_observacion'      => !empty($_POST['pago_observacion'])    ? trim($_POST['pago_observacion']) : null
                 ));
+                if ($guardado_fila !== 1) {
+                    throw new Exception('No se pudo registrar el pago de la cuota.');
+                }
+                $ids_fila[$idx] = (int)$this->builder->lastInsertId();
             }
 
             // ==========================================
@@ -380,34 +395,43 @@ class CobrosController
             ));
 
             // ==========================================
-            // 5. EVALUAR EL ESTADO GLOBAL DEL PRÉSTAMO
+            // 5. CAPITAL E INTERÉS: cada cuota cobrada se reparte entre capital e interés
+            //    (proporcional a lo pendiente) y queda en el historial de movimientos.
+            //    El descuento también se reparte y se registra aparte (deuda condonada).
             // ==========================================
-            $nuevo_saldo = round(max(0, $prestamo->prestamo_saldo_pagar - $total_aplicado), 2);
-
-            // Próximo cobro = siguiente cuota que quedó pendiente
-            $cuotas_pendientes = $this->cobros->listar_cuotas_pendientes_ordenadas($id_prestamo);
-            $prestamo_cancelado = (count($cuotas_pendientes) === 0 || $nuevo_saldo <= 0);
-
-            $datos_actualizar_prestamo = array(
-                'prestamo_saldo_pagar' => $nuevo_saldo
-            );
-
-            if (!$prestamo_cancelado) {
-                $datos_actualizar_prestamo['prestamo_prox_cobro'] = $cuotas_pendientes[0]->pago_diario_fecha;
-            } else {
-                // Sin cuotas pendientes o saldo en cero: el préstamo queda CANCELADO.
-                // Si el saldo llegó a cero con cuotas todavía abiertas, se cierran todas
-                // para que el crédito no vuelva a aparecer en próximos cobros.
-                if (count($cuotas_pendientes) > 0) {
-                    $this->cobros->cerrar_cuotas_pendientes($id_prestamo);
+            foreach ($cuotas_a_pagar as $idx => $cuota) {
+                $fecha_txt = date('d/m/Y', strtotime($cuota->pago_diario_fecha));
+                if ($descuentos_fila[$idx] > 0) {
+                    $s_antes = $this->cobros->saldos_prestamo($id_prestamo);
+                    list($dc, $di) = $this->cobros->repartir_monto($s_antes->capital, $s_antes->interes, $descuentos_fila[$idx]);
+                    $this->cobros->registrar_movimiento($id_prestamo, 'descuento', -$dc, -$di,
+                        'Descuento en la cuota del ' . $fecha_txt, $ids_fila[$idx], $id_usuario);
                 }
-                $datos_actualizar_prestamo['prestamo_estado']      = 2; // 2 = Cancelado (pagado)
-                $datos_actualizar_prestamo['prestamo_saldo_pagar'] = 0;
+                $this->cobros->aplicar_pago($id_prestamo, $ids_fila[$idx], $montos_fila[$idx], 'pago_cuota',
+                    'Cuota del ' . $fecha_txt, $id_usuario);
             }
+            $saldos      = $this->cobros->saldos_prestamo($id_prestamo);
+            $nuevo_saldo = round($saldos->capital + $saldos->interes, 2);
 
-            $this->builder->update("prestamos", $datos_actualizar_prestamo, array(
-                'id_prestamos' => $id_prestamo
-            ));
+            // ==========================================
+            // 6. ESTADO DEL PRÉSTAMO: solo se cancela cuando ya no queda deuda real
+            //    (capital + interés). Si se acabaron las cuotas pero aún hay deuda, se crea
+            //    una cuota por el saldo en lugar de cerrar el préstamo.
+            // ==========================================
+            $prestamo_cancelado = ($nuevo_saldo <= 0);
+            $proxima_cuota = $this->cobros->cuadrar_cuotas($id_prestamo, $nuevo_saldo);
+
+            $datos_actualizar_prestamo = array();
+            if ($prestamo_cancelado) {
+                $datos_actualizar_prestamo['prestamo_estado'] = 2; // 2 = Cancelado (pagado)
+            } elseif ($proxima_cuota) {
+                $datos_actualizar_prestamo['prestamo_prox_cobro'] = $proxima_cuota;
+            }
+            if (!empty($datos_actualizar_prestamo)) {
+                $this->builder->update("prestamos", $datos_actualizar_prestamo, array(
+                    'id_prestamos' => $id_prestamo
+                ));
+            }
 
             // Préstamo cancelado por saldo cero: se devuelve el capital prestado a la
             // línea de crédito del cliente y queda registrado en su historial.
@@ -456,6 +480,7 @@ class CobrosController
             );
 
             $id_prestamo    = (int)$_GET['id'];
+            $this->cobros->aplicar_intereses_vencidos($id_prestamo);
             $prestamos_data = $this->prestamos->listar_x_id($id_prestamo);
             $cliente_data   = $this->clientes->listar_x_id($prestamos_data->id_cliente);
             $metodos_pago   = $this->cobros->listar_metodos_de_pago();
@@ -470,9 +495,7 @@ class CobrosController
 
             $saldo_total_pendiente = floatval($prestamos_data->prestamo_saldo_pagar ?? 0);
             $tasa                  = floatval($prestamos_data->prestamo_interes ?? 0);
-            $capital_pendiente     = $tasa > 0
-                ? round($saldo_total_pendiente / (1 + $tasa / 100), 2)
-                : $saldo_total_pendiente;
+            $capital_pendiente     = $this->cobros->capital_pendiente($prestamos_data);
 
             $puede_amortizar = intval($prestamos_data->prestamo_estado) === 1
                 && $capital_pendiente > 0
@@ -510,6 +533,7 @@ class CobrosController
             $id_usuario      = $this->encriptar->desencriptar($_SESSION['c_u'], _FULL_KEY_);
             $usuario_nombre  = $this->cobros->listar_usuario($id_usuario);
 
+            $this->cobros->aplicar_intereses_vencidos($id_prestamo);
             $prestamo     = $this->prestamos->listar_x_id($id_prestamo);
             $caja_abierta = $this->caja->traer_datos_caja();
 
@@ -521,9 +545,7 @@ class CobrosController
 
             $saldo_total       = floatval($prestamo->prestamo_saldo_pagar);
             $tasa              = floatval($prestamo->prestamo_interes);
-            $capital_pendiente = $tasa > 0
-                ? round($saldo_total / (1 + $tasa / 100), 2)
-                : $saldo_total;
+            $capital_pendiente = $this->cobros->capital_pendiente($prestamo);
 
             // Validaciones de negocio
             if ($monto_amortizar <= 0) {
@@ -565,6 +587,7 @@ class CobrosController
                 'pago_fecha_operacion' => !empty($_POST['fecha_transferencia'])  ? $_POST['fecha_transferencia']        : null,
                 'pago_observacion'     => 'AMORTIZACIÓN' . (!empty($_POST['pago_observacion']) ? ': ' . trim($_POST['pago_observacion']) : ''),
             ]);
+            $id_pago_amortizacion = (int)$this->builder->lastInsertId();
 
             // Actualizar caja
             // Ingreso = Monto recibido - Vuelto (si hay efectivo); si no, usar monto_amortizar
@@ -577,12 +600,23 @@ class CobrosController
                 'monto_caja' => $caja_abierta->monto_caja + $ingreso_caja,
             ], ['id_caja' => $caja_abierta->id_caja]);
 
-            // Actualizar saldo del préstamo (amortización aplica sobre capital, el interés proporcional se limpia)
-            $nuevo_capital  = max(0, $capital_pendiente - $monto_amortizar);
-            $nuevo_saldo    = $tasa > 0 ? round($nuevo_capital * (1 + $tasa / 100), 2) : $nuevo_capital;
-            $datos_prestamo = ['prestamo_saldo_pagar' => $nuevo_saldo];
+            // La amortización va íntegra a capital. Como el interés solo se cobra sobre el capital
+            // que queda, el interés pendiente se recalcula en la misma proporción.
+            $antes = $this->cobros->saldos_prestamo($id_prestamo);
+            $this->builder->update('pagos', ['pago_capital' => $monto_amortizar, 'pago_interes' => 0],
+                ['id_pago' => $id_pago_amortizacion]);
+            $saldos = $this->cobros->registrar_movimiento($id_prestamo, 'amortizacion', -$monto_amortizar, 0,
+                'Amortización a capital', $id_pago_amortizacion, $id_usuario);
+            $nuevo_interes = $antes->capital > 0 ? round($antes->interes * $saldos->capital / $antes->capital, 2) : 0;
+            $ajuste_interes = round($nuevo_interes - $saldos->interes, 2);
+            if ($ajuste_interes != 0) {
+                $saldos = $this->cobros->registrar_movimiento($id_prestamo, 'ajuste_amortizacion', 0, $ajuste_interes,
+                    'Interés pendiente recalculado sobre capital S/ ' . number_format($saldos->capital, 2), $id_pago_amortizacion, $id_usuario);
+            }
+            $nuevo_saldo = $saldos->saldo;
+
             if ($nuevo_saldo <= 0) {
-                $datos_prestamo['prestamo_estado'] = 2;
+                $this->builder->update('prestamos', ['prestamo_estado' => 2], ['id_prestamos' => $id_prestamo]);
                 // Préstamo cancelado por amortización total: restaurar línea de crédito
                 $this->cobros->restaurar_linea_credito(
                     $prestamo->id_cliente,
@@ -592,30 +626,11 @@ class CobrosController
                     'cancelacion'
                 );
             }
-            $this->builder->update('prestamos', $datos_prestamo, ['id_prestamos' => $id_prestamo]);
 
-            // Redistribuir el nuevo saldo entre las cuotas pendientes y actualizar próximo cobro
-            $cuotas = $this->cobros->listar_cuotas_pendientes_ordenadas($id_prestamo);
-            $n      = count($cuotas);
-            if ($nuevo_saldo > 0 && $n > 0) {
-                $cuota_base = round($nuevo_saldo / $n, 2);
-                $acumulado  = 0;
-                foreach ($cuotas as $i => $cuota) {
-                    $monto = ($i === $n - 1)
-                        ? round($nuevo_saldo - $acumulado, 2)
-                        : $cuota_base;
-                    $this->builder->update('pagos_diarios',
-                        ['pago_diario_monto' => $monto],
-                        ['id_pago_diario'    => $cuota->id_pago_diario]
-                    );
-                    if ($i < $n - 1) $acumulado += $monto;
-                }
-
-                // Reflejar la próxima cuota actualizada en el préstamo
-                $this->builder->update('prestamos',
-                    ['prestamo_prox_cobro' => $cuotas[0]->pago_diario_fecha],
-                    ['id_prestamos'        => $id_prestamo]
-                );
+            // Cuotas pendientes alineadas con el nuevo saldo y próximo cobro
+            $proxima_cuota = $this->cobros->cuadrar_cuotas($id_prestamo, $nuevo_saldo);
+            if ($proxima_cuota) {
+                $this->builder->update('prestamos', ['prestamo_prox_cobro' => $proxima_cuota], ['id_prestamos' => $id_prestamo]);
             }
 
             $this->cobros->confirmar_transaccion();
@@ -702,7 +717,8 @@ class CobrosController
             $es_multiple        = count($grupo) > 1;
 
             // Totales del prestamo
-            $debe_pagar      = floatval($data->prestamo_monto) + (floatval($data->prestamo_monto) * floatval($data->prestamo_interes) / 100);
+            $debe_pagar      = floatval($data->prestamo_monto) + (floatval($data->prestamo_monto) * floatval($data->prestamo_interes) / 100)
+                             + $this->cobros->total_interes_atraso($data->id_prestamos);
             // Suma de dinero real recibido (pagos.pago_monto), no del nominal de las cuotas
             $ya_pago_result  = $this->cobros->listar_total_pagos_reales_x_prestamo($data->id_prestamos);
             $ya_pago         = floatval($ya_pago_result->total ?? 0);
@@ -712,6 +728,28 @@ class CobrosController
             $saldo_final     = max(0, $debe_pagar - $ya_pago - $descuento);
             // saldo_anterior: lo que había antes de ESTA operación (todas sus cuotas)
             $saldo_anterior  = $saldo_final + $op_total_pagado;
+
+            // Abono de un préstamo en recuperación: el saldo sale de su historial (incluye
+            // descuentos/recargos de los acuerdos), igual que en la ficha de recuperación
+            $recuperacion = null;
+            if (empty($data->id_pago_diario) && in_array(intval($data->prestamo_estado), [3, 4])) {
+                $prestamo_recup = $this->prestamos->listar_x_id($data->id_prestamos);
+                $recuperacion = $this->prestamos->linea_tiempo_recuperacion($prestamo_recup);
+                $recuperacion['prestamo'] = $prestamo_recup;
+                foreach ($recuperacion['eventos'] as $ev) {
+                    if ($ev['tipo'] !== 'acuerdo' && intval($ev['dato']->id_pago) === intval($data->id_pago)) {
+                        $saldo_final    = $ev['saldo'];
+                        $saldo_anterior = round($saldo_final + $op_total_pagado, 2);
+                    }
+                }
+            }
+
+            // Con historial de movimientos el saldo es exacto al momento del pago (también al reimprimir)
+            $saldos_historial = $this->cobros->saldos_operacion_pago($ids_recibo);
+            if ($saldos_historial !== null) {
+                $saldo_anterior = $saldos_historial->antes;
+                $saldo_final    = $saldos_historial->despues;
+            }
 
             // Cuota original desde pagos_diarios
             $cuota          = !empty($data->id_pago_diario) ? $this->cobros->listar_cuota_individual($data->id_pago_diario) : null;
@@ -777,7 +815,7 @@ class CobrosController
             $es_amortizacion = empty($data->id_pago_diario);
 
             if ($es_amortizacion) {
-                $pdf->Cell($W, 4, 'Amortización:', 0, 1, 'L');
+                $pdf->Cell($W, 4, $recuperacion ? 'Abono (recuperación de deuda):' : 'Amortización:', 0, 1, 'L');
                 $pdf->Cell(5,  4, '', 0, 0);
                 $pdf->Cell(35, 4, 'Monto:', 0, 0, 'L');
                 $pdf->Cell(30, 4, 'S/ ' . number_format($cuota_original, 2), 0, 1, 'R');
@@ -823,6 +861,24 @@ class CobrosController
             $pdf->Cell(30, 4, 'S/ ' . number_format($op_total_pagado, 2), 0, 1, 'R');
             $pdf->SetFont('Arial', '', 8);
 
+            // Reparto del pago entre capital e interés
+            $op_capital = 0; $op_interes = 0; $op_con_reparto = false;
+            foreach ($grupo as $fila) {
+                if (isset($fila->pago_capital) && $fila->pago_capital !== null) {
+                    $op_con_reparto = true;
+                    $op_capital += floatval($fila->pago_capital);
+                    $op_interes += floatval($fila->pago_interes);
+                }
+            }
+            if ($op_con_reparto) {
+                $pdf->Cell(10, 4, '', 0, 0);
+                $pdf->Cell(30, 4, 'A capital:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($op_capital, 2), 0, 1, 'R');
+                $pdf->Cell(10, 4, '', 0, 0);
+                $pdf->Cell(30, 4, 'A interes:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($op_interes, 2), 0, 1, 'R');
+            }
+
             if ($op_total_recibido > 0) {
                 $diferencia = round($op_total_recibido - $op_total_pagado, 2);
 
@@ -859,13 +915,37 @@ class CobrosController
             // ── INFORMACION DEL CREDITO ───────────────────────────────────────
             // Mismos datos que la sección "Información del crédito" de las pantallas
             // cobros/pagar.php y cobros/pagos.php (Cobros::resumen_credito).
-            $ic = $this->cobros->resumen_credito($data->id_prestamos);
+            $ic = $recuperacion ? null : $this->cobros->resumen_credito($data->id_prestamos);
 
             $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell($W, 4, 'INFORMACION DEL CREDITO', 0, 1, 'L');
+            $pdf->Cell($W, 4, $recuperacion ? 'DEUDA EN RECUPERACION' : 'INFORMACION DEL CREDITO', 0, 1, 'L');
             $pdf->SetFont('Arial', '', 8);
 
-            if ($ic) {
+            if ($recuperacion) {
+                // Ya no sigue el cronograma original: se informa el acuerdo y lo que falta
+                $pr = $recuperacion['prestamo'];
+                $av = $recuperacion['acuerdo_vigente'];
+                $pdf->Cell(40, 4, 'Deuda original:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format(floatval($pr->prestamo_monto) + floatval($pr->prestamo_monto_interes), 2), 0, 1, 'R');
+                if ($av) {
+                    $pdf->Cell(40, 4, 'Monto acordado:', 0, 0, 'L');
+                    $pdf->Cell(30, 4, 'S/ ' . number_format($av->prestamo_acuerdo_monto, 2), 0, 1, 'R');
+                    $pdf->Cell($W, 4, 'Acuerdo del ' . date('d/m/Y', strtotime($av->prestamo_acuerdo_fecha))
+                        . ' - ' . $av->prestamo_acuerdo_frecuencia
+                        . ($av->prestamo_acuerdo_abono_sugerido ? ' (S/ ' . number_format($av->prestamo_acuerdo_abono_sugerido, 2) . ')' : ''), 0, 1, 'L');
+                }
+                $pdf->Cell(40, 4, 'Total pagado:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($recuperacion['total_pagado'], 2), 0, 1, 'R');
+                $pdf->SetFont('Arial', 'B', 8);
+                $pdf->Cell(40, 4, 'Saldo pendiente hoy:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($pr->prestamo_saldo_pagar, 2), 0, 1, 'R');
+                $pdf->SetFont('Arial', '', 8);
+                if (intval($pr->prestamo_estado) === 4) {
+                    $pdf->Cell($W, 4, 'Estado: DEUDA SALDADA', 0, 1, 'L');
+                } elseif ($av && $av->prestamo_acuerdo_proxima_fecha) {
+                    $pdf->Cell($W, 4, 'Proximo abono: ' . date('d/m/Y', strtotime($av->prestamo_acuerdo_proxima_fecha)), 0, 1, 'L');
+                }
+            } elseif ($ic) {
                 $fmt_fecha = function ($valor) {
                     return !empty($valor) && strtotime($valor) ? date('d/m/Y', strtotime($valor)) : '-';
                 };
@@ -903,6 +983,14 @@ class CobrosController
                 $pdf->SetFont('Arial', 'B', 8);
                 $pdf->Cell(40, 4, 'Saldo pendiente:', 0, 0, 'L');
                 $pdf->Cell(30, 4, 'S/ ' . number_format($ic->saldo_pendiente, 2), 0, 1, 'R');
+                $pdf->SetFont('Arial', '', 8);
+                $pdf->Cell(5, 4, '', 0, 0);
+                $pdf->Cell(35, 4, 'Capital pendiente:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($ic->capital_pendiente, 2), 0, 1, 'R');
+                $pdf->Cell(5, 4, '', 0, 0);
+                $pdf->Cell(35, 4, 'Interes pendiente:', 0, 0, 'L');
+                $pdf->Cell(30, 4, 'S/ ' . number_format($ic->interes_pendiente, 2), 0, 1, 'R');
+                $pdf->SetFont('Arial', 'B', 8);
 
                 // Estado del credito: destacado cuando esta vencido o cancelado
                 $pdf->Cell($W, 4, 'Estado: ' . strtoupper($ic->estado_etiqueta), 0, 1, 'L');
@@ -1225,6 +1313,11 @@ class CobrosController
             if (!$movimiento_registrado) {
                 throw new Exception("Error al registrar el movimiento en el historial de caja.");
             }
+
+            // La deuda pendiente (capital e interés) queda en cero en el historial de movimientos
+            $saldos_anulacion = $this->cobros->saldos_prestamo($id_prestamo);
+            $this->cobros->registrar_movimiento($id_prestamo, 'anulacion', -$saldos_anulacion->capital, -$saldos_anulacion->interes,
+                'Préstamo anulado', null, $this->encriptar->desencriptar($_SESSION['c_u'], _FULL_KEY_));
 
             // ==========================================
             // PASO 4: RESTAURAR LA LÍNEA DE CRÉDITO

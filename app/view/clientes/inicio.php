@@ -98,6 +98,26 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Documentos y fotos del cliente -->
+                    <div class="border rounded p-3 mt-2 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">
+                                <i class="fa fa-paperclip me-1"></i> Documentos y Fotos
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="agregarDocumento()">
+                                <i class="fa fa-plus me-1"></i>Adjuntar
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mb-2">
+                            DNI, recibo de luz, foto personal u otros. Formatos: JPG, PNG, WEBP, PDF, DOC, DOCX (máx. 10 MB por archivo).
+                        </small>
+
+                        <!-- Documentos ya guardados (al editar) -->
+                        <div id="documentos_guardados"></div>
+                        <!-- Archivos nuevos por subir -->
+                        <div id="documentos_container"></div>
+                    </div>
                 </div>
             </div>
 
@@ -105,7 +125,7 @@
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fa fa-times me-2"></i>Cerrar
                 </button>
-                <button type="button" class="btn btn-success" onclick="guardar_editar_clientes()">
+                <button type="button" class="btn btn-success" id="btn-agregar-cliente" onclick="guardar_editar_clientes()">
                     <i class="fa fa-save me-2"></i>Guardar
                 </button>
             </div>
@@ -128,8 +148,11 @@
                 <div class="container-fluid">
                     <input type="hidden" id="id_cliente_moroso" name="id_cliente_moroso">
 
+                    <!-- Historial de pagos del cliente: un solo atraso no basta para marcarlo moroso -->
+                    <div id="resumen_comportamiento" class="mb-3"></div>
+
                     <div class="row g-4">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="mb-3">
                                 <label class="form-label">Motivo por el cual pasa a moroso</label>
                                 <textarea class="form-control" id="cliente_historial_moroso_comentario" name="cliente_historial_moroso_comentario"></textarea>
@@ -188,9 +211,13 @@
                             <tbody>
                             <?php
                             $contador_cliente = 1;
+                            $hoy_atraso = new DateTime(date('Y-m-d'));
                             foreach ($clientes as $c){
+                                $es_moroso = intval($c->cliente_estado) !== 1;
+                                $atraso = $clientes_atraso[$c->id_cliente] ?? null;
                                 ?>
-                                <tr class="text-center">
+                                <tr class="text-center<?= $es_moroso ? ' fila-morosa' : ($atraso ? ' fila-atraso' : '') ?>"
+                                    <?= $es_moroso ? 'title="Cliente marcado como moroso"' : ($atraso ? 'title="Cliente con pagos atrasados"' : '') ?>>
                                     <td class="align-middle"><?=$contador_cliente?></td>
                                     <td class="align-middle text-left">
                                         <div class="fw-bold"><?=$c->cliente_nombre?></div>
@@ -224,7 +251,25 @@
                                         }else{
                                             echo '<span class="badge bg-danger">Moroso</span>';
                                         }
-                                        ?>
+                                        if ($atraso) {
+                                            $dias_atraso = $atraso->cuota_mas_antigua
+                                                ? $hoy_atraso->diff(new DateTime($atraso->cuota_mas_antigua))->days
+                                                : null;
+                                            ?>
+                                            <div class="mt-1">
+                                                <?php if ($atraso->atrasados > 0) { ?>
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fa fa-clock-o"></i> Con atraso
+                                                    </span>
+                                                    <?php if ($dias_atraso !== null) { ?>
+                                                        <div><small class="text-warning-emphasis fw-bold" style="color:#9a6700;"><?= $dias_atraso ?> día<?= $dias_atraso == 1 ? '' : 's' ?> de atraso</small></div>
+                                                    <?php } ?>
+                                                <?php } ?>
+                                                <?php if ($atraso->en_recuperacion > 0) { ?>
+                                                    <div><span class="badge bg-secondary text-white mt-1">En recuperación</span></div>
+                                                <?php } ?>
+                                            </div>
+                                        <?php } ?>
                                     </td>
                                     <td class="align-middle text-center">
                                         <div class="d-flex flex-wrap gap-2 justify-content-center">
@@ -299,6 +344,21 @@
     }
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
+    }
+    /* Clientes marcados como morosos (a mano, tras revisar su historial): fila en rojo */
+    .table tbody tr.fila-morosa,
+    .table-hover tbody tr.fila-morosa:hover {
+        background-color: #f8d7da;
+    }
+    .table tbody tr.fila-morosa td {
+        color: #842029;
+    }
+    .table tbody tr.fila-morosa td:first-child {
+        border-left: 4px solid #dc3545;
+    }
+    /* Clientes con pagos atrasados: solo una alerta en ámbar; NO es el estado moroso */
+    .table tbody tr.fila-atraso td:first-child {
+        border-left: 4px solid #f6c23e;
     }
     .form-control:focus {
         border-color: #3487C9;

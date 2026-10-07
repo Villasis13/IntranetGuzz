@@ -29,6 +29,8 @@ class AdminController{
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+            // Aplica el interés de los préstamos cuyo plazo venció con saldo (una vez por periodo)
+            $this->cobros->aplicar_intereses_vencidos();
             $num_clientes = $this->nav->num_clientes();
 
             $fecha = date("Y-m-d");

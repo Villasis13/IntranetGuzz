@@ -116,7 +116,8 @@ class Cobros
     {
         try {
             $sql_horario = 'UPDATE prestamos SET
-                            prestamo_estado = 3 
+                            prestamo_estado = 3,
+                            prestamo_fecha_recuperacion = COALESCE(prestamo_fecha_recuperacion, NOW())
                         WHERE id_prestamos = ?';
             $stm_horario = $this->pdo->prepare($sql_horario);
             $stm_horario->execute([$id]);
@@ -624,10 +625,24 @@ class Cobros
             $p = $stm->fetch();
             if (empty($p)) return [];
 
+            // Pagos registrados con el historial de movimientos: saldo exacto después del pago
+            $stm_mov = $this->pdo->prepare('SELECT id_pago, prestamo_movimiento_capital_despues + prestamo_movimiento_interes_despues AS saldo
+                                            FROM prestamos_movimientos WHERE id_prestamos = ? AND id_pago IS NOT NULL
+                                            ORDER BY id_prestamo_movimiento');
+            $stm_mov->execute([$id_prestamo]);
+            $saldo_mov = array();
+            foreach ($stm_mov->fetchAll() as $m) $saldo_mov[$m->id_pago] = round(floatval($m->saldo), 2);
+
             $tasa       = floatval($p->prestamo_interes);
             $saldo_iter = floatval($p->prestamo_saldo_pagar);
 
             for ($i = count($pagos) - 1; $i >= 0; $i--) {
+                if (isset($saldo_mov[$pagos[$i]->id_pago])) {
+                    $pagos[$i]->saldo_restante = $saldo_mov[$pagos[$i]->id_pago];
+                    $saldo_iter = $pagos[$i]->saldo_restante + floatval($pagos[$i]->pago_monto);
+                    continue;
+                }
+                // Pagos anteriores al historial de movimientos: estimación previa
                 $pagos[$i]->saldo_restante = max(0, round($saldo_iter, 2));
 
                 $monto           = floatval($pagos[$i]->pago_monto);
@@ -668,7 +683,7 @@ class Cobros
 
             // Cronograma de cuotas
             $stm_cuo = $this->pdo->prepare('SELECT
-                        COUNT(*) AS cuotas_total,
+                        SUM(CASE WHEN pago_diario_estado <> 2 THEN 1 ELSE 0 END) AS cuotas_total,
                         SUM(CASE WHEN pago_diario_estado = 1 THEN 1 ELSE 0 END) AS cuotas_pendientes,
                         MIN(pago_diario_fecha) AS primera_cuota,
                         MAX(pago_diario_fecha) AS ultima_cuota,
@@ -708,6 +723,9 @@ class Cobros
                 'interes_pct'       => $interes_pct,
                 'interes_monto'     => $interes_monto,
                 'total_credito'     => round($capital + $interes_monto, 2),
+                // Interés por plazo vencido (periodos renovados) ya sumado al saldo
+                'interes_atraso'    => $this->total_interes_atraso($id_prestamo),
+                'renovaciones'      => count($this->listar_renovaciones_x_prestamo($id_prestamo)),
                 'tipo_pago'         => $p->prestamo_tipo_pago,
                 'fecha_emision'     => $p->prestamo_fecha_emision ?: null,
                 'fecha_inicio'      => $p->prestamo_fecha_inicio ?: ($cuo->primera_cuota ?? null),
@@ -723,6 +741,8 @@ class Cobros
                 'total_pagado'      => round(floatval($pag->total_pagado ?? 0), 2),
                 'total_descuento'   => round(floatval($pag->total_descuento ?? 0), 2),
                 'saldo_pendiente'   => max(0, round($saldo, 2)),
+                'capital_pendiente' => round(floatval($p->prestamo_capital_pendiente), 2),
+                'interes_pendiente' => round(floatval($p->prestamo_interes_pendiente), 2),
                 'estado'            => $estado,
                 'estado_etiqueta'   => $etiqueta,
                 'esta_cancelado'    => $cancelado,
@@ -759,8 +779,9 @@ class Cobros
      */
     public function listar_todas_las_cuotas_x_prestamo($id_prestamo){
         try{
+            // Las cuotas reprogramadas por plazo vencido (estado 2) no se numeran: fueron reemplazadas
             $sql = 'SELECT * FROM pagos_diarios
-                    WHERE id_prestamos = ?
+                    WHERE id_prestamos = ? AND pago_diario_estado <> 2
                     ORDER BY pago_diario_fecha ASC, id_pago_diario ASC';
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$id_prestamo]);
@@ -813,6 +834,364 @@ class Cobros
             $stm = $this->pdo->prepare($sql);
             $stm->execute([$mt]);
             return $stm->fetchAll(PDO::FETCH_OBJ);
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    // =====================================================================
+    // INTERÉS POR PLAZO VENCIDO
+    // =====================================================================
+
+    // Capital pendiente del préstamo: saldo guardado y actualizado en cada movimiento
+    public function capital_pendiente($prestamo){
+        return round(floatval($this->saldos_prestamo($prestamo->id_prestamos)->capital), 2);
+    }
+
+    public function total_interes_atraso($id_prestamo){
+        $stm = $this->pdo->prepare('SELECT COALESCE(SUM(prestamo_renovacion_interes), 0) FROM prestamos_renovaciones WHERE id_prestamos = ?');
+        $stm->execute([$id_prestamo]);
+        return round(floatval($stm->fetchColumn()), 2);
+    }
+
+    public function listar_renovaciones_x_prestamo($id_prestamo){
+        try{
+            $stm = $this->pdo->prepare('SELECT * FROM prestamos_renovaciones WHERE id_prestamos = ? ORDER BY id_prestamo_renovacion');
+            $stm->execute([$id_prestamo]);
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+
+    // Fechas de un nuevo periodo, con la misma lógica de PrestamosController::guardar_prestamo
+    private function fechas_periodo($ultima_fecha, $tipo_pago, $num_cuotas, $incluir_domingos){
+        $tipo = strtolower($tipo_pago);
+        $f = new DateTime($ultima_fecha);
+        $fechas = array();
+        if ($tipo === 'semanal' || $tipo === 'mensual') {
+            $intervalo = new DateInterval($tipo === 'semanal' ? 'P7D' : 'P1M');
+            for ($i = 0; $i < $num_cuotas; $i++) {
+                $f->add($intervalo);
+                if ($f->format('w') == 0) $f->add(new DateInterval('P1D'));
+                $fechas[] = $f->format('Y-m-d');
+            }
+        } else {
+            for ($i = 0; $i < $num_cuotas; $i++) {
+                $f->add(new DateInterval('P1D'));
+                if (strtolower((string)$incluir_domingos) === 'no' && $f->format('w') == 0) {
+                    $f->add(new DateInterval('P1D'));
+                }
+                $fechas[] = $f->format('Y-m-d');
+            }
+        }
+        return $fechas;
+    }
+
+    // Aplica el interés por plazo vencido a los préstamos activos cuyo plazo ya terminó con saldo.
+    // Es idempotente: cada periodo vencido se cobra una sola vez (al aplicarlo, el plazo se corre).
+    // Sin $id_prestamo revisa todos. Devuelve cuántos periodos se aplicaron.
+    public function aplicar_intereses_vencidos($id_prestamo = null){
+        $aplicados = 0;
+        try{
+            $desde = $this->pdo->query("SELECT sistema_parametro_valor FROM sistema_parametros
+                                        WHERE sistema_parametro_clave = 'interes_atraso_desde'")->fetchColumn();
+            if (!$desde) return 0;
+            $hoy = date('Y-m-d');
+
+            // Candidatos: activos, con saldo, plazo actual ya pasado y vencimiento original desde la fecha de inicio de la regla
+            $sql = 'SELECT p.id_prestamos FROM prestamos p
+                    WHERE p.prestamo_estado = 1 AND p.prestamo_saldo_pagar > 0'
+                 . ($id_prestamo ? ' AND p.id_prestamos = ?' : '') . '
+                      AND (SELECT MAX(pd.pago_diario_fecha) FROM pagos_diarios pd WHERE pd.id_prestamos = p.id_prestamos) < ?
+                      AND (SELECT MAX(pd.pago_diario_fecha) FROM pagos_diarios pd
+                           WHERE pd.id_prestamos = p.id_prestamos AND pd.id_prestamo_renovacion IS NULL) >= ?';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute($id_prestamo ? [$id_prestamo, $hoy, $desde] : [$hoy, $desde]);
+            $ids = $stm->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($ids as $id) {
+                $aplicados += $this->renovar_prestamo_vencido($id, $hoy);
+            }
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+        }
+        return $aplicados;
+    }
+
+    private function renovar_prestamo_vencido($id_prestamo, $hoy){
+        $aplicados = 0;
+        try{
+            $this->pdo->beginTransaction();
+            $stm = $this->pdo->prepare('SELECT * FROM prestamos WHERE id_prestamos = ? FOR UPDATE');
+            $stm->execute([$id_prestamo]);
+            $p = $stm->fetch();
+
+            $stm_v = $this->pdo->prepare('SELECT MAX(pago_diario_fecha) FROM pagos_diarios WHERE id_prestamos = ?');
+            $stm_v->execute([$id_prestamo]);
+            $vencimiento = $stm_v->fetchColumn();
+            $tasa = floatval($p->prestamo_interes);
+            $num_cuotas = max(1, (int)$p->prestamo_num_cuotas);
+
+            // Un periodo por vuelta, mientras el plazo vigente ya haya pasado (vuelve a validar dentro del bloqueo)
+            while ($p && intval($p->prestamo_estado) === 1 && floatval($p->prestamo_saldo_pagar) > 0
+                   && $vencimiento && $vencimiento < $hoy) {
+                $saldo_anterior = round(floatval($p->prestamo_saldo_pagar), 2);
+                $capital = $this->capital_pendiente($p);
+                $interes = round($capital * $tasa / 100, 2);
+                $saldos = $this->registrar_movimiento($id_prestamo, 'interes_plazo_vencido', 0, $interes,
+                    'Plazo vencido el ' . date('d/m/Y', strtotime($vencimiento)) . ': ' . floatval($tasa) . '% sobre capital pendiente S/ ' . number_format($capital, 2));
+                $saldo_nuevo = $saldos->saldo;
+                $fechas = $this->fechas_periodo($vencimiento, $p->prestamo_tipo_pago, $num_cuotas, $p->prestamo_domingo);
+                $nuevo_vencimiento = end($fechas);
+
+                $this->pdo->prepare('INSERT INTO prestamos_renovaciones (id_prestamos, prestamo_renovacion_vencimiento,
+                                            prestamo_renovacion_capital, prestamo_renovacion_tasa, prestamo_renovacion_interes,
+                                            prestamo_renovacion_saldo_anterior, prestamo_renovacion_saldo_nuevo,
+                                            prestamo_renovacion_nuevo_vencimiento, prestamo_renovacion_fecha)
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+                    ->execute([$id_prestamo, $vencimiento, $capital, $tasa, $interes, $saldo_anterior,
+                               $saldo_nuevo, $nuevo_vencimiento, date('Y-m-d H:i:s')]);
+                $id_renovacion = (int)$this->pdo->lastInsertId();
+
+                // Las cuotas impagas del periodo vencido quedan reprogramadas
+                $this->pdo->prepare('UPDATE pagos_diarios SET pago_diario_estado = 2
+                                     WHERE id_prestamos = ? AND pago_diario_estado = 1')
+                    ->execute([$id_prestamo]);
+
+                // Nuevo cronograma: mismo número de cuotas; redondeo igual al de la creación del préstamo
+                $cuota_base = ceil($saldo_nuevo / $num_cuotas * 10) / 10;
+                $acumulado = 0;
+                $ins = $this->pdo->prepare('INSERT INTO pagos_diarios (id_prestamos, pago_diario_monto, pago_diario_fecha,
+                                                   pago_diario_estado, id_prestamo_renovacion)
+                                            VALUES (?, ?, ?, 1, ?)');
+                foreach ($fechas as $i => $fecha) {
+                    $monto = ($i === count($fechas) - 1) ? round($saldo_nuevo - $acumulado, 2) : $cuota_base;
+                    $acumulado += $monto;
+                    $ins->execute([$id_prestamo, $monto, $fecha, $id_renovacion]);
+                }
+
+                $this->pdo->prepare('UPDATE prestamos SET prestamo_prox_cobro = ? WHERE id_prestamos = ?')
+                    ->execute([$fechas[0], $id_prestamo]);
+
+                $p->prestamo_saldo_pagar = $saldo_nuevo;
+                $vencimiento = $nuevo_vencimiento;
+                $aplicados++;
+            }
+
+            $this->pdo->commit();
+        } catch (Throwable $e){
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return 0;
+        }
+        return $aplicados;
+    }
+
+    // =====================================================================
+    // COMPORTAMIENTO DE PAGO DEL CLIENTE (para decidir si se marca moroso)
+    // =====================================================================
+    public function resumen_comportamiento_cliente($id_cliente){
+        try{
+            $hoy = date('Y-m-d');
+            $r = array();
+
+            $stm = $this->pdo->prepare('SELECT COUNT(*) total,
+                        SUM(prestamo_estado = 1 AND prestamo_saldo_pagar > 0) activos,
+                        SUM(prestamo_estado IN (2, 4) OR (prestamo_estado = 1 AND prestamo_saldo_pagar <= 0)) cancelados,
+                        SUM(prestamo_estado = 3) en_recuperacion
+                    FROM prestamos WHERE id_cliente = ? AND prestamo_estado <> 5');
+            $stm->execute([$id_cliente]);
+            $r['prestamos'] = $stm->fetch();
+
+            // Cuotas pagadas: a tiempo o con atraso (fecha de pago posterior a la fecha de la cuota)
+            $stm = $this->pdo->prepare('SELECT COUNT(DISTINCT pd.id_pago_diario) pagadas,
+                        COUNT(DISTINCT CASE WHEN DATE(pg.pago_fecha) > pd.pago_diario_fecha THEN pd.id_pago_diario END) con_atraso,
+                        MAX(GREATEST(DATEDIFF(DATE(pg.pago_fecha), pd.pago_diario_fecha), 0)) max_dias_atraso,
+                        AVG(CASE WHEN DATE(pg.pago_fecha) > pd.pago_diario_fecha
+                                 THEN DATEDIFF(DATE(pg.pago_fecha), pd.pago_diario_fecha) END) prom_dias_atraso
+                    FROM pagos pg
+                    INNER JOIN pagos_diarios pd ON pd.id_pago_diario = pg.id_pago_diario
+                    INNER JOIN prestamos p ON p.id_prestamos = pd.id_prestamos
+                    WHERE p.id_cliente = ? AND p.prestamo_estado <> 5');
+            $stm->execute([$id_cliente]);
+            $r['cuotas'] = $stm->fetch();
+
+            // Cuotas vencidas sin pagar hoy (solo préstamos activos)
+            $stm = $this->pdo->prepare('SELECT COUNT(*) vencidas, MAX(DATEDIFF(?, pd.pago_diario_fecha)) max_dias
+                    FROM pagos_diarios pd
+                    INNER JOIN prestamos p ON p.id_prestamos = pd.id_prestamos
+                    WHERE p.id_cliente = ? AND p.prestamo_estado = 1 AND pd.pago_diario_estado = 1 AND pd.pago_diario_fecha < ?');
+            $stm->execute([$hoy, $id_cliente, $hoy]);
+            $r['vencidas'] = $stm->fetch();
+
+            $stm = $this->pdo->prepare('SELECT COUNT(*) veces, COALESCE(SUM(r.prestamo_renovacion_interes), 0) interes
+                    FROM prestamos_renovaciones r INNER JOIN prestamos p ON p.id_prestamos = r.id_prestamos
+                    WHERE p.id_cliente = ?');
+            $stm->execute([$id_cliente]);
+            $r['renovaciones'] = $stm->fetch();
+
+            $stm = $this->pdo->prepare('SELECT COUNT(*) FROM clientes_historial_moroso WHERE id_cliente = ?');
+            $stm->execute([$id_cliente]);
+            $r['veces_moroso'] = (int)$stm->fetchColumn();
+
+            return $r;
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
+
+    // =====================================================================
+    // CAPITAL E INTERÉS POR SEPARADO + HISTORIAL DE MOVIMIENTOS
+    // Toda modificación de la deuda de un préstamo pasa por registrar_movimiento(),
+    // que actualiza los dos saldos (y prestamo_saldo_pagar = capital + interés)
+    // y deja una fila en prestamos_movimientos con los saldos resultantes.
+    // =====================================================================
+
+    const TIPOS_MOVIMIENTO = array(
+        'saldo_inicial'         => 'Saldo inicial',
+        'desembolso'            => 'Préstamo otorgado',
+        'pago_cuota'            => 'Pago de cuota',
+        'amortizacion'          => 'Amortización a capital',
+        'ajuste_amortizacion'   => 'Interés recalculado por amortización',
+        'descuento'             => 'Descuento',
+        'interes_plazo_vencido' => 'Interés por plazo vencido',
+        'acuerdo'               => 'Acuerdo de recuperación',
+        'abono_recuperacion'    => 'Abono de recuperación',
+        'anulacion'             => 'Anulación del préstamo',
+    );
+
+    public function saldos_prestamo($id_prestamo){
+        $stm = $this->pdo->prepare('SELECT prestamo_capital_pendiente AS capital, prestamo_interes_pendiente AS interes
+                                    FROM prestamos WHERE id_prestamos = ?');
+        $stm->execute([$id_prestamo]);
+        $s = $stm->fetch();
+        return (object)array('capital' => round(floatval($s->capital ?? 0), 2), 'interes' => round(floatval($s->interes ?? 0), 2));
+    }
+
+    // Reparte un monto entre capital e interés en proporción a lo pendiente de cada uno.
+    // Nunca asigna más de lo pendiente. Devuelve array(capital, interes).
+    public function repartir_monto($capital, $interes, $monto){
+        $monto = round(floatval($monto), 2);
+        $total = round($capital + $interes, 2);
+        if ($total <= 0 || $monto <= 0) return array(0, 0);
+        if ($monto >= $total) return array(round($capital, 2), round($interes, 2));
+        $parte_interes = min(round($monto * $interes / $total, 2), $interes);
+        $parte_capital = round($monto - $parte_interes, 2);
+        if ($parte_capital > $capital) {
+            $parte_capital = $capital;
+            $parte_interes = round($monto - $parte_capital, 2);
+        }
+        return array($parte_capital, $parte_interes);
+    }
+
+    // Aplica un movimiento a los saldos del préstamo (debe llamarse dentro de una transacción).
+    // $d_capital y $d_interes: positivos aumentan la deuda, negativos la reducen.
+    // Devuelve los saldos resultantes: (object) capital, interes, saldo.
+    public function registrar_movimiento($id_prestamo, $tipo, $d_capital, $d_interes, $descripcion = null, $id_pago = null, $id_usuario = null){
+        $stm = $this->pdo->prepare('SELECT prestamo_capital_pendiente, prestamo_interes_pendiente
+                                    FROM prestamos WHERE id_prestamos = ? FOR UPDATE');
+        $stm->execute([$id_prestamo]);
+        $p = $stm->fetch();
+        $capital = max(0, round(floatval($p->prestamo_capital_pendiente) + $d_capital, 2));
+        $interes = max(0, round(floatval($p->prestamo_interes_pendiente) + $d_interes, 2));
+        $saldo   = round($capital + $interes, 2);
+
+        $this->pdo->prepare('UPDATE prestamos SET prestamo_capital_pendiente = ?, prestamo_interes_pendiente = ?,
+                                    prestamo_saldo_pagar = ? WHERE id_prestamos = ?')
+            ->execute([$capital, $interes, $saldo, $id_prestamo]);
+
+        $this->pdo->prepare('INSERT INTO prestamos_movimientos (id_prestamos, prestamo_movimiento_tipo,
+                                    prestamo_movimiento_capital, prestamo_movimiento_interes,
+                                    prestamo_movimiento_capital_despues, prestamo_movimiento_interes_despues,
+                                    prestamo_movimiento_descripcion, id_pago, id_usuario, prestamo_movimiento_fecha)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            ->execute([$id_prestamo, $tipo, round($d_capital, 2), round($d_interes, 2), $capital, $interes,
+                       $descripcion !== null ? mb_substr($descripcion, 0, 255) : null,
+                       $id_pago, $id_usuario, date('Y-m-d H:i:s')]);
+
+        return (object)array('capital' => $capital, 'interes' => $interes, 'saldo' => $saldo);
+    }
+
+    // Registra un pago: lo reparte entre capital e interés, guarda el reparto en la fila de pagos
+    // y deja el movimiento. Devuelve los saldos resultantes.
+    public function aplicar_pago($id_prestamo, $id_pago, $monto, $tipo, $descripcion = null, $id_usuario = null){
+        $s = $this->saldos_prestamo($id_prestamo);
+        list($c, $i) = $this->repartir_monto($s->capital, $s->interes, $monto);
+        $this->pdo->prepare('UPDATE pagos SET pago_capital = ?, pago_interes = ? WHERE id_pago = ?')
+            ->execute([$c, $i, $id_pago]);
+        return $this->registrar_movimiento($id_prestamo, $tipo, -$c, -$i, $descripcion, $id_pago, $id_usuario);
+    }
+
+    // Deja las cuotas pendientes alineadas con la deuda real:
+    //  - sin deuda: no quedan cuotas abiertas
+    //  - con deuda y sin cuotas abiertas: se crea una cuota por el saldo (el préstamo NO se cierra)
+    //  - con deuda distinta a la suma de las cuotas: se reparte el saldo entre las pendientes
+    // Devuelve la fecha de la próxima cuota pendiente (o null).
+    public function cuadrar_cuotas($id_prestamo, $saldo){
+        $cuotas = $this->listar_cuotas_pendientes_ordenadas($id_prestamo);
+        if ($saldo <= 0) {
+            if (!empty($cuotas)) $this->cerrar_cuotas_pendientes($id_prestamo);
+            return null;
+        }
+        if (empty($cuotas)) {
+            $stm = $this->pdo->prepare('SELECT MAX(pago_diario_fecha) FROM pagos_diarios WHERE id_prestamos = ?');
+            $stm->execute([$id_prestamo]);
+            $fecha = max(date('Y-m-d'), (string)$stm->fetchColumn());
+            $this->pdo->prepare('INSERT INTO pagos_diarios (id_prestamos, pago_diario_monto, pago_diario_fecha, pago_diario_estado)
+                                 VALUES (?, ?, ?, 1)')
+                ->execute([$id_prestamo, round($saldo, 2), $fecha]);
+            return $fecha;
+        }
+        $suma = 0;
+        foreach ($cuotas as $c) $suma += floatval($c->pago_diario_monto);
+        if (abs(round($suma, 2) - round($saldo, 2)) >= 0.01) {
+            $n = count($cuotas);
+            $base = round($saldo / $n, 2);
+            $acumulado = 0;
+            $upd = $this->pdo->prepare('UPDATE pagos_diarios SET pago_diario_monto = ? WHERE id_pago_diario = ?');
+            foreach ($cuotas as $k => $c) {
+                $monto = ($k === $n - 1) ? round($saldo - $acumulado, 2) : $base;
+                $acumulado += $monto;
+                $upd->execute([$monto, $c->id_pago_diario]);
+            }
+        }
+        return $cuotas[0]->pago_diario_fecha;
+    }
+
+    // Saldo (capital + interés) antes y después de una operación de pago, según el historial:
+    // antes = saldo previo a su primer movimiento; después = saldo tras su último movimiento.
+    // Incluye descuentos y el interés recalculado por amortización. null si son pagos anteriores al historial.
+    public function saldos_operacion_pago($ids_pago){
+        $ids = array_values(array_filter(array_map('intval', (array)$ids_pago)));
+        if (empty($ids)) return null;
+        $stm = $this->pdo->prepare('SELECT prestamo_movimiento_capital_despues + prestamo_movimiento_interes_despues AS despues,
+                                           prestamo_movimiento_capital + prestamo_movimiento_interes AS cambio
+                                    FROM prestamos_movimientos WHERE id_pago IN (' . implode(',', array_fill(0, count($ids), '?')) . ')
+                                    ORDER BY id_prestamo_movimiento');
+        $stm->execute($ids);
+        $movs = $stm->fetchAll();
+        if (empty($movs)) return null;
+        $primero = $movs[0];
+        $ultimo  = $movs[count($movs) - 1];
+        return (object)array(
+            'antes'   => round(floatval($primero->despues) - floatval($primero->cambio), 2),
+            'despues' => round(floatval($ultimo->despues), 2),
+        );
+    }
+
+    public function listar_movimientos_x_prestamo($id_prestamo){
+        try{
+            $stm = $this->pdo->prepare('SELECT m.*, u.usuario_nickname
+                                        FROM prestamos_movimientos m
+                                        LEFT JOIN usuarios u ON u.id_usuario = m.id_usuario
+                                        WHERE m.id_prestamos = ?
+                                        ORDER BY m.id_prestamo_movimiento');
+            $stm->execute([$id_prestamo]);
+            return $stm->fetchAll();
         } catch (Throwable $e){
             $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
             return [];

@@ -6,6 +6,7 @@ require 'app/models/Archivo.php';
 require 'app/models/Cobros.php';
 require 'app/models/Prestamos.php';
 require 'app/models/Builder.php';
+require 'app/models/Gastos.php';
 
 require 'app/view/pdf/fpdf/fpdf.php';
 
@@ -23,6 +24,7 @@ class CajaController
     private $builder;
     private $cobros;
     private $prestamos;
+    private $gastos;
     public function __construct()
     {
         //Instancias especificas del controlador
@@ -38,6 +40,7 @@ class CajaController
         $this->cobros = new Cobros();
         $this->builder = new Builder();
         $this->prestamos = new Prestamos();
+        $this->gastos = new Gastos();
     }
     public function inicio(){
         try{
@@ -54,6 +57,7 @@ class CajaController
             $prestamos_caja        = [];
             $ingresos_manuales     = [];
             $anulaciones_prestamos = [];
+            $gastos_empresa_caja   = [];
 
             // Asume el nombre del usuario logueado (Ajusta la variable de sesión según tu sistema)
             $usuario_actual = $_SESSION['n_usuario'] ?? 'Administrador';
@@ -76,6 +80,9 @@ class CajaController
 
                 // 5. Traer Anulaciones de préstamos (Tipo 3 = Devolución por anulación)
                 $anulaciones_prestamos = $this->prestamos->listar_anulaciones_prestamos_desde($ultima_caja->id_caja);
+
+                // 6. Gastos de empresa pagados con dinero de esta caja (módulo Gastos)
+                $gastos_empresa_caja = $this->gastos->listar_gastos_caja($ultima_caja->id_caja);
             }
 
             require _VIEW_PATH_ . 'header.php';
@@ -387,6 +394,7 @@ class CajaController
             $prestamos_caja        = [];
             $ingresos_manuales     = [];
             $anulaciones_prestamos = [];
+            $gastos_empresa_caja   = [];
 
             if($ultima_caja->estado_caja == 1){
                 $fecha_caja            = $this->caja->traer_fecha()->fecha_caja;
@@ -395,6 +403,7 @@ class CajaController
                 $prestamos_caja        = $this->prestamos->listar_prestamos_desde($fecha_caja);
                 $ingresos_manuales     = $this->prestamos->listar_ingresos_manuales_desde($ultima_caja->id_caja);
                 $anulaciones_prestamos = $this->prestamos->listar_anulaciones_prestamos_desde($ultima_caja->id_caja);
+                $gastos_empresa_caja   = $this->gastos->listar_gastos_caja($ultima_caja->id_caja);
             }
 
             // Cálculos (idénticos a la vista) — usar ingreso_display para reflejar efectivo real
@@ -417,8 +426,14 @@ class CajaController
             $suma_anulaciones = 0;
             foreach ((array)$anulaciones_prestamos as $an) $suma_anulaciones += $an->caja_movimiento_monto;
 
+            // Gastos de empresa pagados con caja; los anulados se muestran pero no cuentan
+            $suma_gastos_empresa = 0;
+            foreach ((array)$gastos_empresa_caja as $ge) {
+                if (intval($ge->gasto_empresa_estado) === 1) $suma_gastos_empresa += $ge->gasto_empresa_monto;
+            }
+
             $total_ingresos = $suma_pagos + $suma_amortizaciones + $suma_ingresos_manuales;
-            $total_egresos  = $suma_prestamos;
+            $total_egresos  = $suma_prestamos + $suma_gastos_empresa;
             $saldo_final    = $ultima_caja->monto_apertura_caja + $total_ingresos - $total_egresos;
 
             $texto_emision = "Iquitos, " . date('d/m/Y') . " a las " . date('H:i:s');
@@ -494,7 +509,7 @@ class CajaController
             // ── SECCIÓN 3: Amortizaciones ─────────────────────────────────────────
             $pdf->SetFillColor(200, 160, 50);
             $pdf->SetFont('Arial', 'B', 9);
-            $pdf->Cell(180, 6, 'Amortizaciones', 1, 1, 'L', true);
+            $pdf->Cell(180, 6, 'Amortizaciones y Abonos de Recuperacion', 1, 1, 'L', true);
 
             $pdf->SetFillColor(200, 200, 200);
             $pdf->SetFont('Arial', 'B', 8);
@@ -507,7 +522,8 @@ class CajaController
             if (!empty($amortizaciones_caja)) {
                 foreach ($amortizaciones_caja as $am) {
                     $pdf->Cell(42, 5, date('d/m/Y H:i', strtotime($am->pago_fecha)), 1, 0, 'C');
-                    $pdf->Cell(78, 5, $am->cliente_nombre . ' ' . $am->cliente_apellido_paterno, 1, 0, 'L');
+                    $pdf->Cell(78, 5, $am->cliente_nombre . ' ' . $am->cliente_apellido_paterno
+                        . (in_array(intval($am->prestamo_estado ?? 0), [3, 4]) ? ' (Abono recuperacion)' : ''), 1, 0, 'L');
                     $pdf->Cell(36, 5, ucfirst($am->metodo_pago_nombre ?? $am->pago_metodo), 1, 0, 'C');
                     $pdf->SetFont('Arial', 'B', 8);
                     $pdf->Cell(24, 5, 'S/ ' . number_format($am->ingreso_display, 2), 1, 1, 'R');
@@ -615,6 +631,34 @@ class CajaController
                 }
             } else {
                 $pdf->Cell(180, 5, 'No hay ingresos manuales registrados.', 1, 1, 'C');
+            }
+            $pdf->Ln(3);
+
+            // ── SECCIÓN 5: Gastos de Empresa pagados con caja ─────────────────────
+            $pdf->SetFillColor(200, 200, 200);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(180, 6, 'Gastos de Empresa', 1, 1, 'L', true);
+
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(30, 5, 'Fecha',       1, 0, 'C', true);
+            $pdf->Cell(22, 5, 'Hora',        1, 0, 'C', true);
+            $pdf->Cell(40, 5, 'Categoria',   1, 0, 'C', true);
+            $pdf->Cell(68, 5, 'Descripcion', 1, 0, 'C', true);
+            $pdf->Cell(20, 5, 'Egreso',      1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 8);
+            if (!empty($gastos_empresa_caja)) {
+                foreach ($gastos_empresa_caja as $ge) {
+                    $ge_anulado = intval($ge->gasto_empresa_estado) !== 1;
+                    $pdf->SetFillColor(255, 204, 204);
+                    $pdf->Cell(30, 5, date('d/m/Y', strtotime($ge->gasto_empresa_fecha_registro)), 1, 0, 'C', $ge_anulado);
+                    $pdf->Cell(22, 5, date('H:i:s', strtotime($ge->gasto_empresa_fecha_registro)), 1, 0, 'C', $ge_anulado);
+                    $pdf->Cell(40, 5, mb_strimwidth($ge->gasto_empresa_categoria_nombre, 0, 24, '...'), 1, 0, 'L', $ge_anulado);
+                    $pdf->Cell(68, 5, ($ge_anulado ? '[ANULADO] ' : '') . mb_strimwidth($ge->gasto_empresa_descripcion, 0, 42, '...'), 1, 0, 'L', $ge_anulado);
+                    $pdf->Cell(20, 5, $ge_anulado ? '(Anulado)' : 'S/ ' . number_format($ge->gasto_empresa_monto, 2), 1, 1, 'R', $ge_anulado);
+                }
+            } else {
+                $pdf->Cell(180, 5, 'No hay gastos de empresa pagados con caja en este turno.', 1, 1, 'C');
             }
             $pdf->Ln(5);
 

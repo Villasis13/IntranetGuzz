@@ -41,6 +41,92 @@ function toggle_celular2() {
     }
 }
 
+// ===== Documentos y fotos del cliente =====
+var DOC_EXTENSIONES = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'doc', 'docx'];
+var DOC_MAX_BYTES = 10 * 1024 * 1024; // 10 MB, igual que en el servidor
+
+function agregarDocumento() {
+    var $row = $('<div class="doc-row border rounded p-2 mb-2 bg-white">' +
+        '<div class="row g-2 align-items-center">' +
+        '<div class="col-md-3">' +
+        '<select class="form-control form-control-sm doc-tipo">' +
+        '<option value="DNI">DNI</option>' +
+        '<option value="Recibo de luz">Recibo de luz</option>' +
+        '<option value="Foto personal">Foto personal</option>' +
+        '<option value="Otro">Otro</option>' +
+        '</select>' +
+        '</div>' +
+        '<div class="col-md-4">' +
+        '<input type="file" class="form-control form-control-sm doc-archivo" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx">' +
+        '</div>' +
+        '<div class="col-md-4">' +
+        '<input type="text" class="form-control form-control-sm doc-descripcion" maxlength="255" placeholder="Descripción (opcional)">' +
+        '</div>' +
+        '<div class="col-md-1 text-end">' +
+        '<button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="$(this).closest(\'.doc-row\').remove()" title="Quitar">' +
+        '<i class="fa fa-times"></i></button>' +
+        '</div>' +
+        '</div>' +
+        '</div>');
+    $('#documentos_container').append($row);
+}
+
+function formatear_tamanho(bytes) {
+    bytes = parseInt(bytes, 10) || 0;
+    if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+}
+
+// Lista los documentos ya guardados del cliente (texto insertado con .text() para no interpretar HTML)
+function mostrar_documentos_guardados(documentos) {
+    var $cont = $('#documentos_guardados').empty();
+    if (!documentos || !documentos.length) {
+        $cont.append('<small class="text-muted d-block mb-2">Este cliente aún no tiene documentos adjuntos.</small>');
+        return;
+    }
+    documentos.forEach(function (d) {
+        var es_imagen = (d.cliente_documento_mime || '').indexOf('image/') === 0;
+        var icono = es_imagen ? 'fa-image' : (d.cliente_documento_mime === 'application/pdf' ? 'fa-file-pdf' : 'fa-file-alt');
+        var $row = $('<div class="d-flex align-items-center border rounded p-2 mb-2 bg-white">' +
+            '<i class="fa ' + icono + ' text-primary me-2"></i>' +
+            '<div class="flex-grow-1 small">' +
+            '<span class="badge bg-info text-white me-1 doc-g-tipo"></span>' +
+            '<span class="doc-g-nombre"></span>' +
+            '<div class="text-muted doc-g-detalle"></div>' +
+            '</div>' +
+            '<a class="btn btn-outline-primary btn-sm py-0 px-2 me-1" target="_blank" title="Ver"><i class="fa fa-eye"></i></a>' +
+            '<button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar"><i class="fa fa-trash"></i></button>' +
+            '</div>');
+        $row.find('.doc-g-tipo').text(d.cliente_documento_tipo);
+        $row.find('.doc-g-nombre').text(d.cliente_documento_nombre);
+        var detalle = (d.cliente_documento_descripcion ? d.cliente_documento_descripcion + ' · ' : '') +
+            formatear_tamanho(d.cliente_documento_tamanho) + ' · ' + (d.cliente_documento_fecha || '').substring(0, 16);
+        $row.find('.doc-g-detalle').text(detalle);
+        $row.find('a').attr('href', urlweb + 'Clientes/ver_documento/' + d.id_cliente_documento);
+        $row.find('button').on('click', function () {
+            preguntar('¿Eliminar este documento del cliente?', 'eliminar_documento_cliente', 'Sí, eliminar', 'Cancelar', d.id_cliente_documento);
+        });
+        $cont.append($row);
+    });
+}
+
+function eliminar_documento_cliente(id_cliente_documento) {
+    $.ajax({
+        type: "POST",
+        url: urlweb + "api/Clientes/eliminar_documento_cliente",
+        data: { id_cliente_documento: id_cliente_documento },
+        dataType: 'json',
+        success: function (r) {
+            if (r.result.code == 1) {
+                respuesta('Documento eliminado', 'success');
+                editar_clientes($('#id_cliente').val());
+            } else {
+                respuesta('No se pudo eliminar el documento', 'error');
+            }
+        }
+    });
+}
+
 function guardar_editar_clientes(){
     var valor = true;
     var boton = "btn-agregar-cliente";
@@ -90,35 +176,81 @@ function guardar_editar_clientes(){
         valor = false;
     }
 
+    // Documentos nuevos: cada fila debe tener archivo, formato permitido y tamaño válido
+    var documentos = [];
+    $('#documentos_container .doc-row').each(function () {
+        var $fila = $(this);
+        var archivo = $fila.find('.doc-archivo')[0].files[0];
+        $fila.find('.doc-archivo').css('border', '');
+        if (!archivo) {
+            if (valor) respuesta('Seleccione el archivo a adjuntar o quite la fila vacía', 'error');
+            $fila.find('.doc-archivo').css('border', 'solid red');
+            valor = false;
+            return;
+        }
+        var ext = archivo.name.split('.').pop().toLowerCase();
+        if (DOC_EXTENSIONES.indexOf(ext) === -1 || archivo.size > DOC_MAX_BYTES) {
+            if (valor) respuesta('"' + archivo.name + '": solo JPG, PNG, WEBP, PDF, DOC o DOCX de hasta 10 MB', 'error');
+            $fila.find('.doc-archivo').css('border', 'solid red');
+            valor = false;
+            return;
+        }
+        documentos.push({
+            archivo: archivo,
+            tipo: $fila.find('.doc-tipo').val(),
+            descripcion: $fila.find('.doc-descripcion').val().trim()
+        });
+    });
+
     if(valor){
-        var cadena =
-            "id_cliente=" + id_cliente +
-            "&cliente_dni=" + encodeURIComponent(cliente_dni) +
-            "&cliente_nombre=" + encodeURIComponent(cliente_nombre) +
-            "&cliente_apellido_paterno=" + encodeURIComponent(cliente_apellido_paterno) +
-            "&cliente_apellido_materno=" + encodeURIComponent(cliente_apellido_materno) +
-            "&cliente_fecha_nacimiento=" + cliente_fecha_nacimiento +
-            "&cliente_direcciones=" + encodeURIComponent(JSON.stringify(cliente_direcciones)) +
-            "&cliente_celular=" + cliente_celular +
-            "&cliente_celular2=" + cliente_celular2 +
-            "&cliente_correo=" + encodeURIComponent(cliente_correo) +
-            "&cliente_nro_tarjeta=" + cliente_nro_tarjeta +
-            "&cliente_clave=" + cliente_clave +
-            "&cliente_lugar_trabajo=" + encodeURIComponent(cliente_lugar_trabajo) +
-            "&cliente_otro=" + encodeURIComponent(cliente_otro);
+        // FormData para poder enviar los archivos junto con los datos del cliente
+        var datos = new FormData();
+        datos.append('id_cliente', id_cliente);
+        datos.append('cliente_dni', cliente_dni);
+        datos.append('cliente_nombre', cliente_nombre);
+        datos.append('cliente_apellido_paterno', cliente_apellido_paterno);
+        datos.append('cliente_apellido_materno', cliente_apellido_materno);
+        datos.append('cliente_fecha_nacimiento', cliente_fecha_nacimiento);
+        datos.append('cliente_direcciones', JSON.stringify(cliente_direcciones));
+        datos.append('cliente_celular', cliente_celular);
+        datos.append('cliente_celular2', cliente_celular2);
+        datos.append('cliente_correo', cliente_correo);
+        datos.append('cliente_nro_tarjeta', cliente_nro_tarjeta);
+        datos.append('cliente_clave', cliente_clave);
+        datos.append('cliente_lugar_trabajo', cliente_lugar_trabajo);
+        datos.append('cliente_otro', cliente_otro);
+        documentos.forEach(function (d) {
+            datos.append('documentos[]', d.archivo);
+            datos.append('documentos_tipo[]', d.tipo);
+            datos.append('documentos_descripcion[]', d.descripcion);
+        });
 
         $.ajax({
             type: "POST",
             url: urlweb + "api/Clientes/guardar_editar_clientes",
-            data: cadena,
+            data: datos,
+            contentType: false,
+            processData: false,
+            cache: false,
             dataType: 'json',
             beforeSend: function () {
-                cambiar_estado_boton(boton, 'Guardando...', true);
+                cambiar_estado_boton(boton, documentos.length ? 'Subiendo archivos...' : 'Guardando...', true);
             },
             success:function (r) {
                 cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar", false);
                 switch (r.result.code) {
                     case 1:
+                        var rechazados = r.result.documentos_rechazados || [];
+                        if (rechazados.length) {
+                            cambiar_estado_boton(boton, 'Guardando...', true);
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Cliente guardado',
+                                text: 'No se pudieron guardar estos archivos: ' + rechazados.join(', ') +
+                                    '. Verifique que sean JPG, PNG, WEBP, PDF, DOC o DOCX de hasta 10 MB.'
+                            }).then(function () { location.reload(); });
+                            break;
+                        }
                         if(id_cliente != ""){
                             respuesta('¡Cliente Editado Exitosamente', 'success');
                         } else {
@@ -137,6 +269,10 @@ function guardar_editar_clientes(){
                         respuesta('¡Algo catastrofico ha ocurrido!', 'error');
                         break;
                 }
+            },
+            error: function () {
+                cambiar_estado_boton(boton, "<i class=\"fa fa-save fa-sm text-white-50\"></i> Guardar", false);
+                respuesta('No se pudo guardar: error de conexión o archivos demasiado grandes', 'error');
             }
         });
     }
@@ -306,6 +442,8 @@ function editar_clientes(id_cliente){
         $('#cliente_clave').val(almacenar.cliente_clave);
         $('#cliente_lugar_trabajo').val(almacenar.cliente_lugar_trabajo);
         $('#cliente_otro').val(almacenar.cliente_otro);
+        $('#documentos_container').empty();
+        mostrar_documentos_guardados(almacenar.documentos || []);
     });
 
     function edicion(cliente_nombre, cliente_apellidos, cliente_dni, cliente_celular,cliente_email,cliente_genero){
@@ -359,9 +497,52 @@ function limpiar_clientes(){
     $('#cliente_clave').val('');
     $('#cliente_lugar_trabajo').val('');
     $('#cliente_otro').val('');
+    $('#documentos_container').empty();
+    $('#documentos_guardados').empty();
 }
 function poner_id_modal_moroso(id){
     $('#id_cliente_moroso').val(id);
+    cargar_resumen_comportamiento(id);
+}
+
+// Resumen del historial de pagos para decidir si corresponde marcar al cliente como moroso
+function cargar_resumen_comportamiento(id_cliente) {
+    var $cont = $('#resumen_comportamiento').html('<small class="text-muted">Cargando historial de pagos...</small>');
+    $.ajax({
+        type: "POST",
+        url: urlweb + "api/Clientes/resumen_comportamiento_cliente",
+        data: { id_cliente: id_cliente },
+        dataType: 'json',
+        success: function (r) {
+            if (r.result.code != 1 || !r.result.resumen) {
+                $cont.html('<small class="text-danger">No se pudo cargar el historial de pagos.</small>');
+                return;
+            }
+            var d = r.result.resumen;
+            var n = function (v) { return parseInt(v, 10) || 0; };
+            var pagadas = n(d.cuotas.pagadas), con_atraso = n(d.cuotas.con_atraso);
+            var filas = [
+                ['Préstamos', n(d.prestamos.total) + ' (' + n(d.prestamos.activos) + ' activos, ' + n(d.prestamos.cancelados) + ' cancelados'
+                    + (n(d.prestamos.en_recuperacion) ? ', ' + n(d.prestamos.en_recuperacion) + ' en recuperación' : '') + ')'],
+                ['Cuotas pagadas', pagadas + (pagadas ? ' — ' + (pagadas - con_atraso) + ' a tiempo, ' + con_atraso + ' con atraso' : '')],
+                ['Atraso al pagar', con_atraso ? ('promedio ' + Math.round(parseFloat(d.cuotas.prom_dias_atraso) || 0) + ' días, máximo ' + n(d.cuotas.max_dias_atraso) + ' días') : 'Sin atrasos'],
+                ['Cuotas vencidas hoy', n(d.vencidas.vencidas) ? n(d.vencidas.vencidas) + ' (la más antigua con ' + n(d.vencidas.max_dias) + ' días)' : 'Ninguna'],
+                ['Plazos vencidos con interés', n(d.renovaciones.veces) ? n(d.renovaciones.veces) + ' (S/ ' + (parseFloat(d.renovaciones.interes) || 0).toFixed(2) + ')' : 'Ninguno'],
+                ['Veces marcado moroso', n(d.veces_moroso)]
+            ];
+            var $tabla = $('<table class="table table-sm table-bordered mb-1 small"><tbody></tbody></table>');
+            filas.forEach(function (f) {
+                $tabla.find('tbody').append($('<tr>').append($('<th class="bg-light" style="width:45%">').text(f[0]), $('<td>').text(f[1])));
+            });
+            $cont.empty()
+                .append('<div class="fw-bold mb-1"><i class="fa fa-history me-1"></i> Historial de pagos del cliente</div>')
+                .append($tabla)
+                .append('<small class="text-muted">Un atraso aislado no convierte al cliente en moroso: revise su comportamiento antes de confirmar.</small>');
+        },
+        error: function () {
+            $cont.html('<small class="text-danger">No se pudo cargar el historial de pagos.</small>');
+        }
+    });
 }
 function eliminar_cliente(id_cliente){
     $.ajax({

@@ -170,12 +170,86 @@
                     </div>
                 </div>
 
-                <div class="row mt-2">
-                    <div class="col-lg-6">
-                        <label for="prestamo_garantia" class="form-label">Garantía</label>
-                        <input type="text" class="form-control" name="prestamo_garantia" id="prestamo_garantia" >
+                <!-- Registro de la garantía -->
+                <div class="border rounded p-3 mb-4 bg-light">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa fa-shield-alt me-1"></i> Garantía</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="garantia_tipo" class="form-label">Tipo de Garantía <span class="text-danger">*</span></label>
+                            <select class="form-control" id="garantia_tipo" name="garantia_tipo" onchange="ajustar_campos_garantia()">
+                                <option value="">Seleccionar</option>
+                                <option value="Vehículo">Vehículo</option>
+                                <option value="Electrodoméstico">Electrodoméstico</option>
+                                <option value="Equipo electrónico">Equipo electrónico</option>
+                                <option value="Joya">Joya</option>
+                                <option value="Herramienta / Maquinaria">Herramienta / Maquinaria</option>
+                                <option value="Mueble">Mueble</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="garantia_nombre" class="form-label">Nombre del Bien <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="garantia_nombre" name="garantia_nombre" maxlength="250"
+                                   placeholder="Ej.: Motocicleta Honda XR150, Televisor LG 55&quot;">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="garantia_estado" class="form-label">Estado del Bien <span class="text-danger">*</span></label>
+                            <select class="form-control" id="garantia_estado" name="garantia_estado">
+                                <option value="">Seleccionar</option>
+                                <option value="Nuevo">Nuevo</option>
+                                <option value="Bueno">Bueno</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Malo">Malo</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="garantia_descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="garantia_descripcion" name="garantia_descripcion" rows="2" maxlength="1000"
+                                      placeholder="Marca, modelo, serie, accesorios, observaciones del estado..."></textarea>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="garantia_valor_real" class="form-label">Valor Real <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input type="text" class="form-control" id="garantia_valor_real" name="garantia_valor_real"
+                                       onkeyup="validar_numeros_decimales_dos(this.id)">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="garantia_valor_asignado" class="form-label">Valor Asignado como Garantía <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">S/</span>
+                                <input type="text" class="form-control" id="garantia_valor_asignado" name="garantia_valor_asignado"
+                                       onkeyup="validar_numeros_decimales_dos(this.id)">
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- Solo para vehículos -->
+                    <div id="div_garantia_vehiculo" class="row g-3 mt-1" style="display: none;">
+                        <div class="col-md-3">
+                            <label for="garantia_placa" class="form-label">Placa <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="garantia_placa" name="garantia_placa" maxlength="20">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="garantia_chasis" class="form-label">N° de Chasis <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="garantia_chasis" name="garantia_chasis" maxlength="50">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="garantia_anho" class="form-label">Año <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="garantia_anho" name="garantia_anho" maxlength="4"
+                                   onkeyup="validar_numeros(this.id)">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="garantia_color" class="form-label">Color <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="garantia_color" name="garantia_color" maxlength="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
                     <div class="col-md-6">
                         <label for="prestamo_garante" class="form-label">Garante</label>
                         <select class="form-control" id="prestamo_garante" name="prestamo_garante">

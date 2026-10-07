@@ -104,6 +104,8 @@
                         <th>Fecha</th>
                         <th>Tipo</th>
                         <th class="text-end">Monto pagado</th>
+                        <th class="text-end">A capital</th>
+                        <th class="text-end">A interés</th>
                         <th>Método de pago</th>
                         <th class="text-end">Descuento</th>
                         <th class="text-end">Saldo restante</th>
@@ -124,6 +126,8 @@
                                 <?php endif; ?>
                             </td>
                             <td class="text-end pagar-history-paid">S/ <?= number_format(floatval($p_hist->pago_monto), 2) ?></td>
+                            <td class="text-end"><?= $p_hist->pago_capital !== null ? 'S/ ' . number_format($p_hist->pago_capital, 2) : '-' ?></td>
+                            <td class="text-end"><?= $p_hist->pago_interes !== null ? 'S/ ' . number_format($p_hist->pago_interes, 2) : '-' ?></td>
                             <td><?= htmlspecialchars($p_hist->metodo_nombre ?? '-') ?></td>
                             <td class="text-end">
                                 <?= $descuento_hist > 0
@@ -138,6 +142,8 @@
                     <tr>
                         <td colspan="2">Total (<?= count($pagos_hist) ?> pago<?= count($pagos_hist) === 1 ? '' : 's' ?>)</td>
                         <td class="text-end pagar-history-paid">S/ <?= number_format($total_pagado_hist, 2) ?></td>
+                        <td class="text-end">S/ <?= number_format(array_sum(array_map(function ($x) { return floatval($x->pago_capital); }, $pagos_hist)), 2) ?></td>
+                        <td class="text-end">S/ <?= number_format(array_sum(array_map(function ($x) { return floatval($x->pago_interes); }, $pagos_hist)), 2) ?></td>
                         <td></td>
                         <td class="text-end">
                             <?= $total_descuento_hist > 0
@@ -453,7 +459,7 @@
             <div class="col-md-6">
                 <div class="pagar-data-row">
                     <span class="pagar-label">Garante</span>
-                    <span class="pagar-value"><?= $garante->cliente_nombre . ' ' . $garante->cliente_apellido_paterno . ' ' . $garante->cliente_apellido_materno ?></span>
+                    <span class="pagar-value"><?= $garante ? $garante->cliente_nombre . ' ' . $garante->cliente_apellido_paterno . ' ' . $garante->cliente_apellido_materno : '-' ?></span>
                 </div>
             </div>
         </div>

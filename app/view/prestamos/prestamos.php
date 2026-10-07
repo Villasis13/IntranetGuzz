@@ -202,12 +202,12 @@
                                             } else if ($c->prestamo_estado == 3) {
                                                 // ANTIGUO: Amarillo con icono de reloj/historial
                                                 echo '<span class="badge bg-warning text-dark" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
-                    <i class="fa fa-history me-1"></i> P. Antiguo
+                    <i class="fa fa-history me-1"></i> En recuperación
                   </span>';
                                             } else if ($c->prestamo_estado == 4) {
                                                 // ANTIGUO CANCELADO: Gris con icono de archivo
                                                 echo '<span class="badge bg-secondary text-white" style="font-size: 0.85em; padding: 6px 10px; border-radius: 6px;">
-                    <i class="fa fa-archive me-1"></i> P. Antiguo Cancelado
+                    <i class="fa fa-archive me-1"></i> Recuperado
                   </span>';
                                             } else if($c->prestamo_estado == 5) {
                                                 // ANULADO: Etiqueta roja destacada
@@ -238,11 +238,26 @@
                                         <br>-->
                                         <?php
                                         // Sin saldo pendiente no hay nada que cobrar: solo historial
-                                        if(($c->prestamo_estado == 1 || $c->prestamo_estado == 3) && !$esta_cancelado){
+                                        if($c->prestamo_estado == 1 && !$esta_cancelado){
                                             ?>
                                             <a href="<?= _SERVER_ ?>cobros/pagar/<?= $c->id_prestamos ?>"
                                                style="cursor: pointer" class="btn-sm btn-warning text-white">
                                                 <i class="fa fa-money"></i> Pagar
+                                            </a>
+                                            <?php
+                                            // Con cuotas atrasadas se puede pasar a recuperación (nuevo acuerdo y abonos parciales)
+                                            if (!empty($c->proxima_cuota_fecha) && $c->proxima_cuota_fecha < date('Y-m-d')) { ?>
+                                                <br>
+                                                <a onclick="preguntar('¿Pasar este préstamo a recuperación? Dejará de cobrarse por cuotas y se gestionará con un acuerdo y abonos parciales.','pasar_a_recuperacion','Sí, pasar','Cancelar',<?= $c->id_prestamos ?>)"
+                                                   style="cursor: pointer; white-space:nowrap" class="btn btn-sm btn-outline-danger mt-1">
+                                                    <i class="fa fa-history"></i> Recuperación
+                                                </a>
+                                            <?php }
+										} elseif (in_array(intval($c->prestamo_estado), [3, 4])) {
+                                            ?>
+                                            <a href="<?= _SERVER_ ?>Prestamos/recuperacion/<?= $c->id_prestamos ?>"
+                                               style="cursor: pointer; white-space:nowrap" class="btn-sm btn-warning text-white">
+                                                <i class="fa fa-folder-open"></i> <?= $c->prestamo_estado == 3 ? 'Abonos' : 'Historial' ?>
                                             </a>
                                         <?php
 										}

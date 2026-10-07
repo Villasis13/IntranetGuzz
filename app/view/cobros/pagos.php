@@ -163,6 +163,8 @@
                                 <th>Cuota Original</th>
                                 <th>Descuento</th>
                                 <th>Monto Final</th>
+                                <th>A capital</th>
+                                <th>A interés</th>
                                 <th>Monto Recibido</th>
                                 <th>Vuelto</th>
                             </tr>
@@ -206,13 +208,15 @@
                                         </td>
                                         <td><?= $c->pago_descuento_monto > 0 ? '<span class="text-warning">-S/ ' . number_format($c->pago_descuento_monto, 2) . '</span>' : '<span class="text-muted">-</span>' ?></td>
                                         <td class="font-weight-bold text-success">S/ <?= number_format($monto_final, 2) ?></td>
+                                        <td><?= $c->pago_capital !== null ? 'S/ ' . number_format($c->pago_capital, 2) : '<span class="text-muted">-</span>' ?></td>
+                                        <td><?= $c->pago_interes !== null ? 'S/ ' . number_format($c->pago_interes, 2) : '<span class="text-muted">-</span>' ?></td>
                                         <td><?= !empty($c->pago_monto_recibido) ? 'S/ ' . number_format($monto_recibido, 2) : '<span class="text-muted">-</span>' ?></td>
                                         <td><?= $dif_html ?></td>
                                     </tr>
                                     <?php
                                 }
                             } else {
-                                echo '<tr><td colspan="11" class="text-center text-muted">No hay pagos registrados aún.</td></tr>';
+                                echo '<tr><td colspan="13" class="text-center text-muted">No hay pagos registrados aún.</td></tr>';
                             }
                             ?>
                             </tbody>
@@ -294,6 +298,8 @@
             </div>
         <?php endif; ?>
     </div>
+    <!-- ===== HISTORIAL DE MOVIMIENTOS (capital e interés) ===== -->
+    <?php require _VIEW_PATH_ . 'cobros/movimientos_prestamo.php'; ?>
 </div>
 
 <script src="<?php echo _SERVER_ . _JS_;?>domain.js"></script>

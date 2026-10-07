@@ -5,6 +5,7 @@ require 'app/models/Usuario.php';
 require 'app/models/Rol.php';
 require 'app/models/Archivo.php';
 require 'app/models/Prestamos.php';
+require 'app/models/Cobros.php';
 class ClientesController
 {
     private $usuario;
@@ -19,6 +20,7 @@ class ClientesController
     private $clientes;
     private $builder;
     private $prestamos;
+    private $cobros;
     public function __construct()
     {
         //Instancias especificas del controlador
@@ -33,12 +35,16 @@ class ClientesController
         $this->clientes = new Clientes();
         $this->builder = new Builder();
         $this->prestamos = new Prestamos();
+        $this->cobros = new Cobros();
     }
     public function inicio(){
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+            // Aplica el interés de los préstamos cuyo plazo venció con saldo (una vez por periodo)
+            $this->cobros->aplicar_intereses_vencidos();
             $clientes = $this->clientes->todos_clientes();
+            $clientes_atraso = $this->clientes->clientes_con_atraso();
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'clientes/inicio.php';
@@ -90,8 +96,82 @@ class ClientesController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
+    // Documentos adjuntos del cliente: tipos de archivo aceptados (extensión => MIME real) y tamaño máximo
+    const DOC_FORMATOS = array(
+        'jpg'  => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
+        'webp' => 'image/webp', 'pdf'  => 'application/pdf',
+        'doc'  => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    );
+    const DOC_TIPOS = array('DNI', 'Recibo de luz', 'Foto personal', 'Otro');
+    const DOC_MAX_BYTES = 10485760; // 10 MB
+
+    // Guarda los archivos enviados en documentos[] (con documentos_tipo[] y documentos_descripcion[]).
+    // Devuelve los nombres de los archivos rechazados para avisar al usuario.
+    private function guardar_documentos_cliente($id_cliente, $id_usuario)
+    {
+        $rechazados = array();
+        if (empty($_FILES['documentos']['name']) || !is_array($_FILES['documentos']['name'])) {
+            return $rechazados;
+        }
+
+        $carpeta = 'uploads/clientes/' . (int)$id_cliente;
+        if (!is_dir($carpeta)) {
+            mkdir($carpeta, 0755, true);
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        foreach ($_FILES['documentos']['name'] as $i => $nombre_original) {
+            if ($nombre_original === '' || $_FILES['documentos']['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            $tmp  = $_FILES['documentos']['tmp_name'][$i];
+            $peso = (int)$_FILES['documentos']['size'][$i];
+            $ext  = strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION));
+            $tipo = $_POST['documentos_tipo'][$i] ?? '';
+            $descripcion = trim($_POST['documentos_descripcion'][$i] ?? '');
+
+            // La extensión y el contenido real del archivo deben coincidir con un formato permitido
+            $valido = $_FILES['documentos']['error'][$i] === UPLOAD_ERR_OK
+                && is_uploaded_file($tmp)
+                && $peso > 0 && $peso <= self::DOC_MAX_BYTES
+                && isset(self::DOC_FORMATOS[$ext])
+                && in_array($tipo, self::DOC_TIPOS, true);
+            $mime = $valido ? $finfo->file($tmp) : '';
+            if (!$valido || $mime !== self::DOC_FORMATOS[$ext]) {
+                $rechazados[] = $nombre_original;
+                continue;
+            }
+
+            $ruta = $carpeta . '/' . date('YmdHis') . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+            // Fotos JPG/PNG se reducen a 1600 px como máximo (legible para DNI y recibos); el resto se guarda tal cual
+            $guardado = in_array($mime, array('image/jpeg', 'image/png'), true)
+                ? $this->archivo->subir_imagen_comprimida($tmp, $ruta, false, 1600, 1600, 85)
+                : move_uploaded_file($tmp, $ruta);
+            if (!$guardado) {
+                $rechazados[] = $nombre_original;
+                continue;
+            }
+
+            $this->builder->save('clientes_documentos', array(
+                'id_cliente'                    => $id_cliente,
+                'cliente_documento_tipo'        => $tipo,
+                'cliente_documento_descripcion' => $descripcion !== '' ? mb_substr($descripcion, 0, 255) : null,
+                'cliente_documento_nombre'      => mb_substr(basename($nombre_original), 0, 255),
+                'cliente_documento_ruta'        => $ruta,
+                'cliente_documento_mime'        => $mime,
+                'cliente_documento_tamanho'     => filesize($ruta),
+                'id_usuario'                    => $id_usuario,
+                'cliente_documento_fecha'       => date('Y-m-d H:i:s'),
+                'cliente_documento_estado'      => 1,
+            ));
+        }
+        return $rechazados;
+    }
+
     public function guardar_editar_clientes()
     {
+        $documentos_rechazados = array();
         $result = 2;
         $message = 'OK';
         try {
@@ -132,6 +212,7 @@ class ClientesController
                         if ($result == 1) {
                             $nuevo_id = $this->builder->lastInsertId();
                             $this->clientes->guardar_direcciones($nuevo_id, $dirs);
+                            $documentos_rechazados = $this->guardar_documentos_cliente($nuevo_id, $id_usuario_edicion);
                         }
                     }
                 } else {
@@ -179,6 +260,7 @@ class ClientesController
                         ), array("id_cliente" => $id));
                         if ($result == 1) {
                             $this->clientes->guardar_direcciones($id, $dirs);
+                            $documentos_rechazados = $this->guardar_documentos_cliente($id, $id_usuario_edicion);
                         }
                     }
                 }
@@ -190,7 +272,7 @@ class ClientesController
             $this->log->insertar($e->getMessage(), get_class($this) . '|' . __FUNCTION__);
             $message = $e->getMessage();
         }
-        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+        echo json_encode(array("result" => array("code" => $result, "message" => $message, "documentos_rechazados" => $documentos_rechazados)));
     }
     public function actualizar_cliente_a_moroso()
     {
@@ -269,6 +351,7 @@ class ClientesController
                 $id = $_POST['guardarid'];
                 $result = $this->clientes->listar_x_id($id);
                 $result->direcciones = $this->clientes->listar_direcciones_x_id($id);
+                $result->documentos = $this->clientes->listar_documentos_x_id($id);
             } else {
                 $result = 6;
             }
@@ -278,6 +361,68 @@ class ClientesController
         }
         echo json_encode(array("result" => array("code" => $result, "message" => $message)));
     }
+    // Historial de comportamiento de pago, para decidir si corresponde marcar al cliente como moroso
+    public function resumen_comportamiento_cliente(){
+        $result = 2;
+        $message = 'OK';
+        $resumen = null;
+        try{
+            $resumen = $this->cobros->resumen_comportamiento_cliente((int)($_POST['id_cliente'] ?? 0));
+            $result = $resumen ? 1 : 2;
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message, "resumen" => $resumen)));
+    }
+
+    // Baja lógica de un documento adjunto: deja de listarse, el archivo se conserva en disco
+    public function eliminar_documento_cliente(){
+        $result = 2;
+        $message = 'OK';
+        try{
+            $documento = $this->clientes->listar_documento($_POST['id_cliente_documento'] ?? 0);
+            if ($documento) {
+                $result = $this->builder->update('clientes_documentos',
+                    array('cliente_documento_estado' => 0),
+                    array('id_cliente_documento' => $documento->id_cliente_documento));
+            }
+        } catch (Exception $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
+
+    // Muestra/descarga un documento del cliente. La carpeta uploads/clientes no es accesible
+    // por URL directa, así que los archivos solo se entregan por aquí (con sesión y permiso).
+    public function ver_documento(){
+        try{
+            $documento = $this->clientes->listar_documento($_GET['id'] ?? 0);
+            $ruta = $documento ? realpath($documento->cliente_documento_ruta) : false;
+            $base = realpath('uploads/clientes');
+            if (!$ruta || !$base || strpos($ruta, $base . DIRECTORY_SEPARATOR) !== 0) {
+                http_response_code(404);
+                echo 'Documento no encontrado';
+                return;
+            }
+            // Imágenes y PDF se abren en el navegador; Word se descarga
+            $en_linea = strpos($documento->cliente_documento_mime, 'image/') === 0
+                || $documento->cliente_documento_mime === 'application/pdf';
+            $nombre = str_replace(array('"', "\r", "\n"), '', $documento->cliente_documento_nombre);
+            header('Content-Type: ' . $documento->cliente_documento_mime);
+            header('Content-Length: ' . filesize($ruta));
+            header('Content-Disposition: ' . ($en_linea ? 'inline' : 'attachment') . '; filename="' . $nombre . '"');
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: private, max-age=0');
+            readfile($ruta);
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            http_response_code(500);
+            echo 'No se pudo abrir el documento';
+        }
+    }
+
     public function buscar_cliente_garante(){
         $ok_data = true;
         $result = 2;

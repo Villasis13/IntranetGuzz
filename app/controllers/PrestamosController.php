@@ -71,6 +71,8 @@ class PrestamosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+            // Aplica el interés de los préstamos cuyo plazo venció con saldo (una vez por periodo)
+            $this->cobros->aplicar_intereses_vencidos();
 			$prestamos_general = $this->prestamos->listar_prestamos();
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
@@ -87,8 +89,9 @@ class PrestamosController
         try{
             $this->nav = new Navbar();
             $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
-			$prestamos_antiguos = $this->prestamos->listar_prestamos_antiguos();
-			$prestamos_antiguos_cancelados = $this->prestamos->listar_prestamos_antiguos_cancelados();
+			// En recuperación (estado 3) y recuperación cancelada (estado 4), con totales y acuerdo vigente
+			$prestamos_antiguos = $this->prestamos->listar_prestamos_recuperacion(3);
+			$prestamos_antiguos_cancelados = $this->prestamos->listar_prestamos_recuperacion(4);
             require _VIEW_PATH_ . 'header.php';
             require _VIEW_PATH_ . 'navbar.php';
             require _VIEW_PATH_ . 'prestamos/prestamos_antiguos.php';
@@ -100,6 +103,139 @@ class PrestamosController
             echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
         }
     }
+    // Ficha de un préstamo en recuperación: deuda, acuerdos, abonos y saldo
+    public function recuperacion(){
+        try{
+            $this->nav = new Navbar();
+            $navs = $this->nav->listar_menus($this->encriptar->desencriptar($_SESSION['ru'],_FULL_KEY_));
+            $id_prestamo = (int)($_GET['id'] ?? 0);
+            $prestamo = $this->prestamos->listar_x_id($id_prestamo);
+            if (!$prestamo || !in_array(intval($prestamo->prestamo_estado), [3, 4])) {
+                echo "<script language=\"javascript\">alert(\"Este préstamo no está en recuperación.\");</script>";
+                echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."Prestamos/prestamos_antiguos\";</script>";
+                return;
+            }
+            $cliente = $this->clientes->listar_x_id($prestamo->id_cliente);
+            $metodos_pago = $this->cobros->listar_metodos_de_pago();
+            $bancos = $this->cobros->listar_bancos();
+            $cuentas_receptoras = $this->cobros->listar_cuentas_receptoras();
+            $frecuencias = array_keys(Prestamos::FRECUENCIAS_ACUERDO);
+            $ultima_caja = $this->caja->listar_ultima_caja();
+            $caja_abierta = $ultima_caja && intval($ultima_caja->estado_caja) === 1;
+
+            $linea = $this->prestamos->linea_tiempo_recuperacion($prestamo);
+            $acuerdos            = $linea['acuerdos'];
+            $acuerdo_vigente     = $linea['acuerdo_vigente'];
+            $eventos             = $linea['eventos'];
+            $inicio_recuperacion = $linea['inicio'];
+            $total_pagado        = $linea['total_pagado'];
+            $total_abonos        = $linea['total_abonos'];
+
+            $deuda_original = round(floatval($prestamo->prestamo_monto) + floatval($prestamo->prestamo_monto_interes), 2);
+            $ajuste_acuerdos = 0;
+            foreach ($acuerdos as $a) {
+                $ajuste_acuerdos += floatval($a->prestamo_acuerdo_monto) - floatval($a->prestamo_acuerdo_deuda_anterior);
+            }
+            $saldo_actual = round(floatval($prestamo->prestamo_saldo_pagar), 2);
+            $movimientos_prestamo = $this->cobros->listar_movimientos_x_prestamo($id_prestamo);
+
+            require _VIEW_PATH_ . 'header.php';
+            require _VIEW_PATH_ . 'navbar.php';
+            require _VIEW_PATH_ . 'prestamos/recuperacion.php';
+            require _VIEW_PATH_ . 'footer.php';
+        }
+        catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            echo "<script language=\"javascript\">alert(\"Error Al Mostrar Contenido. Redireccionando Al Inicio\");</script>";
+            echo "<script language=\"javascript\">window.location.href=\"". _SERVER_ ."\";</script>";
+        }
+    }
+
+    // Códigos: 1 ok, 2 error, 4 el préstamo no es activo o no tiene saldo
+    public function pasar_a_recuperacion(){
+        $result = 2;
+        $message = 'OK';
+        try{
+            $result = $this->prestamos->pasar_a_recuperacion((int)($_POST['id_prestamo'] ?? 0));
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
+
+    // Códigos: 1 ok, 2 error, 4 no está en recuperación, 6 datos inválidos
+    public function guardar_acuerdo_recuperacion(){
+        $result = 2;
+        $message = 'OK';
+        try{
+            $monto      = $_POST['acuerdo_monto'] ?? '';
+            $abono      = $_POST['acuerdo_abono_sugerido'] ?? '';
+            $frecuencia = $_POST['acuerdo_frecuencia'] ?? '';
+            $fecha      = $_POST['acuerdo_proxima_fecha'] ?? '';
+            $fecha_ok   = DateTime::createFromFormat('Y-m-d', $fecha);
+            $fecha_ok   = ($fecha_ok && $fecha_ok->format('Y-m-d') === $fecha) ? $fecha : null;
+            $observacion = trim($_POST['acuerdo_observacion'] ?? '');
+
+            $ok_data = is_numeric($monto) && round((float)$monto, 2) > 0
+                && ($abono === '' || (is_numeric($abono) && (float)$abono > 0 && (float)$abono <= (float)$monto))
+                && array_key_exists($frecuencia, Prestamos::FRECUENCIAS_ACUERDO)
+                && ($fecha === '' || $fecha_ok)
+                && ($frecuencia === 'Libre' || $fecha_ok);
+
+            if ($ok_data) {
+                $result = $this->prestamos->guardar_acuerdo_recuperacion((int)($_POST['id_prestamo'] ?? 0), array(
+                    'monto'          => round((float)$monto, 2),
+                    'abono_sugerido' => $abono === '' ? null : round((float)$abono, 2),
+                    'frecuencia'     => $frecuencia,
+                    'proxima_fecha'  => $fecha_ok,
+                    'observacion'    => $observacion !== '' ? mb_substr($observacion, 0, 500) : null,
+                ), $this->encriptar->desencriptar($_SESSION['c_u'], _FULL_KEY_));
+            } else {
+                $result = 6;
+            }
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message)));
+    }
+
+    // Códigos: 1 ok, 2 error, 3 caja cerrada, 4 no está en recuperación, 5 supera el saldo, 6 datos inválidos
+    public function guardar_abono_recuperacion(){
+        $result = 2;
+        $message = 'OK';
+        $id_pago = 0;
+        try{
+            $monto  = $_POST['abono_monto'] ?? '';
+            $metodo = (int)($_POST['abono_metodo'] ?? 0);
+            $metodo_valido = false;
+            foreach ($this->cobros->listar_metodos_de_pago() as $m) {
+                if (intval($m->id_metodo_pago) === $metodo) $metodo_valido = true;
+            }
+            if (is_numeric($monto) && round((float)$monto, 2) > 0 && $metodo_valido) {
+                $texto = function ($campo, $largo) {
+                    $v = trim($_POST[$campo] ?? '');
+                    return $v !== '' ? mb_substr($v, 0, $largo) : null;
+                };
+                list($result, $id_pago) = $this->prestamos->guardar_abono_recuperacion((int)($_POST['id_prestamo'] ?? 0), array(
+                    'monto'            => round((float)$monto, 2),
+                    'metodo'           => $metodo,
+                    'operacion'        => $texto('abono_operacion', 500),
+                    'cuenta_receptora' => $texto('abono_cuenta_receptora', 120),
+                    'banco'            => !empty($_POST['abono_banco']) ? (int)$_POST['abono_banco'] : null,
+                    'observacion'      => $texto('abono_observacion', 500),
+                ), $this->encriptar->desencriptar($_SESSION['c_u'], _FULL_KEY_));
+            } else {
+                $result = 6;
+            }
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            $message = $e->getMessage();
+        }
+        echo json_encode(array("result" => array("code" => $result, "message" => $message, "id_pago" => $id_pago)));
+    }
+
     public function detalles(){
         try{
             $this->nav = new Navbar();
@@ -262,6 +398,89 @@ class PrestamosController
         return $cuotas > 0 ? $cuotas : 1;
     }
 
+    // Arma y valida los datos de la garantía enviados desde Prestamos/inicio.
+    // Devuelve null si falta un dato obligatorio o los valores no son coherentes.
+    // prestamo_garantia guarda un resumen legible para las vistas que solo leen ese campo.
+    private function datos_garantia()
+    {
+        $tipo        = trim($_POST['garantia_tipo'] ?? '');
+        $nombre      = trim($_POST['garantia_nombre'] ?? '');
+        $descripcion = trim($_POST['garantia_descripcion'] ?? '');
+        $estado      = trim($_POST['garantia_estado'] ?? '');
+        $valor_real  = $_POST['garantia_valor_real'] ?? '';
+        $valor_asig  = $_POST['garantia_valor_asignado'] ?? '';
+
+        if ($tipo === '' || $nombre === '' || $estado === '' || !is_numeric($valor_real) || !is_numeric($valor_asig)) {
+            return null;
+        }
+        $valor_real = round((float)$valor_real, 2);
+        $valor_asig = round((float)$valor_asig, 2);
+        if ($valor_real <= 0 || $valor_asig <= 0 || $valor_asig > $valor_real) {
+            return null;
+        }
+
+        $placa = $chasis = $anho = $color = null;
+        $resumen = $tipo . ': ' . $nombre;
+        if ($tipo === 'Vehículo') {
+            $placa  = strtoupper(trim($_POST['garantia_placa'] ?? ''));
+            $chasis = strtoupper(trim($_POST['garantia_chasis'] ?? ''));
+            $anho   = (int)($_POST['garantia_anho'] ?? 0);
+            $color  = trim($_POST['garantia_color'] ?? '');
+            if ($placa === '' || $chasis === '' || $color === '' || $anho < 1950 || $anho > (int)date('Y') + 1) {
+                return null;
+            }
+            $resumen .= ' | Placa: ' . $placa . ' | Chasis: ' . $chasis . ' | Año: ' . $anho . ' | Color: ' . $color;
+        }
+        $resumen .= ' | Estado: ' . $estado;
+        if ($descripcion !== '') {
+            $resumen .= ' | ' . $descripcion;
+        }
+
+        return array(
+            'prestamo_garantia'                => mb_substr($resumen, 0, 1000),
+            'prestamo_garantia_tipo'           => $tipo,
+            'prestamo_garantia_nombre'         => $nombre,
+            'prestamo_garantia_descripcion'    => $descripcion !== '' ? $descripcion : null,
+            'prestamo_garantia_estado'         => $estado,
+            'prestamo_garantia_valor_real'     => $valor_real,
+            'prestamo_garantia_valor_asignado' => $valor_asig,
+            'prestamo_garantia_placa'          => $placa,
+            'prestamo_garantia_chasis'         => $chasis,
+            'prestamo_garantia_anho'           => $anho,
+            'prestamo_garantia_color'          => $color,
+        );
+    }
+
+    // Detalle de la garantía como pares etiqueta => valor, para imprimirla en los documentos.
+    // Préstamos anteriores al registro estructurado solo tienen el texto libre de prestamo_garantia.
+    private function detalle_garantia($prestamo)
+    {
+        if (empty($prestamo->prestamo_garantia_nombre)) {
+            return trim((string)$prestamo->prestamo_garantia) !== ''
+                ? array('Garantía' => $prestamo->prestamo_garantia)
+                : array();
+        }
+
+        $detalle = array(
+            'Tipo'  => $prestamo->prestamo_garantia_tipo,
+            'Bien'  => $prestamo->prestamo_garantia_nombre,
+        );
+        if ($prestamo->prestamo_garantia_tipo === 'Vehículo') {
+            $detalle['Placa']  = $prestamo->prestamo_garantia_placa;
+            $detalle['Chasis'] = $prestamo->prestamo_garantia_chasis;
+            $detalle['Año']    = $prestamo->prestamo_garantia_anho;
+            $detalle['Color']  = $prestamo->prestamo_garantia_color;
+        }
+        $detalle['Estado'] = $prestamo->prestamo_garantia_estado;
+        if (!empty($prestamo->prestamo_garantia_descripcion)) {
+            $detalle['Descripción'] = $prestamo->prestamo_garantia_descripcion;
+        }
+        $detalle['Valor Real']     = 'S/. ' . number_format($prestamo->prestamo_garantia_valor_real, 2);
+        $detalle['Valor Asignado'] = 'S/. ' . number_format($prestamo->prestamo_garantia_valor_asignado, 2);
+
+        return $detalle;
+    }
+
     public function guardar_prestamo()
     {
         $result = 2;
@@ -284,8 +503,12 @@ class PrestamosController
             $id_cliente = !empty($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : 0;
             $garante = !empty($_POST['prestamo_garante']) ? (int)$_POST['prestamo_garante'] : 0;
 
+            $garantia = $this->datos_garantia();
+
+            if ($garantia === null) {
+                $result = 6;
             // NUEVA VALIDACIÓN: Si el garante seleccionado es el mismo cliente
-            if ($garante > 0 && $garante === $id_cliente) {
+            } elseif ($garante > 0 && $garante === $id_cliente) {
                 $result = 5;
             } else {
                 // Si pasa la validación, continuamos con el flujo normal
@@ -305,7 +528,7 @@ class PrestamosController
                         // ==========================================
                         // 1. GUARDAR EL PRÉSTAMO
                         // ==========================================
-                        $result_prestamo = $this->builder->save("prestamos", array(
+                        $result_prestamo = $this->builder->save("prestamos", array_merge(array(
                             'id_cliente'             => $_POST['id_cliente'],
                             'id_usuario'             => $usuario,
                             'prestamo_monto'         => $_POST['prestamo_monto'],
@@ -323,20 +546,27 @@ class PrestamosController
                             'prestamo_prox_cobro'    => $_POST['prestamo_prox_cobro'],
                             'prestamo_monto_interes' => ceil($_POST['prestamo_monto'] * $_POST['prestamo_interes'] / 100),
                             'prestamo_saldo_pagar'   => $_POST['prestamo_monto'] + ($_POST['prestamo_monto'] * $_POST['prestamo_interes'] / 100),
-                            'prestamo_garantia'      => $_POST['prestamo_garantia'],
+                            // Saldos por concepto: lo pendiente de capital y de interés
+                            'prestamo_capital_pendiente' => round((float)$_POST['prestamo_monto'], 2),
+                            'prestamo_interes_pendiente' => round((float)$_POST['prestamo_monto'] * (float)$_POST['prestamo_interes'] / 100, 2),
                             'prestamo_garante'       => $_POST['prestamo_garante'],
                             'prestamo_motivo'        => $_POST['prestamo_motivo'],
                             'prestamo_comentario'    => $_POST['prestamo_comentario'],
                             'prestamo_domingo'       => $_POST['select_domingos'],
                             'prestamo_mt'            => $mt,
                             'prestamo_estado'        => 1
-                        ));
+                        ), $garantia));
 
                         if($result_prestamo == 1){
                             $id_prestamo_obj = $this->prestamos->listar_x_mt($mt);
 
                             if($id_prestamo_obj){
                                 $id_generado = $id_prestamo_obj->id_prestamos;
+
+                                // Primer movimiento del historial: el préstamo otorgado (capital + interés pactado)
+                                $this->cobros->registrar_movimiento($id_generado, 'desembolso', 0, 0,
+                                    'Préstamo otorgado: capital S/ ' . number_format((float)$_POST['prestamo_monto'], 2)
+                                    . ' + interés ' . floatval($_POST['prestamo_interes']) . '%', null, $usuario);
 
                                 // ==========================================
                                 // 2. GUARDAR LAS CUOTAS
@@ -568,7 +798,8 @@ class PrestamosController
             $pdf->Ln(); $pdf->Ln();
 
             // --- PÁGINA 2: GARANTÍA ---
-            if($data_prestamo->prestamo_garantia !== ""){
+            $detalle_garantia = $this->detalle_garantia($data_prestamo);
+            if(!empty($detalle_garantia)){
                 $pdf->AddPage();
                 $pdf->SetFont('Arial','B',12);
                 $pdf->Cell(180,6,'CONTRATO PRIVADO DE MUTUO ACUERDO CON GARANTÍA',0,1,'C',0);
@@ -578,13 +809,31 @@ class PrestamosController
                 $pdf->MultiCell(180,6,'1. Primero: EL MUTUATARIO declara acudir al mutuante en forma voluntaria, libre y espontánea, sin coacción, o intimidación alguna para el otorgamiento de un préstamo dinerario de '.$data_prestamo->prestamo_monto.' soles',0,'J',0);
                 $pdf->MultiCell(180,6,'2. Segundo. EL MUTUATARIO se obliga y compromete a respetar el presente contrato privado con todas sus obligaciones.',0,'J',0);
                 $pdf->MultiCell(180,6,'3. Tercero. EL MUTUATARIO como garantía de la reposición dineraria entrega AL MUTUANTE el bien mueble siguiente:',0,'J',0);
-                $pdf->MultiCell(180,6,'- '.$data_prestamo->prestamo_garantia,0,'J',0);
-                $pdf->Ln();
+                // Datos cortos en dos columnas para que el contrato no pase a otra hoja;
+                // la descripción (y el texto libre de préstamos antiguos) va a ancho completo.
+                $datos_cortos = array_diff_key($detalle_garantia, array('Descripción' => 1, 'Garantía' => 1, 'Valor Real' => 1, 'Valor Asignado' => 1));
+                $columna = 0;
+                foreach ($datos_cortos as $etiqueta => $valor) {
+                    $pdf->Cell(90,5,'- '.$etiqueta.': '.$valor,0,$columna,'L',0);
+                    $columna = 1 - $columna;
+                }
+                if ($columna == 1) {
+                    $pdf->Ln();
+                }
+                if (isset($detalle_garantia['Valor Real'])) {
+                    $pdf->Cell(180,5,'- Valor Real: '.$detalle_garantia['Valor Real'].'        Valor Asignado como Garantía: '.$detalle_garantia['Valor Asignado'],0,1,'L',0);
+                }
+                foreach (array('Descripción', 'Garantía') as $etiqueta) {
+                    if (isset($detalle_garantia[$etiqueta])) {
+                        $pdf->MultiCell(180,5,'- '.$etiqueta.': '.$detalle_garantia[$etiqueta],0,'J',0);
+                    }
+                }
+                $pdf->Ln(2);
                 $pdf->MultiCell(180,6,'El o los mismos que deberán ser recuperados una vez cancelada la totalidad del préstamo; vale decir, el MUTUATARIO recuperará sus bienes previo pago del capital más los intereses acordados que debe pagar al "mutuante". En caso de incumplimiento del pago total al finalizar el cronograma acordado, la garantía será retenida en forma definitiva para cubrir el monto adeudado.',0,'J',0);                $pdf->MultiCell(180,6,'4. Cuarto: Habiéndose vencido la garantía y superado el plazo legal acordado, será entregado y transferido en propiedad definitiva a favor de la empresa de la Inversiones y Multiservicios GUZZ E.I.R.L, Identificado con el N° RUC: 20600864255, dirección: calle. José Olaya #324 - Túpac Amaru, con el representante legal de nombre Karlo Abel Guzmán Arbirdo y con DNI 46119903, quien a partir de la fecha será, su real y legitimo poseedor y propietario, sin mediar cualquier comunicación antigua.',0,'J',0);
-                $pdf->MultiCell(180,6,'5. Quinto: "EL MUTUARIO" y el "MUTUANTE" en común acuerdo valorizan la garantía según factura y tiempo de uso del bien, en la suma de .............. no pudiendo ser el préstamo superior a lo valorizado de la garantía por depreciación.',0,'J',0);
-                $pdf->MultiCell(180,6,'6. Sexto: "EL MUTUANTE" para estos efectos hace entrega en el acto "al mutuario" la suma de .......... en dinero en efectivo que "EL MUTUARIO" se compromete a devolver respetando la cláusula tercera del presente contrato.',0,'J',0);
+                $pdf->MultiCell(180,6,'5. Quinto: "EL MUTUARIO" y el "MUTUANTE" en común acuerdo valorizan la garantía según factura y tiempo de uso del bien, en la suma de '.(!empty($data_prestamo->prestamo_garantia_valor_asignado) ? 'S/ '.number_format($data_prestamo->prestamo_garantia_valor_asignado, 2) : '..............').' no pudiendo ser el préstamo superior a lo valorizado de la garantía por depreciación.',0,'J',0);
+                $pdf->MultiCell(180,6,'6. Sexto: "EL MUTUANTE" para estos efectos hace entrega en el acto "al mutuario" la suma de S/ '.number_format($data_prestamo->prestamo_monto, 2).' en dinero en efectivo que "EL MUTUARIO" se compromete a devolver respetando la cláusula tercera del presente contrato.',0,'J',0);
                 $pdf->MultiCell(180,6,'7. Séptimo: EL MUTUARIO Y EL MUTUATARIO declaran conocer y aceptar los términos y condiciones de las cláusulas del presente contrato privado, suscribiéndose en la ciudad de Iquitos a los '.$dia_fecha.' días de '.$mes.' del '.$anho_fecha,0,'J',0);
-                $pdf->Ln(); $pdf->Ln(); $pdf->Ln(); $pdf->Ln();
+                $pdf->Ln(); $pdf->Ln(); $pdf->Ln();
                 $pdf->Cell(80,6,'................................',0,0,'L',0);
                 $pdf->Cell(80,6,'................................',0,1,'R',0);
                 $pdf->Cell(80,6,'MUTUARIO',0,0,'L',0);
@@ -654,6 +903,18 @@ class PrestamosController
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Inicio de Préstamo: ' . $fecha_inicio,0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Primer Pago: ' . $fecha_primer_pago,0,'L');
             $pdf->SetX($posX); $pdf->MultiCell(80,5,'Fecha de Vencimiento del Préstamo: ' . $fecha_ultimo_pago,0,'L');
+
+            // DATOS DE LA GARANTÍA
+            if (!empty($detalle_garantia)) {
+                $pdf->Ln(3);
+                $pdf->SetX($posX);
+                $pdf->SetFont('Arial','B',10);
+                $pdf->MultiCell(80,6,'DATOS DE LA GARANTÍA',0,'J',0);
+                $pdf->SetFont('Arial','',10);
+                foreach ($detalle_garantia as $etiqueta => $valor) {
+                    $pdf->SetX($posX); $pdf->MultiCell(80,5,$etiqueta.': '.$valor,0,'L');
+                }
+            }
 
             // CLÁUSULAS DERECHAS
             $pdf->Ln();

@@ -40,6 +40,63 @@ class Clientes
             return [];
         }
     }
+    // Clientes con atrasos de pago, indexados por id_cliente. Es solo una alerta: un atraso
+    // NO convierte al cliente en moroso; ese estado se asigna a mano tras revisar su historial.
+    //   atrasados          = préstamos activos con alguna cuota vencida sin pagar
+    //   cuota_mas_antigua  = fecha de la cuota vencida más antigua (para los días de atraso)
+    //   en_recuperacion    = préstamos en recuperación (estado 3)
+    public function clientes_con_atraso(){
+        try{
+            $sql = 'SELECT p.id_cliente,
+                           COUNT(DISTINCT CASE WHEN p.prestamo_estado = 1 THEN p.id_prestamos END) AS atrasados,
+                           MIN(CASE WHEN p.prestamo_estado = 1 THEN pd.pago_diario_fecha END) AS cuota_mas_antigua,
+                           COUNT(DISTINCT CASE WHEN p.prestamo_estado = 3 THEN p.id_prestamos END) AS en_recuperacion
+                    FROM prestamos p
+                    LEFT JOIN pagos_diarios pd ON pd.id_prestamos = p.id_prestamos
+                                              AND pd.pago_diario_estado = 1
+                                              AND pd.pago_diario_fecha < CURDATE()
+                    WHERE (p.prestamo_estado = 1 AND p.prestamo_saldo_pagar > 0 AND pd.id_pago_diario IS NOT NULL)
+                       OR p.prestamo_estado = 3
+                    GROUP BY p.id_cliente';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute();
+            $atrasos = array();
+            foreach ($stm->fetchAll() as $m) {
+                $atrasos[$m->id_cliente] = $m;
+            }
+            return $atrasos;
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function listar_documentos_x_id($id_cliente){
+        try{
+            $sql = 'SELECT id_cliente_documento, cliente_documento_tipo, cliente_documento_descripcion,
+                           cliente_documento_nombre, cliente_documento_mime, cliente_documento_tamanho,
+                           cliente_documento_fecha
+                    FROM clientes_documentos
+                    WHERE id_cliente = ? AND cliente_documento_estado = 1
+                    ORDER BY cliente_documento_fecha DESC, id_cliente_documento DESC';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_cliente]);
+            return $stm->fetchAll();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return [];
+        }
+    }
+    public function listar_documento($id_documento){
+        try{
+            $sql = 'SELECT * FROM clientes_documentos WHERE id_cliente_documento = ? AND cliente_documento_estado = 1';
+            $stm = $this->pdo->prepare($sql);
+            $stm->execute([$id_documento]);
+            return $stm->fetch();
+        } catch (Throwable $e){
+            $this->log->insertar($e->getMessage(), get_class($this).'|'.__FUNCTION__);
+            return null;
+        }
+    }
     public function listar_clientes_actualizar(){
         try{
             $sql = 'SELECT * 
@@ -199,7 +256,7 @@ class Clientes
         try{
             // Añadimos ORDER BY para asegurar que sea el primero y LIMIT 1
             $sql = 'SELECT * FROM pagos_diarios 
-                WHERE id_prestamos = ? 
+                WHERE id_prestamos = ? AND id_prestamo_renovacion IS NULL 
                 ORDER BY pago_diario_fecha ASC 
                 LIMIT 1';
 
@@ -218,7 +275,7 @@ class Clientes
         try{
             // Añadimos ORDER BY DESC para traer la fecha más lejana y LIMIT 1
             $sql = 'SELECT * FROM pagos_diarios 
-                WHERE id_prestamos = ? 
+                WHERE id_prestamos = ? AND id_prestamo_renovacion IS NULL 
                 ORDER BY pago_diario_fecha DESC 
                 LIMIT 1';
 

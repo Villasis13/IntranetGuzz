@@ -318,10 +318,39 @@
                                 <?php
                                 // AMORTIZACIONES ocultas temporalmente — solo se suma para los totales
                                 $suma_amortizaciones = 0;
+                                $abonos_recuperacion = [];
                                 foreach ((array)$amortizaciones_caja as $am) {
                                     $suma_amortizaciones += $am->ingreso_display;
+                                    // Abonos de préstamos en recuperación: sí se muestran (ya están en la suma)
+                                    if (in_array(intval($am->prestamo_estado ?? 0), [3, 4])) $abonos_recuperacion[] = $am;
                                 }
                                 ?>
+
+                                <?php if (!empty($abonos_recuperacion)): ?>
+                                <tr>
+                                    <td colspan="6" class="arqueo-sec-header" style="background:#e8f5e9; color:#166534;">
+                                        <i class="fa fa-history mr-1"></i> Abonos de Recuperación
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="arqueo-col-header" style="width:110px;">Fecha</th>
+                                    <th class="arqueo-col-header" style="width:90px;">Hora</th>
+                                    <th class="arqueo-col-header">Cliente</th>
+                                    <th class="arqueo-col-header">Método de Pago</th>
+                                    <th class="arqueo-col-header ing text-right" style="width:140px;">Ingresos</th>
+                                    <th class="arqueo-col-header egr text-right" style="width:140px;">Egresos</th>
+                                </tr>
+                                <?php foreach ($abonos_recuperacion as $ab): ?>
+                                    <tr class="data-row">
+                                        <td><?= date('d/m/Y', strtotime($ab->pago_fecha)) ?></td>
+                                        <td><?= date('H:i:s', strtotime($ab->pago_fecha)) ?></td>
+                                        <td><?= htmlspecialchars($ab->cliente_nombre . ' ' . $ab->cliente_apellido_paterno) ?></td>
+                                        <td><?= ucfirst($ab->metodo_pago_nombre ?? $ab->pago_metodo) ?></td>
+                                        <td class="text-right m-ing">S/ <?= number_format($ab->ingreso_display, 2) ?></td>
+                                        <td></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <?php endif; ?>
 
                                 <!-- Préstamos -->
                                 <tr>
@@ -414,6 +443,50 @@
                                     <tr class="arqueo-empty"><td colspan="6">No hay ingresos manuales registrados.</td></tr>
                                 <?php endif; ?>
 
+                                <!-- Gastos de Empresa pagados con dinero de caja (módulo Gastos) -->
+                                <tr>
+                                    <td colspan="6" class="arqueo-sec-header" style="background:#fdecea; color:#b91c1c;">
+                                        <i class="fa fa-calculator mr-1"></i> Gastos de Empresa
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="arqueo-col-header" style="width:110px;">Fecha</th>
+                                    <th class="arqueo-col-header" style="width:90px;">Hora</th>
+                                    <th class="arqueo-col-header">Categoría</th>
+                                    <th class="arqueo-col-header">Descripción</th>
+                                    <th class="arqueo-col-header ing text-right" style="width:140px;">Ingresos</th>
+                                    <th class="arqueo-col-header egr text-right" style="width:140px;">Egresos</th>
+                                </tr>
+                                <?php
+                                $suma_gastos_empresa = 0;
+                                if(!empty($gastos_empresa_caja)):
+                                    foreach($gastos_empresa_caja as $ge):
+                                        $ge_anulado = intval($ge->gasto_empresa_estado) !== 1;
+                                        if (!$ge_anulado) $suma_gastos_empresa += $ge->gasto_empresa_monto;
+                                        ?>
+                                        <tr class="data-row<?= $ge_anulado ? ' table-secondary' : '' ?>">
+                                            <td><?= date('d/m/Y', strtotime($ge->gasto_empresa_fecha_registro)) ?></td>
+                                            <td><?= date('H:i:s', strtotime($ge->gasto_empresa_fecha_registro)) ?></td>
+                                            <td><?= htmlspecialchars($ge->gasto_empresa_categoria_nombre) ?></td>
+                                            <td>
+                                                <?= htmlspecialchars($ge->gasto_empresa_descripcion) ?>
+                                                <?php if ($ge_anulado): ?>
+                                                    <span class="badge bg-danger text-white ml-1">ANULADO</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td></td>
+                                            <td class="text-right <?= $ge_anulado ? 'text-muted' : 'm-egr' ?>">
+                                                <?php if ($ge_anulado): ?>
+                                                    <del>S/ <?= number_format($ge->gasto_empresa_monto, 2) ?></del>
+                                                <?php else: ?>
+                                                    S/ <?= number_format($ge->gasto_empresa_monto, 2) ?>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; else: ?>
+                                    <tr class="arqueo-empty"><td colspan="6">No hay gastos de empresa pagados con caja en este turno.</td></tr>
+                                <?php endif; ?>
+
                                 </tbody>
                             </table>
                         </div>
@@ -424,7 +497,7 @@
                         <?php
                         $monto_apertura         = $ultima_caja->monto_apertura_caja;
                         $total_ingresos         = $suma_pagos + $suma_amortizaciones + $suma_ingresos_manuales;
-                        $total_egresos          = $suma_prestamos;
+                        $total_egresos          = $suma_prestamos + $suma_gastos_empresa;
                         $saldo_actual_calculado = $monto_apertura + $total_ingresos - $total_egresos;
                         ?>
                         <div style="background: #f8fafc; border-top: 3px solid #4e73df; padding: 20px 28px;">
